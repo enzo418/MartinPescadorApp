@@ -8,6 +8,7 @@ public class GuidId : ValueObject
     {
         Value = value;
     }
+    public static implicit operator GuidId(Guid value) => new(value);
 
     protected override IEnumerable<object> GetEqualityComponents()
     {

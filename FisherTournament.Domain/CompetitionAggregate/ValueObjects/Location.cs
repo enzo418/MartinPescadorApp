@@ -13,6 +13,17 @@ public sealed class Location : ValueObject
     }
 #pragma warning restore CS8618
 
+    public static Location Create(string city, string state, string country, string place)
+    {
+        return new Location
+        {
+            City = city,
+            State = state,
+            Country = country,
+            Place = place
+        };
+    }
+
     protected override IEnumerable<object> GetEqualityComponents()
     {
         yield return City;

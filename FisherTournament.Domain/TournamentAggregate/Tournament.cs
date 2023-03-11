@@ -23,6 +23,7 @@ public class Tournament : AggregateRoot<TournamentId>
     public DateTime StartDate { get; private set; }
     public DateTime EndDate { get; private set; }
 
+    public IReadOnlyCollection<CompetitionId> Competitions => _competitions.AsReadOnly();
     public IReadOnlyCollection<TournamentInscription> Inscriptions => _inscriptions.AsReadOnly();
 
     public void AddCompetition(CompetitionId competitionId)
@@ -33,6 +34,16 @@ public class Tournament : AggregateRoot<TournamentId>
     public void AddInscription(FisherId fisherId)
     {
         _inscriptions.Add(TournamentInscription.Create(Id, fisherId));
+    }
+
+    public bool IsFisherEnrolled(FisherId fisherId)
+    {
+        return _inscriptions.Find(x => x.FisherId == fisherId) != null;
+    }
+
+    public static Tournament Create(string name, DateTime startDate, DateTime endDate)
+    {
+        return new Tournament(Guid.NewGuid(), name, startDate, endDate);
     }
 
 #pragma warning disable CS8618

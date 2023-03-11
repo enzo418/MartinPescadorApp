@@ -51,10 +51,10 @@ The club need the system to be portable because fishing locations might be remot
 
 ### Use cases
 - Create a tournament
-- Create a competition for a tournament
+- Add competitions to a tournament
 - Create a fisher
 - Add a fisher to a tournament (inscription)
-- Add a fish score to a competition
+- Add a fisher score to a competition
 - Get the leader board of a competition
 - Get the leader board of a tournament
 

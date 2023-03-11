@@ -8,3 +8,6 @@ So far i applied the rule:
 Using A.M. implementation which takes the Id as a template parameter, but it makes sense to remove the template parameter and force entities to use integer ids to communicate that are auto generated, oppossed to GUID.
 
 > **Note:** [eShopOnContainers](https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/src/Services/Ordering/Ordering.Domain/SeedWork) uses the same approach of entities with integer ids.
+
+# Where in field
+Is where actually making a query? is it lazy loading even if it's not virtual? Does Find instead of query makes a query?

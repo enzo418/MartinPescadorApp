@@ -14,8 +14,8 @@ public class User : AggregateRoot<UserId>
     public string FirstName { get; private set; }
     public string LastName { get; private set; }
 
-    public static User Create(UserId id, string firstName, string lastName)
+    public static User Create(string firstName, string lastName)
     {
-        return new User(id, firstName, lastName);
+        return new User(Guid.NewGuid(), firstName, lastName);
     }
 }

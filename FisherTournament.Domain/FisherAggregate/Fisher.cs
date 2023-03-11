@@ -12,9 +12,9 @@ public sealed class Fisher : AggregateRoot<FisherId>
         UserId = userId;
     }
 
-    public static Fisher Create(FisherId id, UserId userId)
+    public static Fisher Create(UserId userId)
     {
-        return new Fisher(id, userId);
+        return new Fisher(Guid.NewGuid(), userId);
     }
 
 #pragma warning disable CS8618
