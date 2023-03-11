@@ -11,6 +11,7 @@ public sealed class Location : ValueObject
     private Location()
     {
     }
+#pragma warning restore CS8618
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
@@ -19,5 +20,4 @@ public sealed class Location : ValueObject
         yield return Country;
         yield return Place;
     }
-#pragma warning restore CS8618
 }

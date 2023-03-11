@@ -5,7 +5,10 @@ namespace FisherTournament.Domain.TournamentAggregate.Entities;
 
 public sealed class TournamentInscription : Entity<int>
 {
-    private TournamentInscription(int id, TournamentId tournamentId, FisherId fisherId)
+    private TournamentInscription(
+        int id,
+        TournamentId tournamentId,
+        FisherId fisherId)
         : base(id)
     {
         TournamentId = tournamentId;
@@ -15,8 +18,10 @@ public sealed class TournamentInscription : Entity<int>
     public TournamentId TournamentId { get; private set; }
     public FisherId FisherId { get; private set; }
 
-    public static TournamentInscription Create(TournamentId tournamentId, FisherId fisherId)
+    public static TournamentInscription Create(
+        TournamentId tournamentId,
+        FisherId fisherId)
     {
-        return new TournamentInscription(new TournamentInscriptionId(Guid.NewGuid()), tournamentId, fisherId);
+        return new TournamentInscription(0, tournamentId, fisherId);
     }
 }

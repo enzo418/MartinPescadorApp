@@ -7,24 +7,22 @@ public sealed class CompetitionParticipation : Entity<int>
 {
     private List<FishCaught> _fishCaught = new();
 
-    private CompetitionParticipation(CompetitionId competitionId, FisherId fisherId, Location location, int totalScore)
+    private CompetitionParticipation(CompetitionId competitionId, FisherId fisherId, int totalScore)
     {
         CompetitionId = competitionId;
         FisherId = fisherId;
-        Location = location;
         TotalScore = totalScore;
     }
 
     public CompetitionId CompetitionId { get; private set; }
 
     public FisherId FisherId { get; private set; }
-    public Location Location { get; private set; }
     public int TotalScore { get; private set; }
     public IReadOnlyCollection<FishCaught> FishCaught => _fishCaught.AsReadOnly();
 
-    public static CompetitionParticipation Create(CompetitionId competitionId, FisherId fisherId, Location location)
+    public static CompetitionParticipation Create(CompetitionId competitionId, FisherId fisherId)
     {
-        return new CompetitionParticipation(competitionId, fisherId, location, 0);
+        return new CompetitionParticipation(competitionId, fisherId, 0);
     }
 
     public void AddFishCaught(FishCaught fishCaught)

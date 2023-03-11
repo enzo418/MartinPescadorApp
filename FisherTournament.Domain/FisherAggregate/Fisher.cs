@@ -1,16 +1,25 @@
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
+using FisherTournament.Domain.UserAggregate.ValueObjects;
 
 namespace FisherTournament.Domain.FisherAggregate;
 
 public sealed class Fisher : AggregateRoot<FisherId>
 {
-    private Fisher(FisherId id, string firstName, string lastName)
-        : base(id)
+    public UserId UserId { get; private set; }
+
+    private Fisher(FisherId id, UserId userId) : base(id)
     {
-        FirstName = firstName;
-        LastName = lastName;
+        UserId = userId;
     }
 
-    public string FirstName { get; private set; }
-    public string LastName { get; private set; }
+    public static Fisher Create(FisherId id, UserId userId)
+    {
+        return new Fisher(id, userId);
+    }
+
+#pragma warning disable CS8618
+    private Fisher()
+    {
+    }
+#pragma warning restore CS8618
 }
