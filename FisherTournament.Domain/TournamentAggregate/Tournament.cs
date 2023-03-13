@@ -8,7 +8,7 @@ namespace FisherTournament.Domain.TournamentAggregate;
 
 public class Tournament : AggregateRoot<TournamentId>
 {
-    private List<CompetitionId> _competitions = new();
+    private List<CompetitionId> _competitionsIds = new();
     private List<TournamentInscription> _inscriptions = new();
 
     private Tournament(TournamentId id, string name, DateTime startDate, DateTime endDate)
@@ -23,12 +23,12 @@ public class Tournament : AggregateRoot<TournamentId>
     public DateTime StartDate { get; private set; }
     public DateTime EndDate { get; private set; }
 
-    public IReadOnlyCollection<CompetitionId> Competitions => _competitions.AsReadOnly();
+    public IReadOnlyCollection<CompetitionId> CompetitionsIds => _competitionsIds.AsReadOnly();
     public IReadOnlyCollection<TournamentInscription> Inscriptions => _inscriptions.AsReadOnly();
 
     public void AddCompetition(CompetitionId competitionId)
     {
-        _competitions.Add(competitionId);
+        _competitionsIds.Add(competitionId);
     }
 
     public void AddInscription(FisherId fisherId)

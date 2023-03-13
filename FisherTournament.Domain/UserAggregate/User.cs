@@ -18,4 +18,10 @@ public class User : AggregateRoot<UserId>
     {
         return new User(Guid.NewGuid(), firstName, lastName);
     }
+
+#pragma warning disable CS8618
+    private User()
+    {
+    }
+#pragma warning restore CS8618
 }

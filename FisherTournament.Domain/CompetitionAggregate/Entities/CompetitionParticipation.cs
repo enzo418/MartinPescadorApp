@@ -30,4 +30,10 @@ public sealed class CompetitionParticipation : Entity<int>
         _fishCaught.Add(fishCaught);
         TotalScore += fishCaught.Score;
     }
+
+#pragma warning disable CS8618
+    private CompetitionParticipation()
+    {
+    }
+#pragma warning restore CS8618
 }

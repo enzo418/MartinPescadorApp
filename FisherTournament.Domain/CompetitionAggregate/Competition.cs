@@ -7,7 +7,7 @@ namespace FisherTournament.Domain.CompetitionAggregate;
 
 public sealed class Competition : AggregateRoot<CompetitionId>
 {
-    private List<CompetitionParticipation> _competitionParticipations = new();
+    private List<CompetitionParticipation> _participations = new();
 
     private Competition(CompetitionId id, DateTime startDateTime, DateTime? endDateTime, TournamentId tournamentId, Location location)
         : base(id)
@@ -22,7 +22,7 @@ public sealed class Competition : AggregateRoot<CompetitionId>
     public DateTime? EndDateTime { get; private set; }
     public TournamentId TournamentId { get; private set; }
     public Location Location { get; private set; }
-    public IReadOnlyCollection<CompetitionParticipation> Participations => _competitionParticipations.AsReadOnly();
+    public IReadOnlyCollection<CompetitionParticipation> Participations => _participations.AsReadOnly();
 
 
     public static Competition Create(DateTime startDateTime, DateTime? endDateTime, TournamentId tournamentId, Location location)
@@ -32,12 +32,12 @@ public sealed class Competition : AggregateRoot<CompetitionId>
 
     public void AddScore(FisherId fisherId, int score)
     {
-        var participation = _competitionParticipations.Where(x => x.FisherId == fisherId)
+        var participation = _participations.Where(x => x.FisherId == fisherId)
                                 .SingleOrDefault();
         if (participation == null)
         {
             participation = CompetitionParticipation.Create(Id, fisherId);
-            _competitionParticipations.Add(participation);
+            _participations.Add(participation);
         }
 
         participation.AddFishCaught(FishCaught.Create(this.Id, fisherId, score));

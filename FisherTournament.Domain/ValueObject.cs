@@ -11,11 +11,21 @@ public abstract class ValueObject
         return ReferenceEquals(left, right) || left.Equals(right);
     }
 
-    protected static bool NotEqualOperator(ValueObject left, ValueObject right)
+    protected static bool NotEqualOperator(ValueObject? left, ValueObject? right)
     {
         return !(EqualOperator(left, right));
     }
 
+    public static bool operator ==(ValueObject? left, ValueObject? right)
+    {
+        return EqualOperator(left, right);
+    }
+
+    public static bool operator !=(ValueObject? left, ValueObject? right)
+    {
+        return NotEqualOperator(left, right);
+    }
+    
     protected abstract IEnumerable<object> GetEqualityComponents();
 
     public override bool Equals(object? obj)

@@ -20,4 +20,10 @@ public class FishCaught : Entity<int>
     {
         return new FishCaught(competitionId, fisherId, score);
     }
+
+#pragma warning disable CS8618
+    public FishCaught()
+    {
+    }
+#pragma warning restore CS8618
 }

@@ -24,4 +24,10 @@ public sealed class TournamentInscription : Entity<int>
     {
         return new TournamentInscription(0, tournamentId, fisherId);
     }
+
+#pragma warning disable CS8618
+    private TournamentInscription()
+    {
+    }
+#pragma warning restore CS8618
 }
