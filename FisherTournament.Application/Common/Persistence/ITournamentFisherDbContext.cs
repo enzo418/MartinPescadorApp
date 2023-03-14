@@ -14,7 +14,5 @@ public interface ITournamentFisherDbContext
     DbSet<User> Users { get; }
     DbSet<Fisher> Fishers { get; }
 
-    DbSet<CompetitionParticipation> CompetitionParticipations { get; }
-
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

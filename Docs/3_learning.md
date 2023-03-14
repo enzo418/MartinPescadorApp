@@ -11,6 +11,7 @@ While i wrote this project i learned a lot of things. I will try to questions th
 - [Where in field](#where-in-field)
 - [ASP.NET doesn't support IdTypes as route parameters](#aspnet-doesnt-support-idtypes-as-route-parameters)
   - [Solution](#solution)
+- [There is no way to query Owned Entities](#there-is-no-way-to-query-owned-entities)
 
 
 # Aggregate Ids vs Entities Ids
@@ -214,3 +215,29 @@ TypeDescriptor.AddAttributes(typeof(T), new TypeConverterAttribute(typeof(GuidId
 Truly beautiful.
 
 > Of course i am ususing a lot the word Guid but that doesn't mean that i thight the id to be a Guid. You can chage the internal to be a string or int or whatever you want. But i know i should have named it other way.
+
+# There is no way to query Owned Entities
+One of the design limitations of owned entities is you cannot have an DbSet<T> where T is an owned entity.
+So how do you query it? By using the parent DbSet<T> and then using the `Include` method, or join in LINQ.
+
+**Get LeaderBoard**
+```c#
+from c in _context.Competitions
+where c.Id == request.CompetitionId // filter!
+from p in c.Participations // include owned entity
+join f in _context.Fishers on p.FisherId equals f.Id
+join u in _context.Users on f.UserId equals u.Id
+orderby p.TotalScore descending
+select new LeaderBoardItemDto(f.Id, u.FirstName, u.LastName, p.TotalScore);
+```
+
+**Resulting SQL - Is the same as if it wasn't owned**
+```sql
+SELECT CAST("f"."Id" AS TEXT), "u"."FirstName", "u"."LastName", "c0"."TotalScore"
+FROM "Competitions" AS "c"
+INNER JOIN "CompetitionParticipations" AS "c0" ON "c"."Id" = "c0"."CompetitionId"
+INNER JOIN "Fishers" AS "f" ON "c0"."FisherId" = "f"."Id"
+INNER JOIN "Users" AS "u" ON "f"."UserId" = "u"."Id"
+WHERE CAST("c"."Id" AS TEXT) = @__request_CompetitionId_0
+ORDER BY "c0"."TotalScore" DESC
+```

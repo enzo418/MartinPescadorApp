@@ -14,7 +14,6 @@ public class TournamentFisherDbContext : DbContext, ITournamentFisherDbContext
     public DbSet<Competition> Competitions { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Fisher> Fishers { get; set; } = null!;
-    public DbSet<CompetitionParticipation> CompetitionParticipations { get; set; } = null!;
 
     public TournamentFisherDbContext(
         DbContextOptions<TournamentFisherDbContext> options)

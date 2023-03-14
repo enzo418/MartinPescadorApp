@@ -24,10 +24,11 @@ public class GetLeaderBoardQueryHandler
     {
         // Select CompetitionParticipations join with Fisher to get their names
         // and then group by FisherId and sum the scores.
-        var query = from p in _context.CompetitionParticipations
+        var query = from c in _context.Competitions
+                    where c.Id == request.CompetitionId
+                    from p in c.Participations
                     join f in _context.Fishers on p.FisherId equals f.Id
                     join u in _context.Users on f.UserId equals u.Id
-                    where p.CompetitionId == request.CompetitionId
                     orderby p.TotalScore descending
                     select new LeaderBoardItemDto(f.Id, u.FirstName, u.LastName, p.TotalScore);
 
