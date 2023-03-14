@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FisherTournament.Infrastracture.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -104,14 +104,15 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                 name: "CompetitionParticipations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     CompetitionId = table.Column<Guid>(type: "TEXT", nullable: false),
                     FisherId = table.Column<Guid>(type: "TEXT", nullable: false),
                     TotalScore = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CompetitionParticipations", x => new { x.Id, x.CompetitionId });
+                    table.PrimaryKey("PK_CompetitionParticipations", x => x.Id);
                     table.ForeignKey(
                         name: "FK_CompetitionParticipations_Competitions_CompetitionId",
                         column: x => x.CompetitionId,
@@ -130,13 +131,14 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                 name: "TournamentInscription",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     TournamentId = table.Column<Guid>(type: "TEXT", nullable: false),
                     FisherId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TournamentInscription", x => new { x.Id, x.TournamentId });
+                    table.PrimaryKey("PK_TournamentInscription", x => x.Id);
                     table.ForeignKey(
                         name: "FK_TournamentInscription_Fishers_FisherId",
                         column: x => x.FisherId,
@@ -155,20 +157,21 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                 name: "CompetitionParticipationFishCaught",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     CompetitionId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    CompetitionParticipationId = table.Column<int>(type: "INTEGER", nullable: false),
                     FisherId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Score = table.Column<int>(type: "INTEGER", nullable: false)
+                    Score = table.Column<int>(type: "INTEGER", nullable: false),
+                    CompetitionParticipationId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CompetitionParticipationFishCaught", x => new { x.Id, x.CompetitionParticipationId, x.CompetitionId });
+                    table.PrimaryKey("PK_CompetitionParticipationFishCaught", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CompetitionParticipationFishCaught_CompetitionParticipations_CompetitionParticipationId_CompetitionId",
-                        columns: x => new { x.CompetitionParticipationId, x.CompetitionId },
+                        name: "FK_CompetitionParticipationFishCaught_CompetitionParticipations_CompetitionParticipationId",
+                        column: x => x.CompetitionParticipationId,
                         principalTable: "CompetitionParticipations",
-                        principalColumns: new[] { "Id", "CompetitionId" },
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_CompetitionParticipationFishCaught_Fishers_FisherId",
@@ -178,9 +181,9 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_CompetitionParticipationFishCaught_CompetitionParticipationId_CompetitionId",
+                name: "IX_CompetitionParticipationFishCaught_CompetitionParticipationId",
                 table: "CompetitionParticipationFishCaught",
-                columns: new[] { "CompetitionParticipationId", "CompetitionId" });
+                column: "CompetitionParticipationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CompetitionParticipationFishCaught_FisherId",

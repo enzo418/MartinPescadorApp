@@ -1,9 +1,9 @@
 @host=http://localhost:5244
-@tournamentId=1c795cd3-6519-4589-85e7-27c96147caeb
+@tournamentId=71050288-41e5-4958-b76a-91480a654234
 
 POST {{host}}/tournaments/{{tournamentId}}/inscriptions
 Content-Type: application/json
 
 {
-    "fisherId": "c5cea61a-d5fc-42fb-a22d-7998970b92c8"
+    "fisherId": "8cf0f7cd-796c-441c-9567-60d79bd08271"
 }

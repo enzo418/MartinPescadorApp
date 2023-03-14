@@ -48,7 +48,10 @@ public class CompetitionConfiguration : IEntityTypeConfiguration<Competition>
         {
             p.ToTable("CompetitionParticipations");
             p.WithOwner().HasForeignKey(p => p.CompetitionId);
-            p.HasKey(p => new { p.Id, p.CompetitionId });
+
+            // (SQLite does not support generated values on composite keys)
+            p.HasKey(/*p => new { p.Id, p.CompetitionId }*/ p => p.Id);
+
             p.Property<int>(p => p.Id)
                 .ValueGeneratedOnAdd();
 
@@ -64,11 +67,18 @@ public class CompetitionConfiguration : IEntityTypeConfiguration<Competition>
             // p.Ignore(x => x.FishCaught);
             p.OwnsMany(p => p.FishCaught, f =>
             {
+                // (1) (SQLite does not support generated values on composite keys)
+
                 f.ToTable("CompetitionParticipationFishCaught");
                 f.WithOwner()
-                    .HasForeignKey("CompetitionParticipationId", "CompetitionId");
+                    .HasForeignKey("CompetitionParticipationId"/* (1), "CompetitionId"*/);
 
-                f.HasKey("Id", "CompetitionParticipationId", "CompetitionId");
+                f.HasKey("Id"/* (1), "CompetitionParticipationId", "CompetitionId"*/);
+
+                // (1)
+                f.Property(x => x.CompetitionId)
+                    .HasGuidIdConversion();
+                // --
 
                 f.Property<int>(x => x.Id)
                     .ValueGeneratedOnAdd();

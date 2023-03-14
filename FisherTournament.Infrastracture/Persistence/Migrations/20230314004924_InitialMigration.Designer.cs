@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FisherTournament.Infrastracture.Persistence.Migrations
 {
     [DbContext(typeof(TournamentFisherDbContext))]
-    [Migration("20230313203220_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20230314004924_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -119,7 +119,7 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                             b1.Property<int>("TotalScore")
                                 .HasColumnType("INTEGER");
 
-                            b1.HasKey("Id", "CompetitionId");
+                            b1.HasKey("Id");
 
                             b1.HasIndex("CompetitionId");
 
@@ -142,11 +142,11 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                                         .ValueGeneratedOnAdd()
                                         .HasColumnType("INTEGER");
 
-                                    b2.Property<int>("CompetitionParticipationId")
-                                        .HasColumnType("INTEGER");
-
                                     b2.Property<Guid>("CompetitionId")
                                         .HasColumnType("TEXT");
+
+                                    b2.Property<int>("CompetitionParticipationId")
+                                        .HasColumnType("INTEGER");
 
                                     b2.Property<Guid>("FisherId")
                                         .HasColumnType("TEXT");
@@ -154,22 +154,22 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                                     b2.Property<int>("Score")
                                         .HasColumnType("INTEGER");
 
-                                    b2.HasKey("Id", "CompetitionParticipationId", "CompetitionId");
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("CompetitionParticipationId");
 
                                     b2.HasIndex("FisherId");
 
-                                    b2.HasIndex("CompetitionParticipationId", "CompetitionId");
-
                                     b2.ToTable("CompetitionParticipationFishCaught", (string)null);
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("CompetitionParticipationId");
 
                                     b2.HasOne("FisherTournament.Domain.FisherAggregate.Fisher", null)
                                         .WithMany()
                                         .HasForeignKey("FisherId")
                                         .OnDelete(DeleteBehavior.NoAction)
                                         .IsRequired();
-
-                                    b2.WithOwner()
-                                        .HasForeignKey("CompetitionParticipationId", "CompetitionId");
                                 });
 
                             b1.Navigation("FishCaught");
@@ -250,13 +250,13 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("INTEGER");
 
-                            b1.Property<Guid>("TournamentId")
-                                .HasColumnType("TEXT");
-
                             b1.Property<Guid>("FisherId")
                                 .HasColumnType("TEXT");
 
-                            b1.HasKey("Id", "TournamentId");
+                            b1.Property<Guid>("TournamentId")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("Id");
 
                             b1.HasIndex("FisherId");
 

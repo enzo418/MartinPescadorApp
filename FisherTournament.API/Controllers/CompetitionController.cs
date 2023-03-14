@@ -48,10 +48,10 @@ public class CompetitionController : ControllerBase
         return Ok("Added");
     }
 
-    [HttpGet("Leaderboard")]
-    public async Task<IActionResult> GetLeaderboard()
+    [HttpGet("{competitionId}/Leaderboard")]
+    public async Task<IActionResult> GetLeaderboard(CompetitionId competitionId)
     {
-        var response = await _sender.Send(new GetLeaderBoardQuery());
+        var response = await _sender.Send(new GetLeaderBoardQuery(competitionId));
         return Ok(response);
     }
 }
