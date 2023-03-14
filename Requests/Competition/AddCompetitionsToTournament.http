@@ -1,0 +1,19 @@
+@host=http://localhost:5244
+@tID=1c795cd3-6519-4589-85e7-27c96147caeb
+
+POST {{host}}/tournaments/{{tID}}/competitions
+Content-Type: application/json
+
+{
+    "Competitions": [
+        {
+            "startDateTime": "2024-01-01T12:00:00",
+            "location": {
+                "Country": "Spain",
+                "State": "Catalonia",
+                "City": "Barcelona",
+                "Place": "Port Vell"
+            }
+        }
+    ]
+}

@@ -15,8 +15,8 @@ public static partial class DependencyInjection
             var dataBaseConectionSettings = provider.GetRequiredService<DataBaseConectionSettings>();
             // options.UseSqlServer(dataBaseConectionSettings.ConnectionString);
             options.UseSqlite(dataBaseConectionSettings.ConnectionString);
-            // options.LogTo(System.Console.WriteLine);
-            // options.EnableSensitiveDataLogging();
+            options.LogTo(System.Console.WriteLine);
+            options.EnableSensitiveDataLogging();
         });
         return services;
     }

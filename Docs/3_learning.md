@@ -9,6 +9,8 @@ While i wrote this project i learned a lot of things. I will try to questions th
     - [Update 1: It will not be so painfully because I wrote this extension](#update-1-it-will-not-be-so-painfully-because-i-wrote-this-extension)
 - [Writing the painful configurations](#writing-the-painful-configurations)
 - [Where in field](#where-in-field)
+- [ASP.NET doesn't support IdTypes as route parameters](#aspnet-doesnt-support-idtypes-as-route-parameters)
+  - [Solution](#solution)
 
 
 # Aggregate Ids vs Entities Ids
@@ -137,6 +139,78 @@ Don't rush to write all the foreign keys while using Strongly-typed ids because 
 3. Configure FK, make sure if the FK is GuidId it has a conversion.
 4. In nested OwnedMany, you must USE the parents keys in `WithOwner().HasForeignKey(...)` and then add them as part of the PK in `HasKey("Id", ...)` or it will them something like "Unable to determine the owner for the relationship between ..." https://learn.microsoft.com/en-us/ef/core/modeling/owned-entities#collections-of-owned-types
 
+> **NOTE:** SQLite does not support generated values on composite keys. e.g. 'FishCaught' has composite key '{'Id', 'CompetitionParticipationId', 'CompetitionId'}'
+
 # Where in field
 Is where actually making a query? is it lazy loading even if it's not virtual? Does Find instead of query makes a query?
 Asw: No lazy loading in non private fields.
+
+# ASP.NET doesn't support IdTypes as route parameters
+```c#
+[HttpPost]
+    public async Task<IActionResult> Create(
+        AddCompetitionsRequest request,
+        [FromRoute] TournamentId tournamentId) {...}
+```
+
+throws
+
+`System.InvalidOperationException: Could not create an instance of type 'FisherTournament.Domain.TournamentAggregate.ValueObjects.TournamentId'. Model bound complex types must not be abstract or value types and must have a parameterless constructor. Record types must have a single primary constructor. Alternatively, give the 'tournamentId' parameter a non-null default value`
+
+## Solution
+Register a [TypeConverter](https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.typeconverter?view=net-7.0) but only an attribute is available so i would need to modify each Id.
+
+```c#
+// GuidIdConverter
+public class GuidIdConverter<T> : TypeConverter
+{
+    public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>
+        sourceType == typeof(string) /*|| sourceType == typeof(int)*/;
+
+    public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) =>
+        destinationType == typeof(string) /* || destinationType == typeof(int)*/;
+
+    public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+    {
+        return value switch
+        {
+            string s => GuidId<T>.Create(s) ?? throw new ArgumentException($"Cannot convert from {value} to ProductId", nameof(value)),
+            null => null,
+            _ => throw new ArgumentException($"Cannot convert from {value} to ProductId", nameof(value))
+        };
+    }
+
+    public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+    {
+        if (destinationType == typeof(string))
+        {
+            return value switch
+            {
+                GuidId<T> id => id.ToString(),
+                null => null,
+                _ => throw new ArgumentException($"Cannot convert {value} to string", nameof(value))
+            };
+        }
+
+        throw new ArgumentException($"Cannot convert {value ?? "(null)"} to {destinationType}", nameof(destinationType));
+    }
+}
+
+// DependencyInjection
+TypeDescriptor.AddAttributes(typeof(T), new TypeConverterAttribute(typeof(GuidIdConverter<T>)));
+```
+
+**Now it works and the response on invalids Id is this if your were asking**
+```json
+<rest of problemjson>
+
+  "errors": {
+    "tournamentId": [
+      "The value '1' is not valid."
+    ]
+  }
+```
+
+Truly beautiful.
+
+> Of course i am ususing a lot the word Guid but that doesn't mean that i thight the id to be a Guid. You can chage the internal to be a string or int or whatever you want. But i know i should have named it other way.

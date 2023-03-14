@@ -52,7 +52,6 @@ POST {{host}}/api/tournaments/{{tournamentId}}/inscriptions
 
 ```json
 {
-    "tournamentId": "00000000-0000-0000-0000-000000000000",
     "fisherId": "00000000-0000-0000-0000-000000000000"
 }
 ```

@@ -17,7 +17,7 @@ public class FisherController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult Post(CreateFisherCommand command)
+    public async Task<IActionResult> Create(CreateFisherCommand command)
     {
         // CreateFisherCommand or CreateFisherRequest?
         // Request if:
@@ -25,7 +25,9 @@ public class FisherController : ControllerBase
         //        (Software Version, some key, or others).
         //      - The body needs to have custom fields that the command doesn't have.
         //      - The body fields have different names that the command.
-        var response = _sender.Send(command);
-        return Ok("Created");
+        //      - If the route takes a query parameter and the command uses it.
+
+        var response = await _sender.Send(command);
+        return Ok(response);
     }
 }

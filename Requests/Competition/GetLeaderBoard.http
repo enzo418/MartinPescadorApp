@@ -1,0 +1,5 @@
+@host=http://localhost:5244
+@tID=1c795cd3-6519-4589-85e7-27c96147caeb
+@cID=1
+
+GET {{host}}/tournaments/{{tID}}/competitions/{{cID}}/LeaderBoard

@@ -6,10 +6,9 @@ namespace FisherTournament.Domain.TournamentAggregate.Entities;
 public sealed class TournamentInscription : Entity<int>
 {
     private TournamentInscription(
-        int id,
         TournamentId tournamentId,
         FisherId fisherId)
-        : base(id)
+        : base()
     {
         TournamentId = tournamentId;
         FisherId = fisherId;
@@ -22,7 +21,7 @@ public sealed class TournamentInscription : Entity<int>
         TournamentId tournamentId,
         FisherId fisherId)
     {
-        return new TournamentInscription(0, tournamentId, fisherId);
+        return new TournamentInscription(tournamentId, fisherId);
     }
 
 #pragma warning disable CS8618

@@ -32,7 +32,8 @@ public class TournamentConfigurations : IEntityTypeConfiguration<Tournament>
         {
             i.WithOwner().HasForeignKey(i => i.TournamentId);
 
-            i.HasKey(i => new { i.Id, i.TournamentId });
+            // (SQLite does not support generated values on composite keys)
+            i.HasKey(/*i => new { i.Id, i.TournamentId }*/ i => i.Id);
 
             i.Property<int>(i => i.Id)
                 .ValueGeneratedOnAdd();

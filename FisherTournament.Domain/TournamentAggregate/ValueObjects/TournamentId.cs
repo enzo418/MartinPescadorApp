@@ -8,4 +8,9 @@ public class TournamentId : GuidId<TournamentId>
     public TournamentId(Guid value) : base(value)
     {
     }
+
+    public TournamentId(string value) : base(Guid.Parse(value))
+    {
+
+    }
 }

@@ -1,4 +1,9 @@
+using System.Reflection;
+using FisherTournament.API.Common.ControllerRouteParameterConverters;
+using FisherTournament.API.Common.Mapping;
 using FisherTournament.Infrastracture.Settings;
+using Mapster;
+using MapsterMapper;
 
 namespace FisherTournament.API;
 
@@ -8,6 +13,10 @@ public static partial class DependencyInjection
         this IServiceCollection services)
     {
         services.AddControllers();
+
+        services.AddMappings();
+
+        services.AddControllerRouteParameterConverters();
 
         return services;
     }

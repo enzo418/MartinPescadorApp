@@ -20,14 +20,17 @@ POST {{host}}/api/tournaments/{{tournamentId}}/competitions
 
 ```json
 {
-    "tournamentId": "00000000-0000-0000-0000-000000000000",
-    "startDateTime": "2019-01-01T12:00:00",
-    "location": {
-        "Country": "Spain",
-        "State": "Catalonia",
-        "City": "Barcelona",
-        "Place": "Port Vell"
-    }
+    "Competitions": [
+        {
+            "startDateTime": "2019-01-01T12:00:00",
+            "location": {
+                "Country": "Spain",
+                "State": "Catalonia",
+                "City": "Barcelona",
+                "Place": "Port Vell"
+            }
+        }
+    ]
 }
 ```
 
@@ -38,19 +41,21 @@ Location: {{host}}/api/tournaments/{{tournamentId}}/competitions/{{id}}
 ```
 
 ```json
-{
-    "id": "00000000-0000-0000-0000-000000000000",
-    "tournamentId": "00000000-0000-0000-0000-000000000000",
-    "startDateTime": "2019-01-01T12:00:00",
-    "endDateTime": null,
-    "location": {
-        "Country": "Spain",
-        "State": "Catalonia",
-        "City": "Barcelona",
-        "Place": "Port Vell"
-    },
-    "createdDateTime": "2019-01-01T12:00:00"
-}
+[
+    {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "tournamentId": "00000000-0000-0000-0000-000000000000",
+        "startDateTime": "2019-01-01T12:00:00",
+        "endDateTime": null,
+        "location": {
+            "Country": "Spain",
+            "State": "Catalonia",
+            "City": "Barcelona",
+            "Place": "Port Vell"
+        },
+        "createdDateTime": "2019-01-01T12:00:00"
+    }
+]
 ```
 
 ## Add Fisher Score

@@ -1,0 +1,10 @@
+@host=http://localhost:5244
+
+POST {{host}}/tournaments
+Content-Type: application/json
+
+{
+    "name": "New Year Tournament",
+    "startDate": "2024-01-01",
+    "endDate": "2024-02-01"
+}
