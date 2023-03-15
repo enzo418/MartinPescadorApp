@@ -10,7 +10,7 @@ namespace FisherTournament.Application.Tournaments.Commands.AddCompetitions;
 
 public record struct AddCompetitionsCommand(
     TournamentId TournamentId,
-    List<CompetitionCommand> Competitions) : IRequest<int>;
+    List<CompetitionCommand> Competitions) : IRequest<List<Competition>>;
 
 public record struct CompetitionCommand(
     DateTime StartDateTime,
@@ -22,7 +22,7 @@ public record struct CompetitionCommand(
 );
 
 public class AddCompetitionsCommandHandler
-    : IRequestHandler<AddCompetitionsCommand, int>
+    : IRequestHandler<AddCompetitionsCommand, List<Competition>>
 {
     private readonly ITournamentFisherDbContext _context;
 
@@ -31,7 +31,7 @@ public class AddCompetitionsCommandHandler
         _context = context;
     }
 
-    public async Task<int> Handle(AddCompetitionsCommand request, CancellationToken cancellationToken)
+    public async Task<List<Competition>> Handle(AddCompetitionsCommand request, CancellationToken cancellationToken)
     {
         Tournament? tournament = await _context.Tournaments
             .FirstOrDefaultAsync(t => t.Id == request.TournamentId, cancellationToken);
@@ -59,6 +59,8 @@ public class AddCompetitionsCommandHandler
             tournament.AddCompetition(competition.Id);
         }
 
-        return await _context.SaveChangesAsync(cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return new List<Competition>(competitions.ToList());
     }
 }

@@ -31,11 +31,9 @@ public class CompetitionController : ControllerBase
     {
         var command = _mapper.Map<AddCompetitionsCommand>((request, tournamentId));
 
-        await _sender.Send(command);
+        var response = await _sender.Send(command);
 
-        // TODO: Return ids of created competitions
-
-        return Ok("Added");
+        return Ok(_mapper.Map<AddCompetitionsResponse>(response));
     }
 
     [HttpPost("{competitionId}/scores")]

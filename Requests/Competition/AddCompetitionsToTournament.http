@@ -9,10 +9,19 @@ Content-Type: application/json
         {
             "startDateTime": "2024-01-01T12:00:00",
             "location": {
-                "Country": "Spain",
-                "State": "Catalonia",
-                "City": "Barcelona",
-                "Place": "Port Vell"
+                "Country": "USA",
+                "State": "California",
+                "City": "Los Angeles",
+                "Place": "LA Coliseum"
+            }
+        },
+        {
+            "startDateTime": "2024-01-02T12:00:00",
+            "location": {
+                "Country": "USA",
+                "State": "California",
+                "City": "San Francisco",
+                "Place": "AT&T Park"
             }
         }
     ]

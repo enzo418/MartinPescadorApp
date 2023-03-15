@@ -1,6 +1,7 @@
 using FisherTournament.Application.Competitions.Commands.AddScore;
 using FisherTournament.Application.Tournaments.Commands.AddCompetitions;
 using FisherTournament.Contracts.Competitions;
+using FisherTournament.Domain.CompetitionAggregate;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using Mapster;
@@ -25,5 +26,9 @@ public class CompetitionMapping : IRegister
             .Map(dest => dest.CompetitionId, src => src.competitionId)
             .Map(dest => dest.FisherId, src => src.SR.FisherId)
             .Map(dest => dest.Score, src => src.SR.Score);
+
+        config.NewConfig<Competition, CompetitionResponse>();
+        config.NewConfig<List<Competition>, AddCompetitionsResponse>()
+            .Map(dest => dest.Competitions, src => src);
     }
 }
