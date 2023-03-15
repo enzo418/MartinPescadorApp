@@ -1,6 +1,8 @@
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.CompetitionAggregate;
+using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate;
+using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using FisherTournament.Domain.TournamentAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -8,8 +10,8 @@ using Microsoft.EntityFrameworkCore;
 namespace FisherTournament.Application.Competitions.Commands.AddScore;
 
 public record struct AddScoreCommand(
-    Guid FisherId,
-    Guid CompetitionId,
+    FisherId FisherId,
+    CompetitionId CompetitionId,
     int Score) : IRequest;
 
 public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand>
