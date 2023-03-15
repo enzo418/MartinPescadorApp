@@ -1,15 +1,17 @@
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.CompetitionAggregate;
 using FisherTournament.Domain.FisherAggregate;
+using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using FisherTournament.Domain.TournamentAggregate;
+using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace FisherTournament.Application.Tournaments.Commands.AddInscription;
 
 public record struct AddInscriptionCommand(
-    Guid TournamentId,
-    Guid FisherId) : IRequest;
+    TournamentId TournamentId,
+    FisherId FisherId) : IRequest;
 
 public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionCommand>
 {
