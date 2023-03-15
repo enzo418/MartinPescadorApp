@@ -89,6 +89,9 @@ public class CompetitionConfiguration : IEntityTypeConfiguration<Competition>
                 f.Property(x => x.FisherId)
                     .HasGuidIdConversion();
 
+                f.Property(x => x.DateTime)
+                    .IsRequired();
+
                 f.HasOne<Fisher>()
                     .WithMany()
                     .HasForeignKey(x => x.FisherId)

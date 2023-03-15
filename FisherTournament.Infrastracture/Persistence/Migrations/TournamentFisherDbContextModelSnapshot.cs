@@ -144,6 +144,9 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                                     b2.Property<int>("CompetitionParticipationId")
                                         .HasColumnType("INTEGER");
 
+                                    b2.Property<DateTime>("DateTime")
+                                        .HasColumnType("TEXT");
+
                                     b2.Property<Guid>("FisherId")
                                         .HasColumnType("TEXT");
 

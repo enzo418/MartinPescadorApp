@@ -1,3 +1,4 @@
+using FisherTournament.Domain.Common.Provider;
 using FisherTournament.Domain.CompetitionAggregate.Entities;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
@@ -29,7 +30,7 @@ public sealed class Competition : AggregateRoot<CompetitionId>
         return new Competition(Guid.NewGuid(), startDateTime, null, tournamentId, location);
     }
 
-    public void AddScore(FisherId fisherId, int score)
+    public void AddScore(FisherId fisherId, int score, IDateTimeProvider dateTimeProvider)
     {
         var participation = _participations.Where(x => x.FisherId == fisherId)
                                 .SingleOrDefault();
@@ -39,7 +40,7 @@ public sealed class Competition : AggregateRoot<CompetitionId>
             _participations.Add(participation);
         }
 
-        participation.AddFishCaught(FishCaught.Create(this.Id, fisherId, score));
+        participation.AddFishCaught(FishCaught.Create(this.Id, fisherId, score, dateTimeProvider));
     }
 
 

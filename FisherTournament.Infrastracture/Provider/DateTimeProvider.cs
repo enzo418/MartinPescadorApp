@@ -1,9 +1,9 @@
-using FisherTournament.Application.Common.Provider;
+
+using FisherTournament.Domain.Common.Provider;
 
 namespace FisherTournament.Infrastracture.Provider;
 
 public class DateTimeProvider : IDateTimeProvider
 {
-    public DateTime Now => DateTime.Now;
-    public DateTime UtcNow => DateTime.UtcNow;
+    public DateTime Now => DateTime.UtcNow;
 }

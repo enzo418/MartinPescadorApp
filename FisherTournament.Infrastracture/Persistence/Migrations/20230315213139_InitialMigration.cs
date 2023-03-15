@@ -162,6 +162,7 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                     CompetitionId = table.Column<Guid>(type: "TEXT", nullable: false),
                     FisherId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Score = table.Column<int>(type: "INTEGER", nullable: false),
+                    DateTime = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CompetitionParticipationId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>

@@ -1,6 +1,6 @@
-using FisherTournament.Application.Common.Provider;
 using FisherTournament.Application.Common.Validators;
 using FisherTournament.Application.Tournaments.Commands.CreateTournament;
+using FisherTournament.Domain.Common.Provider;
 using FluentValidation;
 
 namespace FisherTournament.Application.Tournaments.Commands.AddInscription;
@@ -15,7 +15,7 @@ public class CreateTournamentCommandValidator : AbstractValidator<CreateTourname
             .NotEmpty()
             .IsUtcDateTime()
             .LessThan(c => c.EndDate)
-            .GreaterThanOrEqualTo(dateTime.UtcNow);
+            .GreaterThanOrEqualTo(dateTime.Now);
 
         RuleFor(c => c.EndDate)
             .NotEmpty()

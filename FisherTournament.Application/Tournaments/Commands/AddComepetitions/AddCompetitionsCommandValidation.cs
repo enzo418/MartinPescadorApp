@@ -1,5 +1,5 @@
-using FisherTournament.Application.Common.Provider;
 using FisherTournament.Application.Common.Validators;
+using FisherTournament.Domain.Common.Provider;
 using FluentValidation;
 
 namespace FisherTournament.Application.Tournaments.Commands.AddCompetitions;
@@ -10,7 +10,7 @@ public class CompetitionCommandValidation : AbstractValidator<AddCompetitionComm
     {
         RuleFor(c => c.StartDateTime)
             .IsUtcDateTime()
-            .GreaterThan(dateTime.UtcNow);
+            .GreaterThan(dateTime.Now);
         RuleFor(c => c.City).NotEmpty();
         RuleFor(c => c.State).NotEmpty();
         RuleFor(c => c.Country).NotEmpty();

@@ -5,6 +5,6 @@ Content-Type: application/json
 
 {
     "name": "New Year Tournament",
-    "startDate": "2023-01-01T00:00:00Z",
-    "endDate": "2023-02-01T00:00:00Z"
+    "startDate": "2024-01-01T00:00:00Z",
+    "endDate": "2024-02-01T00:00:00Z"
 }

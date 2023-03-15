@@ -1,4 +1,5 @@
 using FisherTournament.Application.Common.Persistence;
+using FisherTournament.Domain.Common.Provider;
 using FisherTournament.Domain.CompetitionAggregate;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate;
@@ -17,10 +18,12 @@ public record struct AddScoreCommand(
 public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand>
 {
     private readonly ITournamentFisherDbContext _context;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-    public AddScoreCommandHandler(ITournamentFisherDbContext context)
+    public AddScoreCommandHandler(ITournamentFisherDbContext context, IDateTimeProvider dateTimeProvider)
     {
         _context = context;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public async Task Handle(AddScoreCommand request, CancellationToken cancellationToken)
@@ -51,7 +54,7 @@ public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand>
             throw new ApplicationException("Fisher is not enrolled in the tournament");
         }
 
-        competition.AddScore(fisher.Id, request.Score);
+        competition.AddScore(fisher.Id, request.Score, _dateTimeProvider);
 
         await _context.SaveChangesAsync(cancellationToken);
     }

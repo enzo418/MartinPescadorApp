@@ -42,7 +42,7 @@ The final leader board would be:
 | Competitor 1 |    2°    | 6           |
 | Competitor 3 |    3°    | 7           |
 
-Is expected that the system allows to register scores of fish that are caught, the score is entered by the notary that is in charge of the competition.
+Is expected that the system allows to register scores of fish that are caught, the score is entered by the notary that is in charge of the competition, is expected that the sytem records the date and time of the score registration.
 When a fisher is registered in a tournament but does not present to a competition, the system should consider the fisher position to be N + 1. Where N is the position of the fishers that did not fish anything in this competition and N - 1 is the position of the fisher with the lower score in the competition but that did fish something.
 
 When two fishers have the same positions in a tournament, the best position is determined by the lower average of positions. If the average is the same, the best position is determined by the higher total score.

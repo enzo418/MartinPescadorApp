@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FisherTournament.Infrastracture.Persistence.Migrations
 {
     [DbContext(typeof(TournamentFisherDbContext))]
-    [Migration("20230315175908_InitialMigration")]
+    [Migration("20230315213139_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -146,6 +146,9 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
 
                                     b2.Property<int>("CompetitionParticipationId")
                                         .HasColumnType("INTEGER");
+
+                                    b2.Property<DateTime>("DateTime")
+                                        .HasColumnType("TEXT");
 
                                     b2.Property<Guid>("FisherId")
                                         .HasColumnType("TEXT");

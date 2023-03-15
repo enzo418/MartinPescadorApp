@@ -1,5 +1,5 @@
 using FisherTournament.Application.Common.Persistence;
-using FisherTournament.Application.Common.Provider;
+using FisherTournament.Domain.Common.Provider;
 using FisherTournament.Infrastracture.Persistence;
 using FisherTournament.Infrastracture.Provider;
 using FisherTournament.Infrastracture.Settings;
