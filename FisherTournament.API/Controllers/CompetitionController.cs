@@ -43,12 +43,13 @@ public class CompetitionController : ControllerBase
     {
         var command = _mapper.Map<AddScoreCommand>((request, competitionId));
         await _sender.Send(command);
-        return Ok("Added");
+        return Ok();
     }
 
     [HttpGet("{competitionId}/Leaderboard")]
     public async Task<IActionResult> GetLeaderboard(CompetitionId competitionId)
     {
+        throw new NotImplementedException();
         var response = await _sender.Send(new GetLeaderBoardQuery(competitionId));
         return Ok(response);
     }
