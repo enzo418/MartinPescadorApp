@@ -22,7 +22,7 @@ POST {{host}}/api/tournaments/{{tournamentId}}/competitions
 {
     "Competitions": [
         {
-            "startDateTime": "2019-01-01T12:00:00",
+            "startDateTime": "2019-01-01T12:00:00Z",
             "location": {
                 "Country": "Spain",
                 "State": "Catalonia",
@@ -45,7 +45,7 @@ Location: {{host}}/api/tournaments/{{tournamentId}}/competitions/{{id}}
     {
         "id": "00000000-0000-0000-0000-000000000000",
         "tournamentId": "00000000-0000-0000-0000-000000000000",
-        "startDateTime": "2019-01-01T12:00:00",
+        "startDateTime": "2019-01-01T12:00:00Z",
         "endDateTime": null,
         "location": {
             "Country": "Spain",
@@ -53,7 +53,7 @@ Location: {{host}}/api/tournaments/{{tournamentId}}/competitions/{{id}}
             "City": "Barcelona",
             "Place": "Port Vell"
         },
-        "createdDateTime": "2019-01-01T12:00:00"
+        "createdDateTime": "2019-01-01T12:00:00Z"
     }
 ]
 ```
@@ -85,7 +85,7 @@ POST {{host}}/api/tournaments/{{tournamentId}}/competitions/{{competitionId}}/sc
     "competitionId": "00000000-0000-0000-0000-000000000000",
     "fisherId": "00000000-0000-0000-0000-000000000000",
     "score": 10,
-    "createdDateTime": "2019-01-01T12:00:00"
+    "createdDateTime": "2019-01-01T12:00:00Z"
 }
 ```
 

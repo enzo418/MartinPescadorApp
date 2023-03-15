@@ -39,7 +39,7 @@ Location: {{host}}/api/tournaments/{{id}}
     "endDate": "2019-02-01",
     "competitionIds": [],
     "inscriptionIds": [],
-    "createdDateTime": "2019-01-01T12:00:00"
+    "createdDateTime": "2019-01-01T12:00:00Z"
 }
 ```
 
@@ -67,7 +67,7 @@ POST {{host}}/api/tournaments/{{tournamentId}}/inscriptions
     "id": "00000000-0000-0000-0000-000000000000",
     "tournamentId": "00000000-0000-0000-0000-000000000000",
     "fisherId": "00000000-0000-0000-0000-000000000000",
-    "createdDateTime": "2019-01-01T12:00:00"
+    "createdDateTime": "2019-01-01T12:00:00Z"
 }
 ```
 
