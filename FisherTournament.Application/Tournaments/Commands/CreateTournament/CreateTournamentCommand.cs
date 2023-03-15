@@ -6,8 +6,8 @@ namespace FisherTournament.Application.Tournaments.Commands.CreateTournament;
 
 public record struct CreateTournamentCommand(
     string Name,
-    DateTime startDate,
-    DateTime endDate) : IRequest<CreateTournamentCommandResponse>;
+    DateTime StartDate,
+    DateTime EndDate) : IRequest<CreateTournamentCommandResponse>;
 
 public sealed class CreateTournamentCommandHandler
     : IRequestHandler<CreateTournamentCommand, CreateTournamentCommandResponse>
@@ -25,8 +25,8 @@ public sealed class CreateTournamentCommandHandler
     {
         Tournament tournament = Tournament.Create(
             request.Name,
-            request.startDate,
-            request.endDate);
+            request.StartDate,
+            request.EndDate);
 
         _context.Tournaments.Add(tournament);
         await _context.SaveChangesAsync(cancellationToken);
