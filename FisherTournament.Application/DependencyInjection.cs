@@ -1,3 +1,7 @@
+using System.Reflection;
+using FisherTournament.Application.Common.Behavior;
+using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FisherTournament.Application;
@@ -10,6 +14,11 @@ public static partial class DependencyInjection
         {
             cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
         });
+
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ExceptionBasedValidationBehavior<,>));
+
         return services;
     }
 }

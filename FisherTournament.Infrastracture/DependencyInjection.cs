@@ -1,5 +1,7 @@
 using FisherTournament.Application.Common.Persistence;
+using FisherTournament.Application.Common.Provider;
 using FisherTournament.Infrastracture.Persistence;
+using FisherTournament.Infrastracture.Provider;
 using FisherTournament.Infrastracture.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +20,9 @@ public static partial class DependencyInjection
             options.LogTo(System.Console.WriteLine);
             options.EnableSensitiveDataLogging();
         });
+
+        services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+
         return services;
     }
 }
