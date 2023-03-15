@@ -44,7 +44,7 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     StartDateTime = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    EndDateTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    EndDateTime = table.Column<DateTime>(type: "TEXT", nullable: true),
                     TournamentId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Location_City = table.Column<string>(type: "TEXT", nullable: false),
                     Location_State = table.Column<string>(type: "TEXT", nullable: false),

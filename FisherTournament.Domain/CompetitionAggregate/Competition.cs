@@ -24,10 +24,9 @@ public sealed class Competition : AggregateRoot<CompetitionId>
     public Location Location { get; private set; }
     public IReadOnlyCollection<CompetitionParticipation> Participations => _participations.AsReadOnly();
 
-
-    public static Competition Create(DateTime startDateTime, DateTime? endDateTime, TournamentId tournamentId, Location location)
+    public static Competition Create(DateTime startDateTime, TournamentId tournamentId, Location location)
     {
-        return new Competition(Guid.NewGuid(), startDateTime, endDateTime, tournamentId, location);
+        return new Competition(Guid.NewGuid(), startDateTime, null, tournamentId, location);
     }
 
     public void AddScore(FisherId fisherId, int score)

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FisherTournament.Infrastracture.Persistence.Migrations
 {
     [DbContext(typeof(TournamentFisherDbContext))]
-    [Migration("20230314004924_InitialMigration")]
+    [Migration("20230315175908_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -26,7 +26,6 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("EndDateTime")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("StartDateTime")

@@ -23,7 +23,6 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("EndDateTime")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("StartDateTime")

@@ -30,7 +30,7 @@ public class CompetitionConfiguration : IEntityTypeConfiguration<Competition>
         builder.HasGuidIdKey(c => c.Id);
 
         builder.Property(c => c.StartDateTime).IsRequired();
-        builder.Property(c => c.EndDateTime).IsRequired();
+        builder.Property(c => c.EndDateTime); // (nullable)
 
         builder.HasOne<Tournament>()
             .WithMany()

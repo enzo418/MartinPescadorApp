@@ -12,7 +12,7 @@ public class CompetitionMapping : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<AddCompetitionRequest, CompetitionCommand>()
+        config.NewConfig<AddCompetitionRequest, AddCompetitionCommand>()
             .Map(dest => dest.City, src => src.Location.City)
             .Map(dest => dest.State, src => src.Location.State)
             .Map(dest => dest.Country, src => src.Location.Country)

@@ -1,5 +1,5 @@
 @host=http://localhost:5244
-@tID=71050288-41e5-4958-b76a-91480a654234
+@tID=e3c5e415-313b-432a-8e93-a28fbcf5cdaa
 @cID=99F90950-19B1-42F5-8F3C-D7FD2DDDDE38
 
 GET {{host}}/tournaments/{{tID}}/competitions/{{cID}}/LeaderBoard

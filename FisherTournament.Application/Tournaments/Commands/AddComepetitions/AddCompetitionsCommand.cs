@@ -10,11 +10,10 @@ namespace FisherTournament.Application.Tournaments.Commands.AddCompetitions;
 
 public record struct AddCompetitionsCommand(
     TournamentId TournamentId,
-    List<CompetitionCommand> Competitions) : IRequest<List<Competition>>;
+    List<AddCompetitionCommand> Competitions) : IRequest<List<Competition>>;
 
-public record struct CompetitionCommand(
+public record struct AddCompetitionCommand(
     DateTime StartDateTime,
-    DateTime EndDate,
     string City,
     string State,
     string Country,
@@ -44,7 +43,6 @@ public class AddCompetitionsCommandHandler
         Competition[] competitions = request.Competitions.Select(
             competition => Competition.Create(
                 competition.StartDateTime,
-                competition.EndDate,
                 request.TournamentId,
                 Location.Create(
                     competition.City,

@@ -49,7 +49,6 @@ public class CompetitionController : ControllerBase
     [HttpGet("{competitionId}/Leaderboard")]
     public async Task<IActionResult> GetLeaderboard(CompetitionId competitionId)
     {
-        throw new NotImplementedException();
         var response = await _sender.Send(new GetLeaderBoardQuery(competitionId));
         return Ok(response);
     }
