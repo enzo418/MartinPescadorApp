@@ -1,7 +1,9 @@
+using FisherTournament.Domain.TournamentAggregate.ValueObjects;
+
 namespace FisherTournament.Application.Tournaments.Commands.CreateTournament;
 
 public record struct CreateTournamentCommandResponse(
-    Guid Id,
+    TournamentId Id,
     string Name,
     DateTime startDate,
     DateTime endDate);

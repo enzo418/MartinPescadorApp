@@ -1,12 +1,14 @@
 using FisherTournament.Application.Common.Persistence;
+using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
+using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
 
-public record struct GetLeaderBoardQuery(Guid CompetitionId) : IRequest<IEnumerable<LeaderBoardItemDto>>;
+public record struct GetLeaderBoardQuery(CompetitionId CompetitionId) : IRequest<IEnumerable<LeaderBoardItemDto>>;
 
-public record struct LeaderBoardItemDto(Guid FisherId, string FirstName, string LastName, int TotalScore);
+public record struct LeaderBoardItemDto(FisherId FisherId, string FirstName, string LastName, int TotalScore);
 
 public class GetLeaderBoardQueryHandler
  : IRequestHandler<GetLeaderBoardQuery, IEnumerable<LeaderBoardItemDto>>
