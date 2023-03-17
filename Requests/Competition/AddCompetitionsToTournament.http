@@ -1,5 +1,5 @@
 @host=http://localhost:5244
-@tID=6d575c0e-f344-4955-9c72-19e49bd37fb2
+@tID=51c64956-a977-4fef-a949-edd818302d55
 
 POST {{host}}/tournaments/{{tID}}/competitions
 Content-Type: application/json

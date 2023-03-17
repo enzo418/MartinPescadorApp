@@ -1,6 +1,7 @@
 using FisherTournament.API;
 using FisherTournament.Application;
 using FisherTournament.Infrastracture;
+using MinimalApi.Endpoint.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,8 +26,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseExceptionHandler("/error");
 
-app.UseAuthorization();
+// app.UseAuthorization();
 
-app.MapControllers();
+// app.MapControllers();
+
+app.MapEndpoints();
 
 app.Run();

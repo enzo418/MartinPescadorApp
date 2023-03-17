@@ -1,6 +1,6 @@
 @host=http://localhost:5244
 
-POST {{host}}/fisher
+POST {{host}}/fishers
 Content-Type: application/json
 
 {

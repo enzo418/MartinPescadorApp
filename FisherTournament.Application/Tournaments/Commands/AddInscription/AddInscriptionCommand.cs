@@ -55,6 +55,11 @@ public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionComman
             return Errors.Fisher.NotFound;
         }
 
+        if (tournament.Inscriptions.Any(i => i.FisherId == fisher.Id))
+        {
+            return Errors.Tournament.InscriptionAlreadyExists;
+        }
+
         tournament.AddInscription(fisher.Id);
 
         await _context.SaveChangesAsync(cancellationToken);

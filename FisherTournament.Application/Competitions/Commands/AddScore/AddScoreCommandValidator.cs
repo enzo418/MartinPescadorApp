@@ -6,8 +6,8 @@ public class AddScoreCommandValidator : AbstractValidator<AddScoreCommand>
 {
     public AddScoreCommandValidator()
     {
-        RuleFor(c => c.CompetitionId.ToString()).NotEmpty();
-        RuleFor(c => c.FisherId.ToString()).NotEmpty();
+        RuleFor(c => c.CompetitionId).NotEmpty();
+        RuleFor(c => c.FisherId).NotEmpty();
         RuleFor(c => c.Score)
             .GreaterThan(0);
     }

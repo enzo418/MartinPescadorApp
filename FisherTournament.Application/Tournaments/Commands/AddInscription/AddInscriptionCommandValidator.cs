@@ -6,7 +6,7 @@ public class AddInscriptionCommandValidator : AbstractValidator<AddInscriptionCo
 {
     public AddInscriptionCommandValidator()
     {
-        RuleFor(c => c.TournamentId.ToString()).NotEmpty();
-        RuleFor(c => c.FisherId.ToString()).NotEmpty();
+        RuleFor(c => c.TournamentId).NotEmpty();
+        RuleFor(c => c.FisherId).NotEmpty();
     }
 }
