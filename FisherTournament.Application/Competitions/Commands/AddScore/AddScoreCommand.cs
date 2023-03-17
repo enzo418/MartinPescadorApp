@@ -13,8 +13,8 @@ using Microsoft.EntityFrameworkCore;
 namespace FisherTournament.Application.Competitions.Commands.AddScore;
 
 public record struct AddScoreCommand(
-    FisherId FisherId,
-    CompetitionId CompetitionId,
+    string FisherId,
+    string CompetitionId,
     int Score) : IRequest<ErrorOr<Updated>>;
 
 public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand, ErrorOr<Updated>>
@@ -30,17 +30,31 @@ public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand, ErrorOr<U
 
     public async Task<ErrorOr<Updated>> Handle(AddScoreCommand request, CancellationToken cancellationToken)
     {
+        ErrorOr<FisherId> fisherId = FisherId.Create(request.FisherId);
+
+        if (fisherId.IsError)
+        {
+            return Errors.Id.NotValidWithProperty(nameof(request.FisherId));
+        }
+
         // Validate that the fisher and competition exist.
         Fisher? fisher = await _context.Fishers
-            .FirstOrDefaultAsync(f => f.Id == request.FisherId, cancellationToken);
+            .FirstOrDefaultAsync(f => f.Id == fisherId.Value, cancellationToken);
 
         if (fisher is null)
         {
             return Errors.Fisher.NotFound;
         }
 
+        ErrorOr<CompetitionId> competitionId = CompetitionId.Create(request.CompetitionId);
+
+        if (competitionId.IsError)
+        {
+            return Errors.Id.NotValidWithProperty(nameof(request.CompetitionId));
+        }
+
         Competition? competition = await _context.Competitions
-            .FirstOrDefaultAsync(c => c.Id == request.CompetitionId, cancellationToken);
+            .FirstOrDefaultAsync(c => c.Id == competitionId.Value, cancellationToken);
 
         if (competition is null)
         {
@@ -51,7 +65,7 @@ public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand, ErrorOr<U
         Tournament tournament = (await _context.Tournaments
             .FirstOrDefaultAsync(t => t.Id == competition.TournamentId, cancellationToken))!;
 
-        if (!tournament.IsFisherEnrolled(request.FisherId))
+        if (!tournament.IsFisherEnrolled(fisherId.Value))
         {
             return Errors.Tournament.NotEnrolled;
         }

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 public class IdConverter<T> : ValueConverter<T, Guid> where T : GuidId<T>
 {
     public IdConverter()
-        : base(x => x.Value, x => GuidId<T>.Create(x))
+        : base(x => x.Value, x => GuidId<T>.Create(x).Value)
     {
     }
 }
@@ -21,7 +21,7 @@ public static partial class Extension
     {
         var converter = new ValueConverter<T, Guid>(
             x => x.Value,
-            x => GuidId<T>.Create(x));
+            x => GuidId<T>.Create(x).Value);
 
         propertyBuilder.HasConversion(converter);
 
@@ -34,7 +34,7 @@ public static partial class Extension
     {
         var converter = new ValueConverter<T, Guid>(
             x => x.Value,
-            x => GuidId<T>.Create(x));
+            x => GuidId<T>.Create(x).Value);
 
         propertyBuilder.HasConversion(converter);
 
@@ -57,7 +57,7 @@ public static partial class Extension
 
         var converter = new ValueConverter<T, Guid>(
             x => x.Value,
-            x => GuidId<T>.Create(x));
+            x => GuidId<T>.Create(x).Value);
 
         modelBuilder.Property(keyExpression)
                     .HasConversion(converter)

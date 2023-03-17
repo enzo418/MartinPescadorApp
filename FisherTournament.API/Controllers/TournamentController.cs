@@ -32,7 +32,7 @@ public class TournamentController : ApiController
     [HttpPost("{tournamentId}/inscriptions")]
     public async Task<IActionResult> AddInscription(
         AddInscriptionRequest request,
-        TournamentId tournamentId)
+        string tournamentId)
     {
         var command = _mapper.Map<AddInscriptionCommand>((request, tournamentId));
         var response = await _sender.Send(command);

@@ -11,8 +11,8 @@ using FisherTournament.Domain.Common.Errors;
 namespace FisherTournament.Application.Tournaments.Commands.AddInscription;
 
 public record struct AddInscriptionCommand(
-    TournamentId TournamentId,
-    FisherId FisherId) : IRequest<ErrorOr<Created>>;
+    string TournamentId,
+    string FisherId) : IRequest<ErrorOr<Created>>;
 
 public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionCommand, ErrorOr<Created>>
 {
@@ -25,16 +25,30 @@ public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionComman
 
     public async Task<ErrorOr<Created>> Handle(AddInscriptionCommand request, CancellationToken cancellationToken)
     {
+        ErrorOr<TournamentId> tournamentId = TournamentId.Create(request.TournamentId);
+
+        if (tournamentId.IsError)
+        {
+            return Errors.Id.NotValidWithProperty(nameof(request.TournamentId));
+        }
+
         Tournament? tournament = await _context.Tournaments
-            .FirstOrDefaultAsync(t => t.Id == request.TournamentId, cancellationToken);
+            .FirstOrDefaultAsync(t => t.Id == tournamentId.Value, cancellationToken);
 
         if (tournament is null)
         {
             return Errors.Tournament.NotFound;
         }
 
+        ErrorOr<FisherId> fisherId = FisherId.Create(request.FisherId);
+
+        if (fisherId.IsError)
+        {
+            return Errors.Id.NotValidWithProperty(nameof(request.FisherId));
+        }
+
         Fisher? fisher = await _context.Fishers
-            .FirstOrDefaultAsync(f => f.Id == request.FisherId, cancellationToken);
+            .FirstOrDefaultAsync(f => f.Id == fisherId.Value, cancellationToken);
 
         if (fisher is null)
         {

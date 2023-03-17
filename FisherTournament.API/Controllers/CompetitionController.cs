@@ -27,14 +27,14 @@ public class CompetitionController : ApiController
     [HttpPost]
     public async Task<IActionResult> Create(
         AddCompetitionsRequest request,
-        TournamentId tournamentId)
+        string tournamentId)
     {
         var command = _mapper.Map<AddCompetitionsCommand>((request, tournamentId));
 
         var response = await _sender.Send(command);
 
         return response.Match(
-           value => Ok(_mapper.Map<AddCompetitionsResponse>(response)),
+           value => Ok(_mapper.Map<AddCompetitionsResponse>(value)),
            errors => Problem(errors)
        );
     }
@@ -42,7 +42,7 @@ public class CompetitionController : ApiController
     [HttpPost("{competitionId}/scores")]
     public async Task<IActionResult> AddScore(
         AddScoreRequest request,
-        [FromRoute] CompetitionId competitionId)
+        [FromRoute] string competitionId)
     {
         var command = _mapper.Map<AddScoreCommand>((request, competitionId));
         var response = await _sender.Send(command);
@@ -53,9 +53,13 @@ public class CompetitionController : ApiController
     }
 
     [HttpGet("{competitionId}/Leaderboard")]
-    public async Task<IActionResult> GetLeaderboard(CompetitionId competitionId)
+    public async Task<IActionResult> GetLeaderboard(string competitionId)
     {
         var response = await _sender.Send(new GetLeaderBoardQuery(competitionId));
-        return Ok(response);
+
+        return response.Match(
+            onValue: value => Ok(value),
+            onError: errors => Problem(errors)
+        );
     }
 }

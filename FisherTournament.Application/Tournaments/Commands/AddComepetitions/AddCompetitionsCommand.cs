@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FisherTournament.Application.Tournaments.Commands.AddCompetitions;
 
 public record struct AddCompetitionsCommand(
-    TournamentId TournamentId,
+    string TournamentId,
     List<AddCompetitionCommand> Competitions) : IRequest<ErrorOr<List<Competition>>>;
 
 public record struct AddCompetitionCommand(
@@ -34,8 +34,15 @@ public class AddCompetitionsCommandHandler
 
     public async Task<ErrorOr<List<Competition>>> Handle(AddCompetitionsCommand request, CancellationToken cancellationToken)
     {
+        ErrorOr<TournamentId> tournamentId = TournamentId.Create(request.TournamentId);
+
+        if (tournamentId.IsError)
+        {
+            return Errors.Id.NotValidWithProperty(nameof(request.TournamentId));
+        }
+
         Tournament? tournament = await _context.Tournaments
-            .FirstOrDefaultAsync(t => t.Id == request.TournamentId, cancellationToken);
+            .FirstOrDefaultAsync(t => t.Id == tournamentId.Value, cancellationToken);
 
         if (tournament is null)
         {
@@ -45,7 +52,7 @@ public class AddCompetitionsCommandHandler
         Competition[] competitions = request.Competitions.Select(
             competition => Competition.Create(
                 competition.StartDateTime,
-                request.TournamentId,
+                tournamentId.Value,
                 Location.Create(
                     competition.City,
                     competition.State,

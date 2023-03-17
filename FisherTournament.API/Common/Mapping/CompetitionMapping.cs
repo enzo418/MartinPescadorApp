@@ -18,11 +18,11 @@ public class CompetitionMapping : IRegister
             .Map(dest => dest.Country, src => src.Location.Country)
             .Map(dest => dest.Place, src => src.Location.Place);
 
-        config.NewConfig<(AddCompetitionsRequest CR, TournamentId tournamentId), AddCompetitionsCommand>()
+        config.NewConfig<(AddCompetitionsRequest CR, string tournamentId), AddCompetitionsCommand>()
             .Map(dest => dest.TournamentId, src => src.tournamentId)
             .Map(dest => dest.Competitions, src => src.CR.Competitions);
 
-        config.NewConfig<(AddScoreRequest SR, CompetitionId competitionId), AddScoreCommand>()
+        config.NewConfig<(AddScoreRequest SR, string competitionId), AddScoreCommand>()
             .Map(dest => dest.CompetitionId, src => src.competitionId)
             .Map(dest => dest.FisherId, src => src.SR.FisherId)
             .Map(dest => dest.Score, src => src.SR.Score);

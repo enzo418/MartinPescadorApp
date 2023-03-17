@@ -147,6 +147,9 @@ Is where actually making a query? is it lazy loading even if it's not virtual? D
 Asw: No lazy loading in non private fields.
 
 # ASP.NET doesn't support IdTypes as route parameters
+
+*Should you use it? read the update below*
+
 ```c#
 [HttpPost]
     public async Task<IActionResult> Create(
@@ -215,6 +218,33 @@ TypeDescriptor.AddAttributes(typeof(T), new TypeConverterAttribute(typeof(GuidId
 Truly beautiful.
 
 > Of course i am ususing a lot the word Guid but that doesn't mean that i thight the id to be a Guid. You can chage the internal to be a string or int or whatever you want. But i know i should have named it other way.
+
+**also you will need a id mapping**
+```c#
+public class IdMapping : IRegister
+{
+    public void Register(TypeAdapterConfig config)
+    {
+        config.Default.MapToConstructor(true);
+
+        // TODO: Add assembly scan in a common function because
+        // i do this in several places
+        RegisterFor<FisherId>(config);
+        RegisterFor<CompetitionId>(config);
+        RegisterFor<TournamentId>(config);
+    }
+
+    private static void RegisterFor<T>(TypeAdapterConfig config)
+        where T : GuidId<T>
+    {
+        // TODO: Remove
+        config.NewConfig<string, T>()
+            .MapWith(s => GuidId<T>.Create(s).Value);
+    }
+}
+```
+
+> **UPDATE:** It was a bad idea to use typed ids in the presentation layer. You end up having to map them to the application layer, but what happens if it's invalid? Do you add another validation step before the mapping? That's extra code and logic in this layer. That's why I moved to use string to represent the ids because it should support any type of id, for example Snowflake (int >= 64 bits) which breaks JS.
 
 # There is no way to query Owned Entities
 One of the design limitations of owned entities is you cannot have an DbSet<T> where T is an owned entity.

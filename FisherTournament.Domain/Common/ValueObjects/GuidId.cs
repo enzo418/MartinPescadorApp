@@ -1,4 +1,6 @@
 using System.Reflection;
+using ErrorOr;
+using FisherTournament.Domain.Common.Errors;
 
 namespace FisherTournament.Domain;
 
@@ -16,24 +18,36 @@ public abstract class GuidId<T> : ValueObject
         Value = value;
     }
 
-    public static T Create(Guid id)
+    public static ErrorOr<T> Create(Guid id)
     {
-        return (T)Activator.CreateInstance(
-                    typeof(T),
-                    BindingFlags.Instance
-                        | BindingFlags.NonPublic
-                        | BindingFlags.Public,
-                    null, new object[] { id }, null)!;
+        try
+        {
+            return (T)Activator.CreateInstance(
+                       typeof(T),
+                       BindingFlags.Instance
+                           | BindingFlags.NonPublic
+                           | BindingFlags.Public,
+                       null, new object[] { id }, null)!;
+        }
+        catch (System.Exception)
+        {
+            return GenerateErrorWithNames();
+        }
     }
 
-    public static T Create(string id)
+    public static ErrorOr<T> Create(string id)
     {
-        return (T)Activator.CreateInstance(
+        if (Guid.TryParse(id, out var guid))
+        {
+            return (T)Activator.CreateInstance(
                     typeof(T),
                     BindingFlags.Instance
                         | BindingFlags.NonPublic
                         | BindingFlags.Public,
-                    null, new object[] { Guid.Parse(id) }, null)!;
+                    null, new object[] { guid }, null)!;
+        }
+
+        return GenerateErrorWithNames();
     }
 
     public static implicit operator Guid(GuidId<T> value) => value.Value;
@@ -46,5 +60,12 @@ public abstract class GuidId<T> : ValueObject
     public override string ToString()
     {
         return Value.ToString();
+    }
+
+    private static Error GenerateErrorWithNames()
+    {
+        var name = typeof(T).Name;
+        var entityName = name.Substring(0, name.Length - 2);
+        return Errors.Id.NotValidWithType(entityName, name);
     }
 }

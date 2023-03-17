@@ -13,3 +13,4 @@ The architecture allows multiple presentation but the current implementation is 
 - ASP.Net Core because it's multi platform and has a lot of support. 
 - Entity Framework Core for the ORM.
 - SQLITE for the database. Because the project needs to be portable.
+

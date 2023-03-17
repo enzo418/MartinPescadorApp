@@ -9,7 +9,7 @@ public class TournamentMapping : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<(AddInscriptionRequest IR, TournamentId tournamentId), AddInscriptionCommand>()
+        config.NewConfig<(AddInscriptionRequest IR, string tournamentId), AddInscriptionCommand>()
             .Map(dest => dest.TournamentId, src => src.tournamentId)
             .Map(dest => dest.FisherId, src => src.IR.FisherId);
     }
