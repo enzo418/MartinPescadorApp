@@ -24,7 +24,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseExceptionHandler("/error");
+// on exception use ProblemDetails with 500 status code
+app.UseExceptionHandler(exceptionHandlerApp
+    => exceptionHandlerApp.Run(async context
+        => await Results.Problem()
+                     .ExecuteAsync(context)));
+
+// if status > 400 and < 599 and do not have a body use ProblemDetails
+app.UseStatusCodePages(async statusCodeContext
+    => await Results.Problem(statusCode: statusCodeContext.HttpContext.Response.StatusCode)
+                 .ExecuteAsync(statusCodeContext.HttpContext));
+
+// app.UseExceptionHandler("/error");
 
 // app.UseAuthorization();
 
