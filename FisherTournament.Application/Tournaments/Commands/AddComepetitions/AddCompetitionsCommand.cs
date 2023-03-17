@@ -1,4 +1,6 @@
+using ErrorOr;
 using FisherTournament.Application.Common.Persistence;
+using FisherTournament.Domain.Common.Errors;
 using FisherTournament.Domain.CompetitionAggregate;
 using FisherTournament.Domain.CompetitionAggregate.Entities;
 using FisherTournament.Domain.TournamentAggregate;
@@ -10,7 +12,7 @@ namespace FisherTournament.Application.Tournaments.Commands.AddCompetitions;
 
 public record struct AddCompetitionsCommand(
     TournamentId TournamentId,
-    List<AddCompetitionCommand> Competitions) : IRequest<List<Competition>>;
+    List<AddCompetitionCommand> Competitions) : IRequest<ErrorOr<List<Competition>>>;
 
 public record struct AddCompetitionCommand(
     DateTime StartDateTime,
@@ -21,7 +23,7 @@ public record struct AddCompetitionCommand(
 );
 
 public class AddCompetitionsCommandHandler
-    : IRequestHandler<AddCompetitionsCommand, List<Competition>>
+    : IRequestHandler<AddCompetitionsCommand, ErrorOr<List<Competition>>>
 {
     private readonly ITournamentFisherDbContext _context;
 
@@ -30,14 +32,14 @@ public class AddCompetitionsCommandHandler
         _context = context;
     }
 
-    public async Task<List<Competition>> Handle(AddCompetitionsCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<List<Competition>>> Handle(AddCompetitionsCommand request, CancellationToken cancellationToken)
     {
         Tournament? tournament = await _context.Tournaments
             .FirstOrDefaultAsync(t => t.Id == request.TournamentId, cancellationToken);
 
         if (tournament is null)
         {
-            throw new ApplicationException("Tournament not found");
+            return Errors.Tournament.NotFound;
         }
 
         Competition[] competitions = request.Competitions.Select(

@@ -1,3 +1,4 @@
+using FisherTournament.Api.Controllers;
 using FisherTournament.Application.Competitions.Commands.AddScore;
 using FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
 using FisherTournament.Application.Tournaments.Commands.AddCompetitions;
@@ -10,9 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FisherTournament.API.Controllers;
 
-[ApiController]
 [Route("tournaments/{tournamentId}/competitions")]
-public class CompetitionController : ControllerBase
+public class CompetitionController : ApiController
 {
 
     private readonly ISender _sender;
@@ -33,7 +33,10 @@ public class CompetitionController : ControllerBase
 
         var response = await _sender.Send(command);
 
-        return Ok(_mapper.Map<AddCompetitionsResponse>(response));
+        return response.Match(
+           value => Ok(_mapper.Map<AddCompetitionsResponse>(response)),
+           errors => Problem(errors)
+       );
     }
 
     [HttpPost("{competitionId}/scores")]
@@ -42,8 +45,11 @@ public class CompetitionController : ControllerBase
         [FromRoute] CompetitionId competitionId)
     {
         var command = _mapper.Map<AddScoreCommand>((request, competitionId));
-        await _sender.Send(command);
-        return Ok();
+        var response = await _sender.Send(command);
+        return response.Match(
+            onValue: _ => Ok(),
+            onError: errors => Problem(errors)
+        );
     }
 
     [HttpGet("{competitionId}/Leaderboard")]

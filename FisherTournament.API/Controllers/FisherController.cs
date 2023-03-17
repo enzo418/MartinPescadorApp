@@ -1,12 +1,12 @@
+using FisherTournament.Api.Controllers;
 using FisherTournament.Application.Fishers.Commands.CreateFisher;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FisherTournament.API.Controllers;
 
-[ApiController]
 [Route("[controller]")]
-public class FisherController : ControllerBase
+public class FisherController : ApiController
 {
 
     private readonly ISender _sender;

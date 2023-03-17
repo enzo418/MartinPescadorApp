@@ -1,9 +1,11 @@
 using System.Reflection;
 using FisherTournament.API.Common.ControllerRouteParameterConverters;
+using FisherTournament.API.Common.Errors;
 using FisherTournament.API.Common.Mapping;
 using FisherTournament.Infrastracture.Settings;
 using Mapster;
 using MapsterMapper;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace FisherTournament.API;
 
@@ -17,6 +19,8 @@ public static partial class DependencyInjection
         services.AddMappings();
 
         services.AddControllerRouteParameterConverters();
+
+        services.AddSingleton<ProblemDetailsFactory, CustomProblemDetailsFactory>();
 
         return services;
     }

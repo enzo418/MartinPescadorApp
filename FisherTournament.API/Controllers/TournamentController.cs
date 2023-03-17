@@ -1,3 +1,4 @@
+using FisherTournament.Api.Controllers;
 using FisherTournament.Application.Tournaments.Commands.AddInscription;
 using FisherTournament.Application.Tournaments.Commands.CreateTournament;
 using FisherTournament.Contracts.Tournaments;
@@ -8,9 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FisherTournament.API.Controllers;
 
-[ApiController]
 [Route("tournaments")]
-public class TournamentController : ControllerBase
+public class TournamentController : ApiController
 {
     private readonly ISender _sender;
     private readonly IMapper _mapper;
@@ -35,7 +35,10 @@ public class TournamentController : ControllerBase
         TournamentId tournamentId)
     {
         var command = _mapper.Map<AddInscriptionCommand>((request, tournamentId));
-        await _sender.Send(command);
-        return Ok();
+        var response = await _sender.Send(command);
+        return response.Match(
+            _ => Ok(),
+            errors => Problem(errors)
+        );
     }
 }

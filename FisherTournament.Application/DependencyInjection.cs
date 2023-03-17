@@ -17,7 +17,10 @@ public static partial class DependencyInjection
 
         services.AddValidatorsFromAssembly(Assembly.GetAssembly(typeof(DependencyInjection)));
 
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ExceptionBasedValidationBehavior<,>));
+        // if c# would have negative constraints on type parameters i would uncomment this line
+        // services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ExceptionBasedValidationBehavior<,>));
+
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ErrorOrBasedValidationBehavior<,>));
 
         return services;
     }

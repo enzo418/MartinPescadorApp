@@ -5,5 +5,5 @@ POST {{host}}/tournaments/{{tournamentId}}/inscriptions
 Content-Type: application/json
 
 {
-    "fisherId": "b0aedca7-27d0-4583-8ef0-78b476f0d419"
+    "fisherId": "b0aedca7-27d0-4583-8ef0-78b476f0d412"
 }

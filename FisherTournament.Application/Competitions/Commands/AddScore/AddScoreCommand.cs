@@ -1,4 +1,6 @@
+using ErrorOr;
 using FisherTournament.Application.Common.Persistence;
+using FisherTournament.Domain.Common.Errors;
 using FisherTournament.Domain.Common.Provider;
 using FisherTournament.Domain.CompetitionAggregate;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
@@ -13,9 +15,9 @@ namespace FisherTournament.Application.Competitions.Commands.AddScore;
 public record struct AddScoreCommand(
     FisherId FisherId,
     CompetitionId CompetitionId,
-    int Score) : IRequest;
+    int Score) : IRequest<ErrorOr<Updated>>;
 
-public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand>
+public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand, ErrorOr<Updated>>
 {
     private readonly ITournamentFisherDbContext _context;
     private readonly IDateTimeProvider _dateTimeProvider;
@@ -26,7 +28,7 @@ public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand>
         _dateTimeProvider = dateTimeProvider;
     }
 
-    public async Task Handle(AddScoreCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<Updated>> Handle(AddScoreCommand request, CancellationToken cancellationToken)
     {
         // Validate that the fisher and competition exist.
         Fisher? fisher = await _context.Fishers
@@ -34,7 +36,7 @@ public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand>
 
         if (fisher is null)
         {
-            throw new ApplicationException("Fisher not found");
+            return Errors.Fisher.NotFound;
         }
 
         Competition? competition = await _context.Competitions
@@ -42,7 +44,7 @@ public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand>
 
         if (competition is null)
         {
-            throw new ApplicationException("Competition not found");
+            return Errors.Competition.NotFound;
         }
 
         // Verify the fisher is enrolled in the competition tournament.
@@ -51,11 +53,13 @@ public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand>
 
         if (!tournament.IsFisherEnrolled(request.FisherId))
         {
-            throw new ApplicationException("Fisher is not enrolled in the tournament");
+            return Errors.Tournament.NotEnrolled;
         }
 
         competition.AddScore(fisher.Id, request.Score, _dateTimeProvider);
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.Updated;
     }
 }

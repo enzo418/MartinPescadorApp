@@ -1,19 +1,20 @@
+using ErrorOr;
 using FisherTournament.Application.Common.Persistence;
-using FisherTournament.Domain.CompetitionAggregate;
 using FisherTournament.Domain.FisherAggregate;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using FisherTournament.Domain.TournamentAggregate;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using FisherTournament.Domain.Common.Errors;
 
 namespace FisherTournament.Application.Tournaments.Commands.AddInscription;
 
 public record struct AddInscriptionCommand(
     TournamentId TournamentId,
-    FisherId FisherId) : IRequest;
+    FisherId FisherId) : IRequest<ErrorOr<Created>>;
 
-public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionCommand>
+public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionCommand, ErrorOr<Created>>
 {
     private readonly ITournamentFisherDbContext _context;
 
@@ -22,14 +23,14 @@ public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionComman
         _context = context;
     }
 
-    public async Task Handle(AddInscriptionCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<Created>> Handle(AddInscriptionCommand request, CancellationToken cancellationToken)
     {
         Tournament? tournament = await _context.Tournaments
             .FirstOrDefaultAsync(t => t.Id == request.TournamentId, cancellationToken);
 
         if (tournament is null)
         {
-            throw new ApplicationException("Tournament not found");
+            return Errors.Tournament.NotFound;
         }
 
         Fisher? fisher = await _context.Fishers
@@ -37,11 +38,13 @@ public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionComman
 
         if (fisher is null)
         {
-            throw new ApplicationException("Fisher not found");
+            return Errors.Fisher.NotFound;
         }
 
         tournament.AddInscription(fisher.Id);
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.Created;
     }
 }
