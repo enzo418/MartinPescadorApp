@@ -14,5 +14,7 @@ public interface ITournamentFisherDbContext
     DbSet<User> Users { get; }
     DbSet<Fisher> Fishers { get; }
 
+    DbSet<TEntity> Set<TEntity>() where TEntity : class; // helpul for testing
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

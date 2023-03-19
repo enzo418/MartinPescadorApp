@@ -12,6 +12,10 @@ While i wrote this project i learned a lot of things. I will try to questions th
 - [ASP.NET doesn't support IdTypes as route parameters](#aspnet-doesnt-support-idtypes-as-route-parameters)
   - [Solution](#solution)
 - [There is no way to query Owned Entities](#there-is-no-way-to-query-owned-entities)
+- [Tests](#tests)
+  - [Now I know better the difference between Unit and Integration tests.](#now-i-know-better-the-difference-between-unit-and-integration-tests)
+    - [Is hard to unit test with EF Core](#is-hard-to-unit-test-with-ef-core)
+  - [Architecture tests](#architecture-tests)
 
 
 # Aggregate Ids vs Entities Ids
@@ -271,3 +275,14 @@ INNER JOIN "Users" AS "u" ON "f"."UserId" = "u"."Id"
 WHERE CAST("c"."Id" AS TEXT) = @__request_CompetitionId_0
 ORDER BY "c0"."TotalScore" DESC
 ```
+
+# Tests
+## Now I know better the difference between Unit and Integration tests.
+For example if you want to test a command handler. You would write a unit and a integration test. The unit test will use mock on the database (`ITournamentFisherDbContext`) and services, testing that it returns the errors codes or exceptions that you expect. The integration test will use the real database and services, for example `InMemory EF` Core, verifying that the data is actually modified and saved.
+
+### Is hard to unit test with EF Core
+If your code uses extension methods from EF, they cannot be mocked. For example `FirstOrDefaultAsync` is an extension method, which is pretty useful and of common use in my code.
+Because of that I decided to skip unit test for the command handlers and only test them with integration tests, it would have been beautiful to do unit on error codes and integration domain changes 😢. Still, I will do unit test for the validations.
+
+## Architecture tests
+Tests that verify that the architecture is correct. For example that the domain layer doesn't depend on the application layer. This is done by using NetArchTest.

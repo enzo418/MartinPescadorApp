@@ -1,3 +1,4 @@
+using ErrorOr;
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.TournamentAggregate;
 using MediatR;
@@ -7,10 +8,10 @@ namespace FisherTournament.Application.Tournaments.Commands.CreateTournament;
 public record struct CreateTournamentCommand(
     string Name,
     DateTime StartDate,
-    DateTime EndDate) : IRequest<CreateTournamentCommandResponse>;
+    DateTime EndDate) : IRequest<ErrorOr<CreateTournamentCommandResponse>>;
 
 public sealed class CreateTournamentCommandHandler
-    : IRequestHandler<CreateTournamentCommand, CreateTournamentCommandResponse>
+    : IRequestHandler<CreateTournamentCommand, ErrorOr<CreateTournamentCommandResponse>>
 {
     private readonly ITournamentFisherDbContext _context;
 
@@ -19,7 +20,7 @@ public sealed class CreateTournamentCommandHandler
         _context = context;
     }
 
-    public async Task<CreateTournamentCommandResponse> Handle(
+    public async Task<ErrorOr<CreateTournamentCommandResponse>> Handle(
         CreateTournamentCommand request,
         CancellationToken cancellationToken)
     {

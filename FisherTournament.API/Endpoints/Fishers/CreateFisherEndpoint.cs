@@ -1,3 +1,4 @@
+using FisherTournament.API.Common.CustomResults;
 using FisherTournament.Application.Fishers.Commands.CreateFisher;
 using FisherTournament.Contracts.Fishers;
 using MapsterMapper;
@@ -7,7 +8,7 @@ using MinimalApi.Endpoint;
 namespace FisherTournament.API.Endpoints.Fishers;
 
 public class CreateFisherEndpoint
- : IEndpoint<CreateFisherResponse, CreateFisherRequest>
+ : IEndpoint<IResult, CreateFisherRequest>
 {
     private readonly ISender _sender;
     private readonly IMapper _mapper;
@@ -23,6 +24,7 @@ public class CreateFisherEndpoint
         app.MapPost("/fishers", async (CreateFisherRequest cmd) => await HandleAsync(cmd))
             .WithTags("FisherEndpoints")
             .ProducesValidationProblem()
+            .Produces<CreateFisherResponse>()
             .WithOpenApi(cfg => new(cfg)
             {
                 Summary = "Create a new fisher",
@@ -31,10 +33,12 @@ public class CreateFisherEndpoint
             .WithName("CreateFisher");
     }
 
-    public async Task<CreateFisherResponse> HandleAsync(CreateFisherRequest request)
+    public async Task<IResult> HandleAsync(CreateFisherRequest request)
     {
         var command = _mapper.Map<CreateFisherCommand>(request);
         var response = await _sender.Send(command);
-        return _mapper.Map<CreateFisherResponse>(response);
+        return response.Match(
+            success => Results.Ok(_mapper.Map<CreateFisherResponse>(success)),
+            error => Results.Extensions.Problem(error));
     }
 }

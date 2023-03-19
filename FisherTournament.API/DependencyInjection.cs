@@ -24,17 +24,4 @@ public static partial class DependencyInjection
 
         return services;
     }
-
-    public static IServiceCollection AddSettings(this IServiceCollection services, ConfigurationManager configurationManager)
-    {
-        DataBaseConectionSettings dataBaseConectionSettings = new();
-
-        configurationManager.Bind(
-            nameof(DataBaseConectionSettings),
-            dataBaseConectionSettings);
-
-        services.AddSingleton(dataBaseConectionSettings);
-
-        return services;
-    }
 }

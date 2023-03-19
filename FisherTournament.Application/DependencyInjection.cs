@@ -1,4 +1,5 @@
 using System.Reflection;
+using ErrorOr;
 using FisherTournament.Application.Common.Behavior;
 using FluentValidation;
 using MediatR;
@@ -22,6 +23,37 @@ public static partial class DependencyInjection
 
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ErrorOrBasedValidationBehavior<,>));
 
+        StopIfUsingInvalidTypes();
+
         return services;
+    }
+
+    private static void StopIfUsingInvalidTypes()
+    {
+        // This is cheaper that check it in the pipeline
+        var assembly = Assembly.GetAssembly(typeof(DependencyInjection))!;
+        var types = assembly.GetTypes();
+        foreach (var type in types)
+        {
+            if (type.IsInterface)
+            {
+                continue;
+            }
+
+            var interfaces = type.GetInterfaces();
+            foreach (var @interface in interfaces)
+            {
+                if (@interface.IsGenericType && @interface.GetGenericTypeDefinition() == typeof(IRequest<>))
+                {
+                    var genericArgument = @interface.GetGenericArguments()[0];
+                    if (genericArgument.IsGenericType && genericArgument.GetGenericTypeDefinition() == typeof(ErrorOr<>))
+                    {
+                        continue;
+                    }
+
+                    throw new Exception($"{type.Name} implements IRequest<{type.Name}> but it should be ErrorOr<{type.Name}>");
+                }
+            }
+        }
     }
 }

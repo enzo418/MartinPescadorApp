@@ -1,3 +1,4 @@
+using ErrorOr;
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.FisherAggregate;
 using FisherTournament.Domain.UserAggregate;
@@ -6,10 +7,10 @@ using MediatR;
 namespace FisherTournament.Application.Fishers.Commands.CreateFisher;
 
 public record struct CreateFisherCommand(string FirstName, string LastName)
-    : IRequest<CreateFisherCommandResponse>;
+    : IRequest<ErrorOr<CreateFisherCommandResponse>>;
 
 public class CreateFisherCommandHandler
- : IRequestHandler<CreateFisherCommand, CreateFisherCommandResponse>
+ : IRequestHandler<CreateFisherCommand, ErrorOr<CreateFisherCommandResponse>>
 {
     private readonly ITournamentFisherDbContext _context;
 
@@ -18,7 +19,7 @@ public class CreateFisherCommandHandler
         _context = context;
     }
 
-    public async Task<CreateFisherCommandResponse> Handle(CreateFisherCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<CreateFisherCommandResponse>> Handle(CreateFisherCommand request, CancellationToken cancellationToken)
     {
         User user = User.Create(request.FirstName, request.LastName);
         await _context.Users.AddAsync(user);

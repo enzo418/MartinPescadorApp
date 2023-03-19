@@ -19,5 +19,10 @@ public static partial class Errors
             code: "Tournament.InscriptionAlreadyExists",
             description: "Fisher is already enrolled in the tournament"
         );
+
+        public static Error IsOver => Error.Conflict(
+            code: "Tournament.TournamentIsOver",
+            description: "Tournament is over"
+        );
     }
 }

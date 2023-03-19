@@ -7,6 +7,7 @@ using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using FisherTournament.Domain.Common.Errors;
+using FisherTournament.Domain.Common.Provider;
 
 namespace FisherTournament.Application.Tournaments.Commands.AddInscription;
 
@@ -17,10 +18,12 @@ public record struct AddInscriptionCommand(
 public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionCommand, ErrorOr<Created>>
 {
     private readonly ITournamentFisherDbContext _context;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-    public AddInscriptionCommandHandler(ITournamentFisherDbContext context)
+    public AddInscriptionCommandHandler(ITournamentFisherDbContext context, IDateTimeProvider dateTimeProvider)
     {
         _context = context;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public async Task<ErrorOr<Created>> Handle(AddInscriptionCommand request, CancellationToken cancellationToken)
@@ -32,12 +35,17 @@ public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionComman
             return Errors.Id.NotValidWithProperty(nameof(request.TournamentId));
         }
 
-        Tournament? tournament = await _context.Tournaments
-            .FirstOrDefaultAsync(t => t.Id == tournamentId.Value, cancellationToken);
+        Tournament? tournament = _context.Set<Tournament>()
+            .FirstOrDefault(t => t.Id == tournamentId.Value);
 
         if (tournament is null)
         {
             return Errors.Tournament.NotFound;
+        }
+
+        if (tournament.EndDate < _dateTimeProvider.Now)
+        {
+            return Errors.Tournament.IsOver;
         }
 
         ErrorOr<FisherId> fisherId = FisherId.Create(request.FisherId);
