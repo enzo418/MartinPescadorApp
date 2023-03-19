@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using ErrorOr;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using FisherTournament.Domain.TournamentAggregate.Entities;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
+using FisherTournament.Domain.Common.Errors;
+using FisherTournament.Domain.Common.Provider;
 
 namespace FisherTournament.Domain.TournamentAggregate;
 
@@ -31,9 +34,21 @@ public class Tournament : AggregateRoot<TournamentId>
         _competitionsIds.Add(competitionId);
     }
 
-    public void AddInscription(FisherId fisherId)
+    public ErrorOr<Success> AddInscription(FisherId fisherId, IDateTimeProvider dateTimeProvider)
     {
+        if (Inscriptions.Any(i => i.FisherId == fisherId))
+        {
+            return Errors.Tournament.InscriptionAlreadyExists;
+        }
+
+        if (EndDate < dateTimeProvider.Now)
+        {
+            return Errors.Tournament.IsOver;
+        }
+
         _inscriptions.Add(TournamentInscription.Create(Id, fisherId));
+
+        return Result.Success;
     }
 
     public bool IsFisherEnrolled(FisherId fisherId)

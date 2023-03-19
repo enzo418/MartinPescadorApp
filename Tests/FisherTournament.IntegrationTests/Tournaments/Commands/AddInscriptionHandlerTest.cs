@@ -80,7 +80,7 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
                 "Test Tournament",
                 _fixture.DateTimeProvider.Now.AddDays(1),
                 _fixture.DateTimeProvider.Now.AddDays(2)),
-                beforeSave: t => t.AddInscription(fisher.Id));
+                beforeSave: t => t.AddInscription(fisher.Id, _fixture.DateTimeProvider));
 
             var command = new AddInscriptionCommand(tournament.Id.ToString(), fisher.Id.ToString());
 

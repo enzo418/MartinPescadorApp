@@ -43,11 +43,6 @@ public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionComman
             return Errors.Tournament.NotFound;
         }
 
-        if (tournament.EndDate < _dateTimeProvider.Now)
-        {
-            return Errors.Tournament.IsOver;
-        }
-
         ErrorOr<FisherId> fisherId = FisherId.Create(request.FisherId);
 
         if (fisherId.IsError)
@@ -63,12 +58,12 @@ public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionComman
             return Errors.Fisher.NotFound;
         }
 
-        if (tournament.Inscriptions.Any(i => i.FisherId == fisher.Id))
-        {
-            return Errors.Tournament.InscriptionAlreadyExists;
-        }
+        ErrorOr<Success> result = tournament.AddInscription(fisher.Id, _dateTimeProvider);
 
-        tournament.AddInscription(fisher.Id);
+        if (result.IsError)
+        {
+            return result.Errors;
+        }
 
         await _context.SaveChangesAsync(cancellationToken);
 

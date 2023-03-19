@@ -29,8 +29,8 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
                 _fixture.DateTimeProvider.Now.AddDays(2)),
                 beforeSave: t =>
                 {
-                    t.AddInscription(fisher1.Id);
-                    t.AddInscription(fisher2.Id);
+                    t.AddInscription(fisher1.Id, _fixture.DateTimeProvider);
+                    t.AddInscription(fisher2.Id, _fixture.DateTimeProvider);
                 });
 
             var competition = await _fixture.AddAsync(Competition.Create(
