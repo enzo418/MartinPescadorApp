@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FisherTournament.Contracts"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FisherTournament.IntegrationTests", "Tests\FisherTournament.IntegrationTests\FisherTournament.IntegrationTests.csproj", "{0B286C82-06EA-495C-9C50-30B90FED07B6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FisherTournament.ArchitectureTests", "Tests\FisherTournament.ArchitectureTests\FisherTournament.ArchitectureTests.csproj", "{63627311-A127-4641-AD6D-A096C43A997D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,9 +58,14 @@ Global
 		{0B286C82-06EA-495C-9C50-30B90FED07B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B286C82-06EA-495C-9C50-30B90FED07B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B286C82-06EA-495C-9C50-30B90FED07B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63627311-A127-4641-AD6D-A096C43A997D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63627311-A127-4641-AD6D-A096C43A997D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63627311-A127-4641-AD6D-A096C43A997D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63627311-A127-4641-AD6D-A096C43A997D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{2E69A4BC-4EE3-4E8E-8EA7-75922178010E} = {9D107376-1FD7-4A31-A676-94DAEE056460}
 		{0B286C82-06EA-495C-9C50-30B90FED07B6} = {9D107376-1FD7-4A31-A676-94DAEE056460}
+		{63627311-A127-4641-AD6D-A096C43A997D} = {9D107376-1FD7-4A31-A676-94DAEE056460}
 	EndGlobalSection
 EndGlobal

@@ -10,7 +10,7 @@
   - [X] Unit tests
   - [X] Integration tests
     - [ ] Use respawner
-- [ ] Add Architecture tests
+- [X] Add Architecture tests
 - [X] Refactor tests
   - [X] Common null empty test data
 - [ ] Move handler Inscription logic to domain
