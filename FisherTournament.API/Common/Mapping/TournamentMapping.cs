@@ -1,4 +1,7 @@
+using FisherTournament.Application.Tournaments.Commands.AddCategory;
 using FisherTournament.Application.Tournaments.Commands.AddInscription;
+using FisherTournament.Application.Tournaments.Commands.CreateTournament;
+using FisherTournament.Contracts.Categories;
 using FisherTournament.Contracts.Tournaments;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using Mapster;
@@ -11,6 +14,11 @@ public class TournamentMapping : IRegister
     {
         config.NewConfig<(AddInscriptionRequest IR, string tournamentId), AddInscriptionCommand>()
             .Map(dest => dest.TournamentId, src => src.tournamentId)
-            .Map(dest => dest.FisherId, src => src.IR.FisherId);
+            .Map(dest => dest, src => src.IR);
+
+        config.NewConfig<(AddCategoryRequest CR, string tournamentId), AddCategoryCommand>()
+            .Map(dest => dest.TournamentId, src => src.tournamentId)
+            .Map(dest => dest, src => src.CR);
+
     }
 }

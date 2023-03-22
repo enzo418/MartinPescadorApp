@@ -12,12 +12,13 @@ namespace FisherTournament.IntegrationTests.Fishers.Commands
         public async Task Handler_Should_CreateFisher()
         {
             // Arrange
+            using var context = _fixture.Context;
             var command = new CreateFisherCommand("First", "Last");
 
             // Act
             var result = await _fixture.SendAsync(command);
-            var fisher = await _fixture.FindAsync<Fisher>(result.Value.Id);
-            var user = await _fixture.FindAsync<User>(fisher is null ? "" : fisher.UserId);
+            var fisher = await context.FindAsync<Fisher>(result.Value.Id);
+            var user = await context.FindAsync<User>(fisher is null ? "" : fisher.UserId);
 
             // Assert
             result.IsError.Should().BeFalse();

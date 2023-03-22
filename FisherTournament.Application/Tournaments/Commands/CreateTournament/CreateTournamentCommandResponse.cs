@@ -5,5 +5,5 @@ namespace FisherTournament.Application.Tournaments.Commands.CreateTournament;
 public record struct CreateTournamentCommandResponse(
     TournamentId Id,
     string Name,
-    DateTime startDate,
-    DateTime endDate);
+    DateTime StartDate,
+    DateTime EndDate);

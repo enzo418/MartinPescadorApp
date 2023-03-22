@@ -13,8 +13,12 @@ public class Tournament : AggregateRoot<TournamentId>
 {
     private List<CompetitionId> _competitionsIds = new();
     private List<TournamentInscription> _inscriptions = new();
+    private List<Category> _categories = new();
 
-    private Tournament(TournamentId id, string name, DateTime startDate, DateTime endDate)
+    private Tournament(TournamentId id,
+                       string name,
+                       DateTime startDate,
+                       DateTime endDate)
         : base(id)
     {
         Name = name;
@@ -28,25 +32,33 @@ public class Tournament : AggregateRoot<TournamentId>
 
     public IReadOnlyCollection<CompetitionId> CompetitionsIds => _competitionsIds.AsReadOnly();
     public IReadOnlyCollection<TournamentInscription> Inscriptions => _inscriptions.AsReadOnly();
+    public IReadOnlyCollection<Category> Categories => _categories.AsReadOnly();
 
     public void AddCompetition(CompetitionId competitionId)
     {
         _competitionsIds.Add(competitionId);
     }
 
-    public ErrorOr<Success> AddInscription(FisherId fisherId, IDateTimeProvider dateTimeProvider)
+    public ErrorOr<Success> AddInscription(FisherId fisherId,
+                                           CategoryId categoryId,
+                                           IDateTimeProvider dateTimeProvider)
     {
         if (Inscriptions.Any(i => i.FisherId == fisherId))
         {
-            return Errors.Tournament.InscriptionAlreadyExists;
+            return Errors.Tournaments.InscriptionAlreadyExists;
         }
 
         if (EndDate < dateTimeProvider.Now)
         {
-            return Errors.Tournament.IsOver;
+            return Errors.Tournaments.IsOver;
         }
 
-        _inscriptions.Add(TournamentInscription.Create(Id, fisherId));
+        if (!Categories.Any(c => c.Id == categoryId))
+        {
+            return Errors.Categories.NotFound;
+        }
+
+        _inscriptions.Add(TournamentInscription.Create(Id, fisherId, categoryId));
 
         return Result.Success;
     }
@@ -54,6 +66,13 @@ public class Tournament : AggregateRoot<TournamentId>
     public bool IsFisherEnrolled(FisherId fisherId)
     {
         return _inscriptions.Find(x => x.FisherId == fisherId) != null;
+    }
+
+    public Category AddCategory(string name)
+    {
+        Category category = Category.Create(name);
+        _categories.Add(category);
+        return category;
     }
 
     public static Tournament Create(string name, DateTime startDate, DateTime endDate)

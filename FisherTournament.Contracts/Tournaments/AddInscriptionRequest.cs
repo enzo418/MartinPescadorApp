@@ -1,5 +1,6 @@
 namespace FisherTournament.Contracts.Tournaments;
 
 public record struct AddInscriptionRequest(
-    string FisherId
+    string FisherId,
+    string CategoryId
 );

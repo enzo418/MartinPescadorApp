@@ -46,12 +46,12 @@ public class AddCompetitionsCommandHandler
 
         if (tournament is null)
         {
-            return Errors.Tournament.NotFound;
+            return Errors.Tournaments.NotFound;
         }
 
         if (request.Competitions.Any(c => c.StartDateTime < tournament.StartDate))
         {
-            return Errors.Competition.StartDateBeforeTournament;
+            return Errors.Competitions.StartDateBeforeTournament;
         }
 
         Competition[] competitions = request.Competitions.Select(

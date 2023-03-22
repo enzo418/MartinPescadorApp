@@ -13,7 +13,9 @@ namespace FisherTournament.Application.Tournaments.Commands.AddInscription;
 
 public record struct AddInscriptionCommand(
     string TournamentId,
-    string FisherId) : IRequest<ErrorOr<Created>>;
+    string FisherId,
+    string CategoryId)
+     : IRequest<ErrorOr<Created>>;
 
 public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionCommand, ErrorOr<Created>>
 {
@@ -40,7 +42,7 @@ public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionComman
 
         if (tournament is null)
         {
-            return Errors.Tournament.NotFound;
+            return Errors.Tournaments.NotFound;
         }
 
         ErrorOr<FisherId> fisherId = FisherId.Create(request.FisherId);
@@ -55,10 +57,17 @@ public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionComman
 
         if (fisher is null)
         {
-            return Errors.Fisher.NotFound;
+            return Errors.Fishers.NotFound;
         }
 
-        ErrorOr<Success> result = tournament.AddInscription(fisher.Id, _dateTimeProvider);
+        ErrorOr<CategoryId> categoryId = CategoryId.Create(request.CategoryId);
+
+        if (categoryId.IsError)
+        {
+            return Errors.Id.NotValidWithProperty(nameof(request.CategoryId));
+        }
+
+        ErrorOr<Success> result = tournament.AddInscription(fisher.Id, categoryId.Value, _dateTimeProvider);
 
         if (result.IsError)
         {

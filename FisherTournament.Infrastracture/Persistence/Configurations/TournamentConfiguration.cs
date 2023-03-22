@@ -2,6 +2,7 @@ using FisherTournament.Domain.CompetitionAggregate;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate;
 using FisherTournament.Domain.TournamentAggregate;
+using FisherTournament.Domain.TournamentAggregate.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,6 +17,26 @@ public class TournamentConfigurations : IEntityTypeConfiguration<Tournament>
         ConfigureTournament_Inscriptions(builder);
 
         ConfigureTournament_Competitions(builder);
+
+        ConfigureTournament_Category(builder);
+    }
+
+    private static void ConfigureTournament_Category(EntityTypeBuilder<Tournament> builder)
+    {
+        builder.OwnsMany(p => p.Categories, c =>
+        {
+            c.WithOwner().HasForeignKey("TournamentId");
+
+            c.HasKey(c => c.Id);
+
+            c.Property(c => c.Id)
+                .ValueGeneratedOnAdd()
+                .HasIntIdConversion();
+
+            c.Property(c => c.Name)
+                .IsRequired()
+                .HasMaxLength(50);
+        }).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 
     private static void ConfigureTournament(EntityTypeBuilder<Tournament> builder)
@@ -30,7 +51,8 @@ public class TournamentConfigurations : IEntityTypeConfiguration<Tournament>
     {
         builder.OwnsMany(t => t.Inscriptions, i =>
         {
-            i.WithOwner().HasForeignKey(i => i.TournamentId);
+            i.WithOwner()
+                .HasForeignKey(i => i.TournamentId);
 
             // (SQLite does not support generated values on composite keys)
             i.HasKey(/*i => new { i.Id, i.TournamentId }*/ i => i.Id);
@@ -38,8 +60,14 @@ public class TournamentConfigurations : IEntityTypeConfiguration<Tournament>
             i.Property<int>(i => i.Id)
                 .ValueGeneratedOnAdd();
 
+            i.Property(i => i.CategoryId)
+                .HasIntIdConversion();
+
             i.Property(x => x.FisherId)
                     .HasGuidIdConversion();
+
+            i.Property(x => x.TournamentId)
+                .HasGuidIdConversion();
 
             i.HasOne<Fisher>()
                 .WithMany()

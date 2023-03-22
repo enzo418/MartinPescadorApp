@@ -43,7 +43,7 @@ public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand, ErrorOr<U
 
         if (fisher is null)
         {
-            return Errors.Fisher.NotFound;
+            return Errors.Fishers.NotFound;
         }
 
         ErrorOr<CompetitionId> competitionId = CompetitionId.Create(request.CompetitionId);
@@ -58,7 +58,7 @@ public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand, ErrorOr<U
 
         if (competition is null)
         {
-            return Errors.Competition.NotFound;
+            return Errors.Competitions.NotFound;
         }
 
         // Verify the fisher is enrolled in the competition tournament.
@@ -67,7 +67,7 @@ public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand, ErrorOr<U
 
         if (!tournament.IsFisherEnrolled(fisherId.Value))
         {
-            return Errors.Tournament.NotEnrolled;
+            return Errors.Tournaments.NotEnrolled;
         }
 
         competition.AddScore(fisher.Id, request.Score, _dateTimeProvider);

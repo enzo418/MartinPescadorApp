@@ -18,6 +18,8 @@ public class UseCaseTestsFixture : IDisposable
 
     public IDateTimeProvider DateTimeProvider => _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IDateTimeProvider>();
 
+    public TournamentFisherDbContext Context => (_scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ITournamentFisherDbContext>() as TournamentFisherDbContext)!;
+
     public UseCaseTestsFixture()
     {
         var builder = Host.CreateDefaultBuilder();
@@ -61,64 +63,6 @@ public class UseCaseTestsFixture : IDisposable
         {
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
             return await mediator.Send(request);
-        }
-    }
-
-    public async Task<TEntity?> FindAsync<TEntity>(params object[] id)
-     where TEntity : class
-    {
-        using (var scope = _scopeFactory.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<ITournamentFisherDbContext>();
-            return await context.Set<TEntity>().FindAsync(id);
-        }
-    }
-
-    public async Task<IEnumerable<TEntity>> FindAllAsync<TEntity, TId>(IEnumerable<TId> Ids)
-        where TId : notnull
-        where TEntity : AggregateRoot<TId>
-    {
-        using (var scope = _scopeFactory.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<ITournamentFisherDbContext>();
-            return await context.Set<TEntity>().Where(c => Ids.Contains(c.Id)).ToListAsync();
-        }
-    }
-
-    public async Task<TEntity> AddAsync<TEntity>(TEntity entity, Action<TEntity>? beforeSave = null) where TEntity : class
-    {
-        using (var scope = _scopeFactory.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<ITournamentFisherDbContext>();
-            await context.Set<TEntity>().AddAsync(entity);
-
-            if (beforeSave is not null)
-            {
-                beforeSave(entity);
-            }
-
-            await context.SaveChangesAsync(default);
-            return entity;
-        }
-    }
-
-    public async Task<IEnumerable<TEntity>> AddRangeAsync<TEntity>(IEnumerable<TEntity> entities) where TEntity : class
-    {
-        using (var scope = _scopeFactory.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<ITournamentFisherDbContext>();
-            await context.Set<TEntity>().AddRangeAsync(entities);
-            await context.SaveChangesAsync(default);
-            return entities;
-        }
-    }
-
-    public async Task<int> CountAsync<TEntity>() where TEntity : class
-    {
-        using (var scope = _scopeFactory.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<ITournamentFisherDbContext>();
-            return await context.Set<TEntity>().CountAsync();
         }
     }
 }

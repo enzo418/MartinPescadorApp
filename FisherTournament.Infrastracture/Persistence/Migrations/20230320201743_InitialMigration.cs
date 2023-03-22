@@ -39,6 +39,25 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Category",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    TournamentId = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Category", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Category_Tournaments_TournamentId",
+                        column: x => x.TournamentId,
+                        principalTable: "Tournaments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Competitions",
                 columns: table => new
                 {
@@ -134,7 +153,8 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     TournamentId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    FisherId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    FisherId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    CategoryId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -180,6 +200,11 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                         principalTable: "Fishers",
                         principalColumn: "Id");
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Category_TournamentId",
+                table: "Category",
+                column: "TournamentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CompetitionParticipationFishCaught_CompetitionParticipationId",
@@ -231,6 +256,9 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Category");
+
             migrationBuilder.DropTable(
                 name: "CompetitionParticipationFishCaught");
 

@@ -7,10 +7,7 @@
 ├── Docs
 │   ├── 1_introduction.md
 │   ├── 2_implementation.md
-│   ├── 3_learning.md
 │   ├── 4_setup.md
-│   ├── 5_todo.md
-│   ├── 6_frecuent_problems.md
 │   ├── Api
 │   │   ├── Api.Competition.md
 │   │   ├── Api.Fisher.md
@@ -200,8 +197,6 @@
     │   └── Usings.cs
     └── FisherTournament.UnitTests
         ├── Common
-        │   ├── DbContext
-        │   │   └── MockDbContextFunctions.cs
         │   └── TestData
         │       ├── BaseTestData.cs
         │       ├── NegativeNumberTestData.cs

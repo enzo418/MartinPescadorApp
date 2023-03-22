@@ -5,9 +5,9 @@ using FisherTournament.Domain;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-public class IdConverter<T> : ValueConverter<T, Guid> where T : GuidId<T>
+public class GuidIdConverter<T> : ValueConverter<T, Guid> where T : GuidId<T>
 {
-    public IdConverter()
+    public GuidIdConverter()
         : base(x => x.Value, x => GuidId<T>.Create(x).Value)
     {
     }
@@ -62,5 +62,21 @@ public static partial class Extension
         modelBuilder.Property(keyExpression)
                     .HasConversion(converter)
                     .ValueGeneratedNever();
+    }
+}
+
+public static partial class Extension
+{
+    public static PropertyBuilder<T> HasIntIdConversion<T>(
+            this PropertyBuilder<T> propertyBuilder)
+        where T : IntId<T>
+    {
+        var converter = new ValueConverter<T, int>(
+            x => x.Value,
+            x => IntId<T>.Create(x).Value);
+
+        propertyBuilder.HasConversion(converter);
+
+        return propertyBuilder;
     }
 }

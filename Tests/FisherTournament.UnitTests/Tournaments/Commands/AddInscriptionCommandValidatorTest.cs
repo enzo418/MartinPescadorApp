@@ -20,7 +20,8 @@ namespace FisherTournament.UnitTests.Tournaments.Commands.AddInscription
             // Arrange
             var command = new AddInscriptionCommand(
                 tournamentId,
-                Guid.NewGuid().ToString());
+                Guid.NewGuid().ToString(),
+                "0");
 
             // Act
             var result = _validator.TestValidate(command);
@@ -36,7 +37,8 @@ namespace FisherTournament.UnitTests.Tournaments.Commands.AddInscription
             // Arrange
             var command = new AddInscriptionCommand(
                 Guid.NewGuid().ToString(),
-                fisherId);
+                fisherId,
+                "0");
 
             // Act
             var result = _validator.TestValidate(command);
@@ -51,13 +53,31 @@ namespace FisherTournament.UnitTests.Tournaments.Commands.AddInscription
             // Arrange
             var command = new AddInscriptionCommand(
                 Guid.NewGuid().ToString(),
-                Guid.NewGuid().ToString());
+                Guid.NewGuid().ToString(),
+                "0");
 
             // Act
             var result = _validator.TestValidate(command);
 
             // Assert
             result.ShouldNotHaveAnyValidationErrors();
+        }
+
+        [Theory]
+        [ClassData(typeof(NullEmptyStringTesData))]
+        public void Validator_Error_WhenPassedEmptyCategoryId(string categoryId)
+        {
+            // Arrange
+            var command = new AddInscriptionCommand(
+                Guid.NewGuid().ToString(),
+                Guid.NewGuid().ToString(),
+                categoryId);
+
+            // Act
+            var result = _validator.TestValidate(command);
+
+            // Assert
+            result.ShouldHaveValidationErrorFor(c => c.CategoryId);
         }
     }
 }

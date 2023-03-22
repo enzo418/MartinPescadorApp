@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FisherTournament.Infrastracture.Persistence.Migrations
 {
     [DbContext(typeof(TournamentFisherDbContext))]
-    [Migration("20230315213139_InitialMigration")]
+    [Migration("20230320201743_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -246,10 +246,37 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                                 .HasForeignKey("TournamentId");
                         });
 
+                    b.OwnsMany("FisherTournament.Domain.TournamentAggregate.Entities.Category", "Categories", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("TEXT");
+
+                            b1.Property<Guid>("TournamentId")
+                                .HasColumnType("TEXT");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("TournamentId");
+
+                            b1.ToTable("Category");
+
+                            b1.WithOwner()
+                                .HasForeignKey("TournamentId");
+                        });
+
                     b.OwnsMany("FisherTournament.Domain.TournamentAggregate.Entities.TournamentInscription", "Inscriptions", b1 =>
                         {
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
+                                .HasColumnType("INTEGER");
+
+                            b1.Property<int>("CategoryId")
                                 .HasColumnType("INTEGER");
 
                             b1.Property<Guid>("FisherId")
@@ -275,6 +302,8 @@ namespace FisherTournament.Infrastracture.Persistence.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("TournamentId");
                         });
+
+                    b.Navigation("Categories");
 
                     b.Navigation("CompetitionsIds");
 

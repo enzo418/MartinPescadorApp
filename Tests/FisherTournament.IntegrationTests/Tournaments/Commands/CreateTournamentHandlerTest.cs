@@ -11,6 +11,7 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
         public async Task Handler_Should_CreateTournament()
         {
             // 
+            using var context = _fixture.Context;
             var command = new CreateTournamentCommand(
                 "Test Tournament",
                 _fixture.DateTimeProvider.Now.AddDays(1),
@@ -18,7 +19,7 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
 
             // 
             var result = await _fixture.SendAsync(command);
-            var tournament = await _fixture.FindAsync<Tournament>(result.Value.Id);
+            var tournament = await context.FindAsync<Tournament>(result.Value.Id);
 
             // 
             result.IsError.Should().BeFalse($"because the command is valid ({result.Errors.First().Description})");

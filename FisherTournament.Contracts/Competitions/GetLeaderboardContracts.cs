@@ -4,4 +4,11 @@ public record struct CompetitionLeaderBoardItem(
     string FisherId,
     string FirstName,
     string LastName,
-    int TotalScore);
+    int TotalScore
+);
+
+public record struct CompetitionCategoryLeaderBoard(
+    string CategoryId,
+    string CategoryName,
+    IEnumerable<CompetitionLeaderBoardItem> LeaderBoard
+);

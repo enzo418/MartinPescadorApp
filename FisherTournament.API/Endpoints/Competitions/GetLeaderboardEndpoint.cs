@@ -7,7 +7,7 @@ using MinimalApi.Endpoint;
 
 namespace FisherTournament.API.Endpoints.Competitions;
 
-using GetLeaderboardResponse = IEnumerable<CompetitionLeaderBoardItem>;
+using GetLeaderboardResponse = IEnumerable<CompetitionCategoryLeaderBoard>;
 
 public class GetLeaderboardEndpoint : IEndpoint<IResult, string>
 {

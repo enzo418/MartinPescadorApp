@@ -13,12 +13,12 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
         public async Task Handler_Should_AddCompetitions()
         {
             // 
-            var tournament = await _fixture.AddAsync(Tournament.Create(
+            using var context = _fixture.Context;
+            var tournament = await context.WithAsync(Tournament.Create(
                 "Test Tournament",
                 _fixture.DateTimeProvider.Now.AddDays(1),
                 _fixture.DateTimeProvider.Now.AddDays(2)));
-            var user = await _fixture.AddAsync(User.Create("First", "Last"));
-            var fisher = await _fixture.AddAsync(Fisher.Create(user.Id));
+            var fisher = await context.WithFisherAsync("First", "Last");
 
             var command = new AddCompetitionsCommand(tournament.Id.ToString(), new List<AddCompetitionCommand>
             {
@@ -40,10 +40,12 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
                 }
             });
 
+            await context.SaveChangesAndClear();
+
             // 
             var result = await _fixture.SendAsync(command);
-            var tournamentWithCompetitions = await _fixture.FindAsync<Tournament>(tournament.Id);
-            var competitions = await _fixture.FindAllAsync<Competition, CompetitionId>(result.Value.Select(c => c.Id));
+            var tournamentWithCompetitions = await context.FindAsync<Tournament>(tournament.Id);
+            var competitions = await context.FindAllAsync<Competition, CompetitionId>(result.Value.Select(c => c.Id));
 
             // Assert correct response
             result.IsError.Should().BeFalse($"because the command is valid ({result.Errors.First().Description})");
@@ -86,17 +88,18 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
 
             // 
             result.IsError.Should().BeTrue();
-            result.FirstError.Should().Be(Errors.Tournament.NotFound);
+            result.FirstError.Should().Be(Errors.Tournaments.NotFound);
         }
 
         [Fact]
         public async Task Handler_Should_NotAddCompetitions_When_CompetitionStartIsBeforeTournamentStart()
         {
             // 
-            var tournament = await _fixture.AddAsync(Tournament.Create(
-                "Test Tournament",
-                _fixture.DateTimeProvider.Now.AddDays(4),
-                _fixture.DateTimeProvider.Now.AddDays(6)));
+            using var context = _fixture.Context;
+            Tournament tournament = await context.WithAsync(Tournament.Create(
+                        "Test Tournament",
+                        _fixture.DateTimeProvider.Now.AddDays(4),
+                        _fixture.DateTimeProvider.Now.AddDays(6)));
 
             var command = new AddCompetitionsCommand(tournament.Id.ToString(), new List<AddCompetitionCommand>
             {
@@ -115,7 +118,7 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
 
             // 
             result.IsError.Should().BeTrue();
-            result.FirstError.Should().Be(Errors.Competition.StartDateBeforeTournament);
+            result.FirstError.Should().Be(Errors.Competitions.StartDateBeforeTournament);
         }
 
     }

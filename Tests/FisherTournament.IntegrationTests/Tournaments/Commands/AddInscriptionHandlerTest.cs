@@ -1,4 +1,5 @@
 using FisherTournament.Application.Tournaments.Commands.AddInscription;
+using FisherTournament.Domain.TournamentAggregate.Entities;
 
 namespace FisherTournament.IntegrationTests.Tournaments.Commands
 {
@@ -10,19 +11,26 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
         [Fact]
         public async Task Handler_Should_AddInscription()
         {
-            // Arrange
-            var tournament = await _fixture.AddAsync(Tournament.Create(
+            using var context = _fixture.Context;
+
+            var tournament = context.PrepareAdd(Tournament.Create(
                 "Test Tournament",
                 _fixture.DateTimeProvider.Now.AddDays(1),
-                _fixture.DateTimeProvider.Now.AddDays(2)));
-            var user = await _fixture.AddAsync(User.Create("First", "Last"));
-            var fisher = await _fixture.AddAsync(Fisher.Create(user.Id));
+                _fixture.DateTimeProvider.Now.AddDays(2))
+            );
+            var category = tournament.AddCategory("test");
+            var user = context.PrepareAdd(User.Create("First", "Last"));
+            var fisher = context.PrepareAdd(Fisher.Create(user.Id));
 
-            var command = new AddInscriptionCommand(tournament.Id.ToString(), fisher.Id.ToString());
+            // EF NOTE: If you don't clear the change tracker, find will return the same as `tournament` variable,
+            // since it was modified in the inscription command (different DB context instance).
+            await context.SaveChangesAndClear();
+
+            var command = new AddInscriptionCommand(tournament.Id.ToString(), fisher.Id.ToString(), category.Id);
 
             // Act
             var result = await _fixture.SendAsync(command);
-            var tournamentWithInscription = await _fixture.FindAsync<Tournament>(tournament.Id);
+            var tournamentWithInscription = await context.FindAsync<Tournament>(tournament.Id);
 
             // Assert
             result.IsError.Should().BeFalse($"because the command is valid ({result.Errors.First().Description})");
@@ -37,80 +45,119 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
         public async Task Handler_Should_NotAddInscription_When_TournamentDoesntExist()
         {
             // Arrange
-            var user = await _fixture.AddAsync(User.Create("First", "Last"));
-            var fisher = await _fixture.AddAsync(Fisher.Create(user.Id));
+            using var context = _fixture.Context;
+            var fisher = await context.WithFisherAsync("First", "Last");
 
-            var command = new AddInscriptionCommand(Guid.NewGuid().ToString(), fisher.Id.ToString());
+            var command = new AddInscriptionCommand(Guid.NewGuid().ToString(), fisher.Id.ToString(), "0");
 
             // Act
             var result = await _fixture.SendAsync(command);
 
             // Assert
             result.IsError.Should().BeTrue();
-            result.FirstError.Should().Be(Errors.Tournament.NotFound);
+            result.FirstError.Should().Be(Errors.Tournaments.NotFound);
         }
 
         [Fact]
         public async Task Handler_Should_NotAddInscription_When_FisherDoesntExist()
         {
             // Arrange
-            var tournament = await _fixture.AddAsync(Tournament.Create(
+            using var context = _fixture.Context;
+            var tournament = await context.WithAsync(Tournament.Create(
                 "Test Tournament",
                 _fixture.DateTimeProvider.Now.AddDays(1),
                 _fixture.DateTimeProvider.Now.AddDays(2)));
 
-            var command = new AddInscriptionCommand(tournament.Id.ToString(), Guid.NewGuid().ToString());
+            var command = new AddInscriptionCommand(tournament.Id.ToString(), Guid.NewGuid().ToString(), "0");
 
             // Act
             var result = await _fixture.SendAsync(command);
 
             // Assert
             result.IsError.Should().BeTrue();
-            result.FirstError.Should().Be(Errors.Fisher.NotFound);
+            result.FirstError.Should().Be(Errors.Fishers.NotFound);
         }
 
         [Fact]
         public async Task Handler_Should_NotAddInscription_When_FisherIsAlreadyInscribed()
         {
             // Arrange
-            var user = await _fixture.AddAsync(User.Create("First", "Last"));
-            var fisher = await _fixture.AddAsync(Fisher.Create(user.Id));
+            using var context = _fixture.Context;
+            var user = context.PrepareAdd(User.Create("First", "Last"));
+            var fisher = context.PrepareAdd(Fisher.Create(user.Id));
 
-            var tournament = await _fixture.AddAsync(Tournament.Create(
+            var tournament = context.PrepareAdd(Tournament.Create(
                 "Test Tournament",
                 _fixture.DateTimeProvider.Now.AddDays(1),
-                _fixture.DateTimeProvider.Now.AddDays(2)),
-                beforeSave: t => t.AddInscription(fisher.Id, _fixture.DateTimeProvider));
+                _fixture.DateTimeProvider.Now.AddDays(2)));
 
-            var command = new AddInscriptionCommand(tournament.Id.ToString(), fisher.Id.ToString());
+            var category = tournament.AddCategory("test");
+            await context.SaveChangesAsync();
+
+            tournament.AddInscription(fisher.Id, category.Id, _fixture.DateTimeProvider);
+            await context.SaveChangesAsync();
 
             // Act
-            var errorResult = await _fixture.SendAsync(command);
+            var errorResult = await _fixture.SendAsync(
+                new AddInscriptionCommand(tournament.Id.ToString(), fisher.Id.ToString(), category.Id)
+            );
 
             // Assert
             errorResult.IsError.Should().BeTrue();
-            errorResult.FirstError.Should().Be(Errors.Tournament.InscriptionAlreadyExists);
+            errorResult.FirstError.Should().Be(Errors.Tournaments.InscriptionAlreadyExists);
         }
 
         [Fact]
         public async Task Handler_Should_NotAddInscription_When_TournamentIsClosed()
         {
             // Arrange
-            var tournament = await _fixture.AddAsync(Tournament.Create(
+            using var context = _fixture.Context;
+            var tournament = context.PrepareAdd(Tournament.Create(
                 "Test Tournament",
                 _fixture.DateTimeProvider.Now.AddDays(-2),
                 _fixture.DateTimeProvider.Now.AddDays(-1)));
-            var user = await _fixture.AddAsync(User.Create("First", "Last"));
-            var fisher = await _fixture.AddAsync(Fisher.Create(user.Id));
+            var user = context.PrepareAdd(User.Create("First", "Last"));
+            var fisher = context.PrepareAdd(Fisher.Create(user.Id));
 
-            var command = new AddInscriptionCommand(tournament.Id.ToString(), fisher.Id.ToString());
+            var category = tournament.AddCategory("test");
+            await context.SaveChangesAsync();
+
+            tournament.AddInscription(fisher.Id, category.Id, _fixture.DateTimeProvider);
+            await context.SaveChangesAsync();
+
+            var command = new AddInscriptionCommand(tournament.Id.ToString(), fisher.Id.ToString(), category.Id);
 
             // Act
             var result = await _fixture.SendAsync(command);
 
             // Assert
             result.IsError.Should().BeTrue();
-            result.FirstError.Should().Be(Errors.Tournament.IsOver);
+            result.FirstError.Should().Be(Errors.Tournaments.IsOver);
+        }
+
+        [Fact]
+        public async Task Handler_Should_NotAddInscription_WhenCategoryDoesntExist()
+        {
+            // Arrange
+            using var context = _fixture.Context;
+            var tournament = context.PrepareAdd(Tournament.Create(
+                "Test Tournament",
+                _fixture.DateTimeProvider.Now.AddDays(1),
+                _fixture.DateTimeProvider.Now.AddDays(2)));
+            var user = context.PrepareAdd(User.Create("First", "Last"));
+            var fisher = context.PrepareAdd(Fisher.Create(user.Id));
+
+            var category = tournament.AddCategory("test");
+            await context.SaveChangesAsync();
+
+            var command = new AddInscriptionCommand(tournament.Id.ToString(), fisher.Id.ToString(), "999");
+
+            // Act
+            var result = await _fixture.SendAsync(command);
+
+            // Assert
+            result.IsError.Should().BeTrue();
+            result.FirstError.Should().Be(Errors.Categories.NotFound);
         }
     }
 }

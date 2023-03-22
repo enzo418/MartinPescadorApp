@@ -4,8 +4,9 @@ namespace FisherTournament.Domain.Common.Errors;
 
 public static partial class Errors
 {
-    public static class Tournament
+    public static class Tournaments
     {
+
         public static Error NotFound => Error.NotFound(
             code: "Tournament.NotFound",
             description: "Tournament not found.");
