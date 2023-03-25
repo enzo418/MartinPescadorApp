@@ -1,3 +1,5 @@
+using ErrorOr;
+using FisherTournament.Domain.Common.Errors;
 using FisherTournament.Domain.Common.Provider;
 using FisherTournament.Domain.CompetitionAggregate.Entities;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
@@ -30,8 +32,14 @@ public sealed class Competition : AggregateRoot<CompetitionId>
         return new Competition(Guid.NewGuid(), startDateTime, null, tournamentId, location);
     }
 
-    public void AddScore(FisherId fisherId, int score, IDateTimeProvider dateTimeProvider)
+    public ErrorOr<Success> AddScore(FisherId fisherId, int score, IDateTimeProvider dateTimeProvider)
     {
+        if (EndDateTime.HasValue)
+            return Errors.Competitions.HasEnded;
+
+        if (StartDateTime > dateTimeProvider.Now)
+            return Errors.Competitions.HasNotStarted;
+
         var participation = _participations.Where(x => x.FisherId == fisherId)
                                 .SingleOrDefault();
         if (participation == null)
@@ -41,8 +49,14 @@ public sealed class Competition : AggregateRoot<CompetitionId>
         }
 
         participation.AddFishCaught(FishCaught.Create(this.Id, fisherId, score, dateTimeProvider));
+
+        return Result.Success;
     }
 
+    public void EndCompetition(IDateTimeProvider dateTimeProvider)
+    {
+        EndDateTime = dateTimeProvider.Now;
+    }
 
 #pragma warning disable CS8618
     private Competition()

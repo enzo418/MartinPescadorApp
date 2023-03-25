@@ -2,7 +2,7 @@ using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 
 namespace FisherTournament.Domain.TournamentAggregate.Entities;
 
-public sealed class Category : Entity<CategoryId>
+public class Category : Entity<CategoryId>
 {
     public string Name { get; private set; }
 
@@ -16,7 +16,7 @@ public sealed class Category : Entity<CategoryId>
         Name = name;
     }
 
-    internal static Category Create(string name)
+    public static Category Create(string name)
     {
         return new Category(name);
     }

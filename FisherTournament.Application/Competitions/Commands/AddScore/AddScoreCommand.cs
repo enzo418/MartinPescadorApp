@@ -65,12 +65,21 @@ public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand, ErrorOr<U
         Tournament tournament = (await _context.Tournaments
             .FirstOrDefaultAsync(t => t.Id == competition.TournamentId, cancellationToken))!;
 
-        if (!tournament.IsFisherEnrolled(fisherId.Value))
+        if (tournament is null)
+        {
+            return Errors.Tournaments.NotFound;
+        }
+        else if (!tournament.IsFisherEnrolled(fisherId.Value))
         {
             return Errors.Tournaments.NotEnrolled;
         }
 
-        competition.AddScore(fisher.Id, request.Score, _dateTimeProvider);
+        var errors = competition.AddScore(fisher.Id, request.Score, _dateTimeProvider);
+
+        if (errors.IsError)
+        {
+            return errors.Errors;
+        }
 
         await _context.SaveChangesAsync(cancellationToken);
 

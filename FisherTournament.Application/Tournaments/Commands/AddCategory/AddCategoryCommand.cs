@@ -44,7 +44,14 @@ namespace FisherTournament.Application.Tournaments.Commands.AddCategory
                 return Errors.Tournaments.NotFound;
             }
 
-            Category category = tournament.AddCategory(request.Name);
+            Category category = Category.Create(request.Name);
+
+            ErrorOr<Category> result = tournament.AddCategory(category);
+
+            if (result.IsError)
+            {
+                return result.Errors;
+            }
 
             await _context.SaveChangesAsync(cancellationToken);
 

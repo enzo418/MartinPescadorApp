@@ -18,12 +18,14 @@ public class Tournament : AggregateRoot<TournamentId>
     private Tournament(TournamentId id,
                        string name,
                        DateTime startDate,
-                       DateTime endDate)
+                       DateTime endDate,
+                       List<Category> categories)
         : base(id)
     {
         Name = name;
         StartDate = startDate;
         EndDate = endDate;
+        _categories = categories;
     }
 
     public string Name { get; private set; }
@@ -68,16 +70,42 @@ public class Tournament : AggregateRoot<TournamentId>
         return _inscriptions.Find(x => x.FisherId == fisherId) != null;
     }
 
-    public Category AddCategory(string name)
+    public ErrorOr<Category> AddCategory(string categoryName)
     {
-        Category category = Category.Create(name);
+        if (_categories.Any(c => c.Name == categoryName))
+        {
+            return Errors.Categories.AlreadyExists;
+        }
+
+        var category = Category.Create(categoryName);
+
         _categories.Add(category);
+
         return category;
     }
 
-    public static Tournament Create(string name, DateTime startDate, DateTime endDate)
+    public ErrorOr<Category> AddCategory(Category category)
     {
-        return new Tournament(Guid.NewGuid(), name, startDate, endDate);
+        if (_categories.Any(c => c.Name == category.Name))
+        {
+            return Errors.Categories.AlreadyExists;
+        }
+
+        _categories.Add(category);
+
+        return category;
+    }
+
+    public static Tournament Create(string name,
+                                    DateTime startDate,
+                                    DateTime endDate,
+                                    List<Category>? categories = null)
+    {
+        return new Tournament(Guid.NewGuid(),
+                              name,
+                              startDate,
+                              endDate,
+                              categories ?? new List<Category>());
     }
 
 #pragma warning disable CS8618
