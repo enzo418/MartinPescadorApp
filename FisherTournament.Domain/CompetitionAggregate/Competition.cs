@@ -50,12 +50,26 @@ public sealed class Competition : AggregateRoot<CompetitionId>
 
         participation.AddFishCaught(FishCaught.Create(this.Id, fisherId, score, dateTimeProvider));
 
+        this.AddDomainEvent(new ScoreAddedDomainEvent(this.Id, fisherId, score));
+
         return Result.Success;
     }
 
     public void EndCompetition(IDateTimeProvider dateTimeProvider)
     {
         EndDateTime = dateTimeProvider.Now;
+    }
+
+    public void AddParticipation(FisherId fisherId)
+    {
+        if (_participations.Any(x => x.FisherId == fisherId))
+            return;
+
+        var participation = CompetitionParticipation.Create(Id, fisherId);
+
+        _participations.Add(participation);
+
+        AddDomainEvent(new ParticipationAddedDomainEvent(fisherId, this.Id));
     }
 
 #pragma warning disable CS8618
