@@ -1,3 +1,4 @@
+using FisherTournament.Application.Competitions.Commands.AddParticipation;
 using FisherTournament.Application.Competitions.Commands.AddScore;
 using FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
 using FisherTournament.Application.Tournaments.Commands.AddCompetitions;
@@ -37,6 +38,8 @@ public class CompetitionMapping : IRegister
             .Map(dest => dest.CategoryId, src => src.Id)
             .Map(dest => dest.LeaderBoard, src => src.LeaderBoard);
 
-
+        config.NewConfig<(AddParticipationRequest SR, string competitionId), AddParticipationCommand>()
+            .Map(dest => dest.CompetitionId, src => src.competitionId)
+            .Map(dest => dest.FisherId, src => src.SR.FisherId);
     }
 }

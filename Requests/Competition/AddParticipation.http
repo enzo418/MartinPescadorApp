@@ -1,0 +1,10 @@
+@host=http://localhost:5244
+@tID=5e4d77c8-7f76-49a6-9be1-802ecd5f8651
+@cID=60AB6993-4EF7-4CFE-AAC7-51593C4A901D
+
+POST {{host}}/tournaments/{{tID}}/competitions/{{cID}}/participations
+Content-Type: application/json
+
+{
+    "FisherId": "0c1b3ccc-78e8-41e9-aae0-b6d9d80f76f2"
+}

@@ -5,6 +5,6 @@ Content-Type: application/json
 
 {
     "name": "asd",
-    "startDate": "2024-01-01T00:00:00Z",
+    "startDate": "2023-03-27T10:00:00Z",
     "endDate": "2024-02-01T00:00:00Z"
 }
