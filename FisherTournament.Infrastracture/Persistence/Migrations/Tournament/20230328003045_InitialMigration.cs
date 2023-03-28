@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace FisherTournament.Infrastracture.Persistence.Migrations
+namespace FisherTournament.Infrastracture.Persistence.Migrations.Tournament
 {
     /// <inheritdoc />
     public partial class InitialMigration : Migration

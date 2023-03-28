@@ -24,8 +24,11 @@ $ dotnet ef database update -p FisherTournament.Infrastracture/ -s FisherTournam
 ```bash
 # Ensure UseSqlite in infrastracture dependency injection
 # Add initial migration if missing
-$ dotnet ef migrations add InitialCreate --project FisherTournament.Infrastracture/ --startup-project FisherTournament.API  -v -o Persistence/Migrations
+$ dotnet ef migrations add InitialMigration --project FisherTournament.Infrastracture/ --startup-project FisherTournament.API  -v -o Persistence/Migrations/Tournament --context "TournamentFisherDbContext"
+$ dotnet ef migrations add InitialMigration --project FisherTournament.Infrastracture/ --startup-project FisherTournament.API  -v -o Persistence/Migrations/ReadModels --context "ReadModelsDbContext"  
+
 
 # Update database
-$ dotnet ef database update -p FisherTournament.Infrastracture -s FisherTournament.API --connection 'Data Source=Tournament.db
+$ dotnet ef database update -p FisherTournament.Infrastracture -s FisherTournament.API --connection 'Data Source=Tournament.db' --context "TournamentFisherDbContext"
+$ dotnet ef database update -p FisherTournament.Infrastracture -s FisherTournament.API --connection 'Data Source=ReadModels.db' --context "ReadModelsDbContext"  
 ```

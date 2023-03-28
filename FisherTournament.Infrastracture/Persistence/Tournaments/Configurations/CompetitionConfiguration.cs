@@ -3,10 +3,11 @@ using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate;
 using FisherTournament.Domain.TournamentAggregate;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
+using FisherTournament.Infrastracture.Persistence.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace FisherTournament.Infrastracture.Persistence.Configurations;
+namespace FisherTournament.Infrastracture.Persistence.Tournaments.Configurations;
 
 public class CompetitionConfiguration : IEntityTypeConfiguration<Competition>
 {

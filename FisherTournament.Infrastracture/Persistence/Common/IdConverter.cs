@@ -1,4 +1,4 @@
-namespace FisherTournament.Infrastracture.Persistence.Configurations;
+namespace FisherTournament.Infrastracture.Persistence.Common;
 
 using System.Linq.Expressions;
 using FisherTournament.Domain;

@@ -1,5 +1,6 @@
 using FisherTournament.Domain;
 using FisherTournament.Infrastracture.Persistence;
+using FisherTournament.Infrastracture.Persistence.Tournaments;
 using Microsoft.EntityFrameworkCore;
 
 namespace FisherTournament.IntegrationTests;

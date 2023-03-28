@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FisherTournament.Application\FisherTournament.Application.csproj" />
+    <ProjectReference Include="..\FisherTournament.ReadModels\FisherTournament.ReadModels.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,7 @@
 using ErrorOr;
 using FisherTournament.Domain.Common.Errors;
 using FisherTournament.Domain.Common.Provider;
+using FisherTournament.Domain.CompetitionAggregate.DomainEvents;
 using FisherTournament.Domain.CompetitionAggregate.Entities;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;

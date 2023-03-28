@@ -20,7 +20,7 @@ public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot
 
     public void ClearDomainEvents(DispatchOrder dispatchOrderToClear)
     {
-        _domainEvents.RemoveAll(x => x.SaveState == dispatchOrderToClear);
+        _domainEvents.RemoveAll(x => x.DispatchOrder == dispatchOrderToClear);
     }
 
 #pragma warning disable CS8618

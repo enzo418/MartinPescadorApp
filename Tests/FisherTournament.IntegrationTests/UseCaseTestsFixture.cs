@@ -1,3 +1,5 @@
+using FisherTournament.Infrastracture.Persistence.Tournaments;
+
 namespace FisherTournament.IntegrationTests;
 
 using FisherTournament.Application;

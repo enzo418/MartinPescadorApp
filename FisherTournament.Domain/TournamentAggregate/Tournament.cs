@@ -6,6 +6,7 @@ using FisherTournament.Domain.TournamentAggregate.Entities;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using FisherTournament.Domain.Common.Errors;
 using FisherTournament.Domain.Common.Provider;
+using FisherTournament.Domain.TournamentAggregate.DomainEvents;
 
 namespace FisherTournament.Domain.TournamentAggregate;
 
@@ -62,6 +63,8 @@ public class Tournament : AggregateRoot<TournamentId>
 
         _inscriptions.Add(TournamentInscription.Create(Id, fisherId, categoryId));
 
+        AddDomainEvent(new InscriptionAddedDomainEvent(fisherId, categoryId, Id));
+        
         return Result.Success;
     }
 

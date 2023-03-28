@@ -82,6 +82,10 @@ Domain model
 
 Relational tables
 
+**Read Models**
+Leader board
+![Leader board](Diagrams/LeaderBoard%20Models.png)
+
 ---
 ## Limitations
 None

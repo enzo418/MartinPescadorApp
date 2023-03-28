@@ -7,5 +7,5 @@ public record struct ParticipationAddedDomainEvent(
     FisherId FisherId,
     CompetitionId CompetitionId) : IDomainEvent
 {
-    public DispatchOrder SaveState { get; init; } = DispatchOrder.AfterSave;
+    public DispatchOrder DispatchOrder { get; init; } = DispatchOrder.AfterSave;
 }

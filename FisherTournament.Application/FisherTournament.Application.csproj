@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FisherTournament.Domain\FisherTournament.Domain.csproj" />
+    <ProjectReference Include="..\FisherTournament.ReadModels\FisherTournament.ReadModels.csproj" />
   </ItemGroup>
 
 </Project>

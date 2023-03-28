@@ -4,6 +4,7 @@ public record struct CompetitionLeaderBoardItem(
     string FisherId,
     string FirstName,
     string LastName,
+    int Position,
     int TotalScore
 );
 

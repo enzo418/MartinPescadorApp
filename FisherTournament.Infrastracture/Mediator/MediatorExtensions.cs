@@ -1,5 +1,5 @@
 using FisherTournament.Domain;
-using FisherTournament.Infrastracture.Persistence;
+using FisherTournament.Infrastracture.Persistence.Tournaments;
 using MediatR;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
@@ -16,11 +16,11 @@ public static partial class MediatorExtensions
         var aggregates = ctx.ChangeTracker
             .Entries<IAggregateRoot>()
             .Where(x => x.Entity.DomainEvents != null
-                        && x.Entity.DomainEvents.Any(e => e.SaveState == DispatchOrder.BeforeSave));
+                        && x.Entity.DomainEvents.Any(e => e.DispatchOrder == DispatchOrder.BeforeSave));
 
         var domainEvents = aggregates
             .SelectMany(x => x.Entity.DomainEvents)
-            .Where(x => x.SaveState == DispatchOrder.BeforeSave)
+            .Where(x => x.DispatchOrder == DispatchOrder.BeforeSave)
             .ToList();
 
         await mediator.Dispatch(domainEvents, cancellationToken);
@@ -36,11 +36,11 @@ public static partial class MediatorExtensions
         var aggregates = ctx.ChangeTracker
             .Entries<IAggregateRoot>()
             .Where(x => x.Entity.DomainEvents != null
-                        && x.Entity.DomainEvents.Any(e => e.SaveState == DispatchOrder.AfterSave));
+                        && x.Entity.DomainEvents.Any(e => e.DispatchOrder == DispatchOrder.AfterSave));
 
         var domainEvents = aggregates
             .SelectMany(x => x.Entity.DomainEvents)
-            .Where(x => x.SaveState == DispatchOrder.AfterSave)
+            .Where(x => x.DispatchOrder == DispatchOrder.AfterSave)
             .ToList();
 
         await mediator.Dispatch(domainEvents, cancellationToken);

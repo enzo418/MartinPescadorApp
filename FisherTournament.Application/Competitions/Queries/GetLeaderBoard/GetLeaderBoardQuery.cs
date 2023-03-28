@@ -5,13 +5,15 @@ using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using FisherTournament.Domain.Common.Errors;
+using FisherTournament.ReadModels.Models;
+using FisherTournament.ReadModels.Persistence;
 
 namespace FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
 
 public record struct GetLeaderBoardQuery(string CompetitionId)
      : IRequest<ErrorOr<IEnumerable<LeaderBoardCategory>>>;
 
-public record struct LeaderBoardItem(FisherId FisherId, string FirstName, string LastName, int TotalScore);
+public record struct LeaderBoardItem(FisherId FisherId, string FirstName, string LastName, int Position, int TotalScore);
 
 public record struct LeaderBoardCategory(string Name, string Id, IEnumerable<LeaderBoardItem> LeaderBoard);
 
@@ -19,10 +21,12 @@ public class GetLeaderBoardQueryHandler
  : IRequestHandler<GetLeaderBoardQuery, ErrorOr<IEnumerable<LeaderBoardCategory>>>
 {
     private readonly ITournamentFisherDbContext _context;
+    private readonly ILeaderBoardRepository _leaderBoardRepository;
 
-    public GetLeaderBoardQueryHandler(ITournamentFisherDbContext context)
+    public GetLeaderBoardQueryHandler(ITournamentFisherDbContext context, ILeaderBoardRepository leaderBoardRepository)
     {
         _context = context;
+        _leaderBoardRepository = leaderBoardRepository;
     }
 
     public async Task<ErrorOr<IEnumerable<LeaderBoardCategory>>> Handle(
@@ -36,48 +40,37 @@ public class GetLeaderBoardQueryHandler
             return Errors.Id.NotValidWithProperty(nameof(request.CompetitionId));
         }
 
-        // Select CompetitionParticipations join with Fisher to get their names
-        // and then group by FisherId and sum the scores.
-        var query = from comp in _context.Competitions
-
-                    where comp.Id == competitionId.Value
-
-                    from participation in comp.Participations
-                    from tn in _context.Tournaments
-                    from category in tn.Categories
-                    from inscription in tn.Inscriptions
-
-                    where inscription.FisherId == participation.FisherId
-                    where inscription.CategoryId == category.Id
-                    where tn.Id == comp.TournamentId
-
-                    join fisher in _context.Fishers on participation.FisherId equals fisher.Id
-                    join user in _context.Users on fisher.UserId equals user.Id
-                    orderby category.Name, participation.TotalScore descending
-                    select new
-                    {
-                        CategoryName = category.Name,
-                        CategoryId = category.Id,
-                        FisherId = fisher.Id,
-                        user.FirstName,
-                        user.LastName,
-                        participation.TotalScore
-                    };
-
-        var result = await query.ToListAsync(cancellationToken);
-
-        var categories = result
-            .GroupBy(r => r.CategoryName)
+        IEnumerable<LeaderboardCompetitionCategoryItem> leaderBoard =
+            _leaderBoardRepository.GetCompetitionLeaderBoard(competitionId.Value);
+        
+        // OPTIMIZE: Cache fisher names instead of a join? 
+        var fishersNames = await _context.Fishers
+            .Where(f => leaderBoard.Select(l => l.FisherId).Contains(f.Id))
+            .Join(_context.Users, f => f.UserId, u => u.Id, (f, u) => new { f.Id, u.FirstName, u.LastName })
+            .Select(f => new { f.Id, f.FirstName, f.LastName })
+            .ToListAsync(cancellationToken);
+        
+        // FIXME: we need the categories names!!! category.key is using the id
+        
+        var categories = leaderBoard
+            .GroupBy(r => r.CategoryId)
             .Select(category => new LeaderBoardCategory(
-                category.Key,
-                category.First().CategoryId,
-                category.Select(r => new LeaderBoardItem(
-                    r.FisherId,
-                    r.FirstName,
-                    r.LastName,
-                    r.TotalScore
-                ))
-            ));
+                    category.Key,
+                    category.First().CategoryId,
+                    category.Select(r =>
+                    {
+                        var fisher = fishersNames.FirstOrDefault(f => f.Id == r.FisherId);
+                        
+                        return new LeaderBoardItem(
+                            r.FisherId,
+                            fisher?.FirstName ?? string.Empty,
+                            fisher?.LastName ?? string.Empty,
+                            r.Position,
+                            r.Score
+                        );
+                    })
+                )
+            );
 
         return new List<LeaderBoardCategory>(categories);
     }

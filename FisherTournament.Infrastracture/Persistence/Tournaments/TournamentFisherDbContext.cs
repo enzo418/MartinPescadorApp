@@ -1,14 +1,14 @@
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.CompetitionAggregate;
-using FisherTournament.Domain.CompetitionAggregate.Entities;
 using FisherTournament.Domain.FisherAggregate;
 using FisherTournament.Domain.TournamentAggregate;
 using FisherTournament.Domain.UserAggregate;
 using FisherTournament.Infrastracture.Mediator;
+using FisherTournament.Infrastracture.Persistence.Tournaments.Configurations;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace FisherTournament.Infrastracture.Persistence;
+namespace FisherTournament.Infrastracture.Persistence.Tournaments;
 
 public class TournamentFisherDbContext : DbContext, ITournamentFisherDbContext
 {
@@ -39,7 +39,13 @@ public class TournamentFisherDbContext : DbContext, ITournamentFisherDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(TournamentFisherDbContext).Assembly);
+        //modelBuilder.ApplyConfigurationsFromAssembly(typeof(TournamentFisherDbContext).Assembly);
+        
+        new UserConfiguration().Configure(modelBuilder.Entity<User>());
+        new FisherConfiguration().Configure(modelBuilder.Entity<Fisher>());
+        new CompetitionConfiguration().Configure(modelBuilder.Entity<Competition>());
+        new TournamentConfigurations().Configure(modelBuilder.Entity<Tournament>());
+        
         base.OnModelCreating(modelBuilder);
     }
 

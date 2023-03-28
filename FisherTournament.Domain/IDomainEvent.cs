@@ -11,5 +11,5 @@ public enum DispatchOrder
 
 public interface IDomainEvent : INotification
 {
-    DispatchOrder SaveState { get; init; }
+    DispatchOrder DispatchOrder { get; init; }
 }

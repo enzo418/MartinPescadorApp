@@ -1,8 +1,9 @@
 using FisherTournament.Domain.UserAggregate;
+using FisherTournament.Infrastracture.Persistence.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace FisherTournament.Infrastracture.Persistence.Configurations;
+namespace FisherTournament.Infrastracture.Persistence.Tournaments.Configurations;
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {

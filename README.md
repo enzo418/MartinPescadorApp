@@ -216,3 +216,5 @@
         │       └── CreateTournamentCommandValidatorTest.cs
         └── Usings.cs
 ```
+
+> **NOTE:** I know, there is a typo in infrastructure.

@@ -7,3 +7,6 @@
 *.db*
 
 **/private
+
+# hidden folders
+.*
