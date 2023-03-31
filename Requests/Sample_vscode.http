@@ -1,0 +1,173 @@
+# @name createTournament
+POST {{host}}/tournaments
+Content-Type: application/json
+
+{
+  "name": "asd",
+  "startDate": "{{$datetime iso8601 2 s}}",
+  "endDate": "2024-02-01T00:00:00Z"
+}
+
+###
+
+@tournamentId = {{createTournament.response.body.$.id}}
+
+# @name createCategory1
+POST {{host}}/tournaments/{{tournamentId}}/categories
+Content-Type: application/json
+
+{
+  "Name": "Primary"
+}
+
+###
+
+@category1ID = {{createCategory1.response.body.$.id}}
+
+# @name addCompetitions1
+POST {{host}}/tournaments/{{tournamentId}}/competitions
+Content-Type: application/json
+
+{
+  "Competitions": [
+    {
+      "startDateTime": "{{$datetime iso8601 2 s}}",
+      "location": {
+        "Country": "USA",
+        "State": "California",
+        "City": "Los Angeles",
+        "Place": "LA Coliseum"
+      }
+    }
+  ]
+}
+
+###
+@competition1ID = {{addCompetitions1.response.body.$.competitions[0].id}}
+
+# @name createFisher1
+POST {{host}}/fishers
+Content-Type: application/json
+
+{
+  "FirstName": "Pepe",
+  "LastName": "Perez"
+}
+
+###
+@fisher1ID = {{createFisher1.response.body.$.id}}
+
+# @name createFisher2
+POST {{host}}/fishers
+Content-Type: application/json
+
+{
+  "FirstName": "Juan",
+  "LastName": "Te"
+}
+
+###
+@fisher2ID = {{createFisher2.response.body.$.id}}
+
+### Add Inscription to fisher 1
+POST {{host}}/tournaments/{{tournamentId}}/inscriptions
+Content-Type: application/json
+
+{
+  "fisherId": "{{fisher1ID}}",
+  "categoryId": "{{category1ID}}"
+}
+
+### Get competition leaderboard
+GET {{host}}/tournaments/{{tournamentId}}/competitions/{{competition1ID}}/leaderboard
+
+### Add score to fisher 1
+POST {{host}}/tournaments/{{tournamentId}}/competitions/{{competition1ID}}/scores
+Content-Type: application/json
+
+{
+  "FisherId": "{{fisher1ID}}",
+  "Score": 22
+}
+
+### Get competition leaderboard
+GET {{host}}/tournaments/{{tournamentId}}/competitions/{{competition1ID}}/leaderboard
+
+### Add inscription to fisher 2
+POST {{host}}/tournaments/{{tournamentId}}/inscriptions
+Content-Type: application/json
+
+{
+  "fisherId": "{{fisher2ID}}",
+  "categoryId": "{{category1ID}}"
+}
+
+### Get competition leaderboard
+GET {{host}}/tournaments/{{tournamentId}}/competitions/{{competition1ID}}/leaderboard
+
+
+### Get Tournament leaderboard
+GET {{host}}/tournaments/{{tournamentId}}/leaderboard
+
+### Add participation to fisher 2
+POST {{host}}/tournaments/{{tournamentId}}/competitions/{{competition1ID}}/participations
+Content-Type: application/json
+
+{
+  "FisherId": "{{fisher2ID}}"
+}
+
+### Get competition leaderboard
+GET {{host}}/tournaments/{{tournamentId}}/competitions/{{competition1ID}}/leaderboard
+
+### Add score to fisher 2
+POST {{host}}/tournaments/{{tournamentId}}/competitions/{{competition1ID}}/scores
+Content-Type: application/json
+
+{
+  "FisherId": "{{fisher2ID}}",
+  "Score": 30
+}
+
+### Get competition leaderboard
+GET {{host}}/tournaments/{{tournamentId}}/competitions/{{competition1ID}}/leaderboard
+
+### Add fisher 3
+# @name createFisher3
+POST {{host}}/fishers
+Content-Type: application/json
+
+{
+  "FirstName": "Omar",
+  "LastName": "Red"
+}
+
+###
+@fisher3ID = {{createFisher3.response.body.$.id}}
+
+### Add category 2
+# @name createCategory2
+POST {{host}}/tournaments/{{tournamentId}}/categories
+Content-Type: application/json
+
+{
+  "Name": "Secondary"
+}
+
+###
+@category2ID = {{createCategory2.response.body.$.id}}
+
+### Get competition leaderboard
+GET {{host}}/tournaments/{{tournamentId}}/competitions/{{competition1ID}}/leaderboard
+
+### Add inscription to fisher 3
+POST {{host}}/tournaments/{{tournamentId}}/inscriptions
+Content-Type: application/json
+
+{
+  "fisherId": "{{fisher3ID}}",
+  "categoryId": "{{category2ID}}"
+}
+
+### Get competition leaderboard
+GET {{host}}/tournaments/{{tournamentId}}/competitions/{{competition1ID}}/leaderboard
