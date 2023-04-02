@@ -12,7 +12,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSettings(builder.Configuration)
                 .AddApplication()
                 .AddInfrastracture()
-                .AddApi();
+                .AddApi(builder.Configuration);
 
 var app = builder.Build();
 
@@ -23,6 +23,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors();
+
+app.UseMetricsAllMiddleware();
 
 // on exception use ProblemDetails with 500 status code
 app.UseExceptionHandler(exceptionHandlerApp
@@ -42,5 +46,8 @@ app.UseStatusCodePages(async statusCodeContext
 // app.MapControllers();
 
 app.MapEndpoints();
+
+app.UseMetricsAllEndpoints();
+
 
 app.Run();

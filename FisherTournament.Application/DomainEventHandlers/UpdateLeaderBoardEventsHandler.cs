@@ -1,3 +1,4 @@
+using App.Metrics;
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.CompetitionAggregate.DomainEvents;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
@@ -8,6 +9,7 @@ using FisherTournament.ReadModels.Models;
 using FisherTournament.ReadModels.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using FisherTournament.Application.Common.Metrics;
 
 namespace FisherTournament.Application.DomainEventHandlers;
 
@@ -25,10 +27,15 @@ public class UpdateLeaderBoardEventsHandler
     private readonly ITournamentFisherDbContext _context;
     private readonly IReadModelsUnitOfWork _readModelsUnitOfWork;
 
-    public UpdateLeaderBoardEventsHandler(ITournamentFisherDbContext context, IReadModelsUnitOfWork readModelsUnitOfWork)
+    private readonly IMetrics _metrics;
+
+    public UpdateLeaderBoardEventsHandler(ITournamentFisherDbContext context,
+                                          IReadModelsUnitOfWork readModelsUnitOfWork,
+                                          IMetrics metrics)
     {
         _context = context;
         _readModelsUnitOfWork = readModelsUnitOfWork;
+        _metrics = metrics;
     }
 
     public async Task Handle(ScoreAddedDomainEvent notification,
@@ -46,13 +53,13 @@ public class UpdateLeaderBoardEventsHandler
                                 notification.FisherId,
                                 cancellationToken);
     }
-    
+
     public async Task Handle(InscriptionAddedDomainEvent notification, CancellationToken cancellationToken)
     {
         // this will be an expensive operation, might be opt-in
         await UpdateLeaderBoard(notification.TournamentId, notification.CategoryId, cancellationToken);
     }
-    
+
     private async Task UpdateLeaderBoard(TournamentId tournamentId,
                                             CategoryId categoryId,
                                             CancellationToken cancellationToken)
@@ -62,11 +69,11 @@ public class UpdateLeaderBoardEventsHandler
             .Select(x => x.Id)
             .ToListAsync(cancellationToken);
 
-        foreach (var competitionId in competitionsIds)   
+        foreach (var competitionId in competitionsIds)
         {
             await UpdateCompetitionLeaderBoard(competitionId, categoryId);
         }
-        
+
         await UpdateTournamentLeaderBoard(tournamentId, categoryId);
     }
 
@@ -74,6 +81,8 @@ public class UpdateLeaderBoardEventsHandler
                                         FisherId fisherId,
                                         CancellationToken cancellationToken)
     {
+        _metrics.Measure.Counter.Increment(ApplicationMetrics.LeadeboardMetrics.LeaderboardUpdateCounter);
+
         var tournamentId = await _context.Competitions
             .Where(x => x.Id == competitionId)
             .Select(x => x.TournamentId)
@@ -95,9 +104,16 @@ public class UpdateLeaderBoardEventsHandler
         {
             return;
         }
-        
-        await UpdateCompetitionLeaderBoard(competitionId, categoryId);
-        await UpdateTournamentLeaderBoard(tournamentId, categoryId);
+
+        using (_metrics.Measure.Timer.Time(ApplicationMetrics.LeadeboardMetrics.CompetitionLeadeboardUpdateTimer))
+        {
+            await UpdateCompetitionLeaderBoard(competitionId, categoryId);
+        }
+
+        using (_metrics.Measure.Timer.Time(ApplicationMetrics.LeadeboardMetrics.TournamentLeadeboardUpdateTimer))
+        {
+            await UpdateTournamentLeaderBoard(tournamentId, categoryId);
+        }
     }
 
     private async Task UpdateCompetitionLeaderBoard(CompetitionId competitionId, CategoryId categoryId)
@@ -217,7 +233,7 @@ public class UpdateLeaderBoardEventsHandler
 
         _readModelsUnitOfWork.Commit();
     }
-    
+
     private static void UpdateFisherPositionOnCompetition(CompetitionId competitionId,
                                                    CategoryId categoryId,
                                                    ILeaderBoardRepository leaderBoardRepository,

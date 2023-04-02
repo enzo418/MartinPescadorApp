@@ -87,7 +87,7 @@ Content-Type: application/json
 
 {
   "FisherId": "{{fisher1ID}}",
-  "Score": 22
+  "Score": 1
 }
 
 ### Get competition leaderboard
