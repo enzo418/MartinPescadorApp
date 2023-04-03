@@ -17,13 +17,13 @@ public record struct LeaderBoardItem(FisherId FisherId, string FirstName, string
 
 public record struct LeaderBoardCategory(string Name, string Id, IEnumerable<LeaderBoardItem> LeaderBoard);
 
-public class GetLeaderBoardQueryHandler
+public class GetCompetitionLeaderBoardQueryHandler
  : IRequestHandler<GetLeaderBoardQuery, ErrorOr<IEnumerable<LeaderBoardCategory>>>
 {
     private readonly ITournamentFisherDbContext _context;
     private readonly ILeaderBoardRepository _leaderBoardRepository;
 
-    public GetLeaderBoardQueryHandler(ITournamentFisherDbContext context, ILeaderBoardRepository leaderBoardRepository)
+    public GetCompetitionLeaderBoardQueryHandler(ITournamentFisherDbContext context, ILeaderBoardRepository leaderBoardRepository)
     {
         _context = context;
         _leaderBoardRepository = leaderBoardRepository;
@@ -40,18 +40,17 @@ public class GetLeaderBoardQueryHandler
             return Errors.Id.NotValidWithProperty(nameof(request.CompetitionId));
         }
 
-        IEnumerable<LeaderboardCompetitionCategoryItem> leaderBoard =
-            _leaderBoardRepository.GetCompetitionLeaderBoard(competitionId.Value);
-        
+        IEnumerable<LeaderboardCompetitionCategoryItem> leaderBoard = _leaderBoardRepository.GetCompetitionLeaderBoard(competitionId.Value);
+
         // OPTIMIZE: Cache fisher names instead of a join? 
         var fishersNames = await _context.Fishers
             .Where(f => leaderBoard.Select(l => l.FisherId).Contains(f.Id))
             .Join(_context.Users, f => f.UserId, u => u.Id, (f, u) => new { f.Id, u.FirstName, u.LastName })
             .Select(f => new { f.Id, f.FirstName, f.LastName })
             .ToListAsync(cancellationToken);
-        
+
         // FIXME: we need the categories names!!! category.key is using the id
-        
+
         var categories = leaderBoard
             .GroupBy(r => r.CategoryId)
             .Select(category => new LeaderBoardCategory(
@@ -60,7 +59,7 @@ public class GetLeaderBoardQueryHandler
                     category.Select(r =>
                     {
                         var fisher = fishersNames.FirstOrDefault(f => f.Id == r.FisherId);
-                        
+
                         return new LeaderBoardItem(
                             r.FisherId,
                             fisher?.FirstName ?? string.Empty,
