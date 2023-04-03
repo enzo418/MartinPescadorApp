@@ -8,21 +8,21 @@ using MinimalApi.Endpoint;
 
 namespace FisherTournament.API.Endpoints.Competitions;
 
-public class AddParticipationEndpoint : IEndpoint<IResult, AddParticipationRequest, string>
+public class AddParticipationEndpoint : IEndpoint<IResult, AddParticipationRequest, string, ISender>
 {
-    private readonly ISender _sender;
     private readonly IMapper _mapper;
 
-    public AddParticipationEndpoint(ISender sender, IMapper mapper)
+    public AddParticipationEndpoint(IMapper mapper)
     {
-        _sender = sender;
         _mapper = mapper;
     }
 
     public void AddRoute(IEndpointRouteBuilder app)
     {
         app.MapPost("/tournaments/{tournamentId}/competitions/{competitionId}/participations",
-            async (AddParticipationRequest cmd, string competitionId) => await HandleAsync(cmd, competitionId))
+            async (AddParticipationRequest cmd,
+                   string competitionId,
+                   ISender sender) => await HandleAsync(cmd, competitionId, sender))
             .Produces(StatusCodes.Status200OK)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status409Conflict)
@@ -35,10 +35,12 @@ public class AddParticipationEndpoint : IEndpoint<IResult, AddParticipationReque
             });
     }
 
-    public async Task<IResult> HandleAsync(AddParticipationRequest request, string competitionId)
+    public async Task<IResult> HandleAsync(AddParticipationRequest request,
+                                           string competitionId,
+                                           ISender sender)
     {
         var command = _mapper.Map<AddParticipationCommand>((request, competitionId));
-        var response = await _sender.Send(command);
+        var response = await sender.Send(command);
         return response.Match(
             value => Results.Ok(),
             errors => Results.Extensions.Problem(errors)

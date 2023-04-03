@@ -11,21 +11,21 @@ using MinimalApi.Endpoint;
 
 namespace FisherTournament.API.Endpoints.Categories
 {
-    public class AddCategoryEndpoint : IEndpoint<IResult, AddCategoryRequest, string>
+    public class AddCategoryEndpoint : IEndpoint<IResult, AddCategoryRequest, string, ISender>
     {
-        private readonly ISender _sender;
         private readonly IMapper _mapper;
 
-        public AddCategoryEndpoint(ISender sender, IMapper mapper)
+        public AddCategoryEndpoint(IMapper mapper)
         {
-            _sender = sender;
             _mapper = mapper;
         }
 
         public void AddRoute(IEndpointRouteBuilder app)
         {
             app.MapPost("/tournaments/{tournamentId}/categories",
-            async (AddCategoryRequest cmd, string tournamentId) => await HandleAsync(cmd, tournamentId))
+            async (AddCategoryRequest cmd,
+                   string tournamentId,
+                   ISender sender) => await HandleAsync(cmd, tournamentId, sender))
                 .WithTags("CategoriesEndpoints")
                 .WithOpenApi(cfg => new(cfg)
                 {
@@ -37,10 +37,12 @@ namespace FisherTournament.API.Endpoints.Categories
                 .ProducesProblem(StatusCodes.Status409Conflict);
         }
 
-        public async Task<IResult> HandleAsync(AddCategoryRequest request, string tournamentId)
+        public async Task<IResult> HandleAsync(AddCategoryRequest request,
+                                               string tournamentId,
+                                               ISender sender)
         {
             var command = _mapper.Map<AddCategoryCommand>((request, tournamentId));
-            var result = await _sender.Send(command);
+            var result = await sender.Send(command);
             return result.Match(
                 value => Results.Ok(_mapper.Map<AddCategoryResponse>(value)),
                 errors => Results.Extensions.Problem(errors)

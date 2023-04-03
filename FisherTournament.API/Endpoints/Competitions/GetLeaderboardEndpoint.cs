@@ -9,21 +9,19 @@ namespace FisherTournament.API.Endpoints.Competitions;
 
 using GetLeaderboardResponse = IEnumerable<CompetitionCategoryLeaderBoard>;
 
-public class GetLeaderboardEndpoint : IEndpoint<IResult, string>
+public class GetLeaderboardEndpoint : IEndpoint<IResult, string, ISender>
 {
-    private readonly ISender _sender;
     private readonly IMapper _mapper;
 
-    public GetLeaderboardEndpoint(ISender sender, IMapper mapper)
+    public GetLeaderboardEndpoint(IMapper mapper)
     {
-        _sender = sender;
         _mapper = mapper;
     }
 
     public void AddRoute(IEndpointRouteBuilder app)
     {
         app.MapGet("/tournaments/{tournamentId}/competitions/{competitionId}/leaderboard",
-            async (string competitionId) => await HandleAsync(competitionId))
+            async (string competitionId, ISender sender) => await HandleAsync(competitionId, sender))
             .Produces<GetLeaderboardResponse>()
             .ProducesValidationProblem()
             .WithTags("CompetitionEndpoints")
@@ -35,7 +33,7 @@ public class GetLeaderboardEndpoint : IEndpoint<IResult, string>
             });
     }
 
-    public async Task<IResult> HandleAsync(string competitionId)
+    public async Task<IResult> HandleAsync(string competitionId, ISender _sender)
     {
         var response = await _sender.Send(new GetLeaderBoardQuery(competitionId));
         return response.Match(

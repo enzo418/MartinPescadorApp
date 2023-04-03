@@ -7,20 +7,19 @@ using MinimalApi.Endpoint;
 
 namespace FisherTournament.API.Endpoints.Tournaments;
 
-public class CreateTournamentEndpoint : IEndpoint<IResult, CreateTournamentRequest>
+public class CreateTournamentEndpoint : IEndpoint<IResult, CreateTournamentRequest, ISender>
 {
-    private readonly ISender _sender;
     private readonly IMapper _mapper;
 
-    public CreateTournamentEndpoint(ISender sender, IMapper mapper)
+    public CreateTournamentEndpoint(IMapper mapper)
     {
-        _sender = sender;
         _mapper = mapper;
     }
 
     public void AddRoute(IEndpointRouteBuilder app)
     {
-        app.MapPost("/tournaments", async (CreateTournamentRequest cmd) => await HandleAsync(cmd))
+        app.MapPost("/tournaments", async (CreateTournamentRequest cmd,
+                                           ISender sender) => await HandleAsync(cmd, sender))
             .WithTags("TournamentEndpoints")
             .ProducesValidationProblem()
             .Produces<CreateTournamentResponse>()
@@ -32,10 +31,10 @@ public class CreateTournamentEndpoint : IEndpoint<IResult, CreateTournamentReque
             .WithName("CreateTournament");
     }
 
-    public async Task<IResult> HandleAsync(CreateTournamentRequest request)
+    public async Task<IResult> HandleAsync(CreateTournamentRequest request, ISender sender)
     {
         var command = _mapper.Map<CreateTournamentCommand>(request);
-        var response = await _sender.Send(command);
+        var response = await sender.Send(command);
         return response.Match(
             success => Results.Ok(_mapper.Map<CreateTournamentResponse>(success)),
             errors => Results.Extensions.Problem(errors));

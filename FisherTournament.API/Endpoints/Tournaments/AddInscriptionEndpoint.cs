@@ -8,21 +8,21 @@ using MinimalApi.Endpoint;
 
 namespace FisherTournament.API.Endpoints.Tournaments;
 
-public class AddInscriptionEndpoint : IEndpoint<IResult, AddInscriptionRequest, string>
+public class AddInscriptionEndpoint : IEndpoint<IResult, AddInscriptionRequest, string, ISender>
 {
-    private readonly ISender _sender;
     private readonly IMapper _mapper;
 
-    public AddInscriptionEndpoint(ISender sender, IMapper mapper)
+    public AddInscriptionEndpoint(IMapper mapper)
     {
-        _sender = sender;
         _mapper = mapper;
     }
 
     public void AddRoute(IEndpointRouteBuilder app)
     {
         app.MapPost("/tournaments/{tournamentId}/inscriptions",
-            async (AddInscriptionRequest cmd, string tournamentId) => await HandleAsync(cmd, tournamentId))
+            async (AddInscriptionRequest cmd,
+                   string tournamentId,
+                   ISender sender) => await HandleAsync(cmd, tournamentId, sender))
         .WithTags("TournamentEndpoints")
         .WithOpenApi(cfg => new(cfg)
         {
@@ -35,10 +35,12 @@ public class AddInscriptionEndpoint : IEndpoint<IResult, AddInscriptionRequest, 
         .ProducesProblem(StatusCodes.Status409Conflict);
     }
 
-    public async Task<IResult> HandleAsync(AddInscriptionRequest request, string tournamentId)
+    public async Task<IResult> HandleAsync(AddInscriptionRequest request,
+                                           string tournamentId,
+                                           ISender sender)
     {
         var command = _mapper.Map<AddInscriptionCommand>((request, tournamentId));
-        var response = await _sender.Send(command);
+        var response = await sender.Send(command);
         return response.Match(
             _ => Results.Ok(),
             errors => Results.Extensions.Problem(errors)

@@ -7,21 +7,21 @@ using MinimalApi.Endpoint;
 
 namespace FisherTournament.API.Endpoints.Competitions;
 
-public class AddCompetitionsEndpoint : IEndpoint<IResult, AddCompetitionsRequest, string>
+public class AddCompetitionsEndpoint : IEndpoint<IResult, AddCompetitionsRequest, string, ISender>
 {
-    private readonly ISender _sender;
     private readonly IMapper _mapper;
 
-    public AddCompetitionsEndpoint(ISender sender, IMapper mapper)
+    public AddCompetitionsEndpoint(IMapper mapper)
     {
-        _sender = sender;
         _mapper = mapper;
     }
 
     public void AddRoute(IEndpointRouteBuilder app)
     {
         app.MapPost("/tournaments/{tournamentId}/competitions",
-            async (AddCompetitionsRequest cmd, string tournamentId) => await HandleAsync(cmd, tournamentId))
+            async (AddCompetitionsRequest cmd,
+                   string tournamentId,
+                   ISender sender) => await HandleAsync(cmd, tournamentId, sender))
             .Produces<AddCompetitionsResponse>()
             .ProducesValidationProblem()
             .WithTags("CompetitionEndpoints")
@@ -33,10 +33,10 @@ public class AddCompetitionsEndpoint : IEndpoint<IResult, AddCompetitionsRequest
             });
     }
 
-    public async Task<IResult> HandleAsync(AddCompetitionsRequest request, string tournamentId)
+    public async Task<IResult> HandleAsync(AddCompetitionsRequest request, string tournamentId, ISender sender)
     {
         var command = _mapper.Map<AddCompetitionsCommand>((request, tournamentId));
-        var response = await _sender.Send(command);
+        var response = await sender.Send(command);
         return response.Match(
             value => Results.Ok(_mapper.Map<AddCompetitionsResponse>(value)),
             errors => Results.Extensions.Problem(errors)
