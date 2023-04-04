@@ -1,5 +1,6 @@
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.Common.Provider;
+using FisherTournament.Infrastracture.Persistence.Common.Interceptors;
 using FisherTournament.Infrastracture.Persistence.ReadModels.EntityFramework;
 using FisherTournament.Infrastracture.Persistence.ReadModels.EntityFramework.Repositories;
 using FisherTournament.Infrastracture.Persistence.Tournaments;
@@ -24,6 +25,8 @@ public static partial class DependencyInjection
             options.UseSqlite(dataBaseConnectionSettings.TournamentDbConnectionString);
             // options.LogTo(System.Console.WriteLine);
             // options.EnableSensitiveDataLogging();
+
+            options.AddInterceptors(new RelaxSqliteDbConnectionInterceptor());
         });
 
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
@@ -39,6 +42,8 @@ public static partial class DependencyInjection
         {
             var dataBaseConnectionSettings = provider.GetRequiredService<DataBaseConnectionSettings>();
             builder.UseSqlite(dataBaseConnectionSettings.ReadModelsDbConnectionString);
+
+            builder.AddInterceptors(new RelaxSqliteDbConnectionInterceptor());
         });
 
         services.AddScoped<IReadModelsUnitOfWork, ReadModelsUnitOfWork>();
