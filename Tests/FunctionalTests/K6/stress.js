@@ -1,5 +1,5 @@
 import http from "k6/http";
-import { sleep, randomString } from "k6";
+import { check, fail, sleep, randomString } from "k6";
 
 export const options = {
   scenarios: {
@@ -25,8 +25,26 @@ export const options = {
 };
 
 export default function () {
+
   const BASE_URL = "http://localhost:5244"; // make sure this is not production
   const tournamentId = "B84D7572-D177-40AD-843D-1CF8EF662B51";
+  const competitionIDs = [
+    "49BE8785-675A-4368-BC3C-5BF6E97C26BD",
+    "64B2EF5A-0B1B-4386-A722-C93C16B93F8B",
+    "0CBDB8F2-38BE-4D6F-8E95-DAEA2D037528",
+    "54A0C8B7-641B-4195-AB1C-8EC7659DAE85",
+    "6E40B551-AF66-4777-9114-C9244C97CF48",
+    "9475B34F-7C56-4B61-993A-68B685457B7C",
+    "99445B43-D408-48A8-B943-9D5E12678439"
+  ]
+
+  const fishersIds = [
+    "7448D5D7-BDFE-48F8-A550-F7BA7C8F6CEC",
+    "314559DF-142F-415C-B70D-162F9B2C8E90",
+    "D5E5BDDB-F5AB-446B-A25E-B2789352570F",
+    "A12807D4-584B-4430-A958-D0857C7EE306",
+    "9FD8C5A9-6900-4CE2-974F-90AEBFE68221"
+  ]
 
   const headers = {
     params: {
@@ -34,9 +52,25 @@ export default function () {
     },
   }
 
-  const responses = http.batch([
-    // ["GET", `${BASE_URL}/tournaments/${tournamentId}/competitions/49BE8785-675A-4368-BC3C-5BF6E97C26BD/leaderboard`],
+  const maxCompId = competitionIDs.length - 1;
+
+  const requests = {
+    'add score': {
+      method: "POST",
+      url: `${BASE_URL}/tournaments/${tournamentId}/competitions/${competitionIDs[randomIntFromInterval(0, maxCompId)]}/scores`,
+      body: JSON.stringify({ "FisherId": fishersIds[randomIntFromInterval(0, fishersIds.length - 1)], "Score": 2 }),
+      params: {
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      }
+    },
+
+    'get competition leaderboard': {
+      method: "GET",
+      url: `${BASE_URL}/tournaments/${tournamentId}/competitions/${competitionIDs[randomIntFromInterval(0, maxCompId)]}/leaderboard`,
+    }
+
     // ["GET", `${BASE_URL}/tournaments/${tournamentId}/leaderboard`],
+
     // {
     //   method: "POST",
     //   url: `${BASE_URL}/tournaments/${tournamentId}/categories`,
@@ -45,15 +79,24 @@ export default function () {
     //     headers: { 'Content-Type': 'application/json; charset=utf-8' },
     //   }
     // },
-    {
-      method: "POST",
-      url: `${BASE_URL}/fishers`,
-      body: JSON.stringify({ "FirstName": "stretest", "LastName": "test" }),
-      params: {
-        headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      }
-    },
-  ]);
 
-  // console.log(responses);
+    // 'add fisher': {
+    //   method: "POST",
+    //   url: `${BASE_URL}/fishers`,
+    //   body: JSON.stringify({ "FirstName": "stress test", "LastName": "test" }),
+    //   params: {
+    //     headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    //   }
+    // },
+  }
+
+  const responses = http.batch(requests);
+
+  if (!check(responses['add score'], { 'status 200': (r) => r.status === 200 })) {
+    fail('failed to add score');
+  }
+}
+
+function randomIntFromInterval(min, max) { // min and max included 
+  return Math.floor(Math.random() * (max - min + 1) + min)
 }

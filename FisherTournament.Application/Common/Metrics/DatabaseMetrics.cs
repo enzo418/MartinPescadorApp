@@ -7,9 +7,17 @@ namespace FisherTournament.Application.Common.Metrics
     {
         public class DatabaseMetrics
         {
-            public static TimerOptions SaveChangesTimer => new TimerOptions
+            public static TimerOptions SaveChangesTournamentDbTimer => new TimerOptions
             {
-                Name = "Save_Changes_Timer",
+                Name = "Save_Changes_TournamentDb",
+                MeasurementUnit = Unit.Events,
+                DurationUnit = TimeUnit.Milliseconds,
+                RateUnit = TimeUnit.Milliseconds
+            };
+
+            public static TimerOptions SaveChangesReadModelsDbTimer => new TimerOptions
+            {
+                Name = "Save_Changes_ReadModelsDb",
                 MeasurementUnit = Unit.Events,
                 DurationUnit = TimeUnit.Milliseconds,
                 RateUnit = TimeUnit.Milliseconds

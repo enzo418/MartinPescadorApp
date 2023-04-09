@@ -56,6 +56,8 @@ public class TournamentFisherDbContext : DbContext, ITournamentFisherDbContext
         base.OnModelCreating(modelBuilder);
     }
 
+    // TODO: public override int SaveChanges()
+
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {
         using (var timer = _metrics.Measure.Timer.Time(ApplicationMetrics.DatabaseMetrics.SaveChangesBeforeDispatchEventsTimer))
@@ -64,7 +66,7 @@ public class TournamentFisherDbContext : DbContext, ITournamentFisherDbContext
         }
 
         int changes;
-        using (var timer = _metrics.Measure.Timer.Time(ApplicationMetrics.DatabaseMetrics.SaveChangesTimer))
+        using (var timer = _metrics.Measure.Timer.Time(ApplicationMetrics.DatabaseMetrics.SaveChangesTournamentDbTimer))
         {
             changes = await base.SaveChangesAsync(cancellationToken);
         }

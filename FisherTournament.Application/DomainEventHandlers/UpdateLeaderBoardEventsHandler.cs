@@ -81,7 +81,7 @@ public class UpdateLeaderBoardEventsHandler
                                         FisherId fisherId,
                                         CancellationToken cancellationToken)
     {
-        _metrics.Measure.Counter.Increment(ApplicationMetrics.LeadeboardMetrics.LeaderboardUpdateCounter);
+        using var _ = _metrics.Measure.Timer.Time(ApplicationMetrics.LeaderboardMetrics.LeaderboardUpdate);
 
         var tournamentId = await _context.Competitions
             .Where(x => x.Id == competitionId)
@@ -105,12 +105,12 @@ public class UpdateLeaderBoardEventsHandler
             return;
         }
 
-        using (_metrics.Measure.Timer.Time(ApplicationMetrics.LeadeboardMetrics.CompetitionLeadeboardUpdateTimer))
+        using (_metrics.Measure.Timer.Time(ApplicationMetrics.LeaderboardMetrics.CompetitionLeaderboardUpdate))
         {
             await UpdateCompetitionLeaderBoard(competitionId, categoryId);
         }
 
-        using (_metrics.Measure.Timer.Time(ApplicationMetrics.LeadeboardMetrics.TournamentLeadeboardUpdateTimer))
+        using (_metrics.Measure.Timer.Time(ApplicationMetrics.LeaderboardMetrics.TournamentLeaderboardUpdate))
         {
             await UpdateTournamentLeaderBoard(tournamentId, categoryId);
         }
@@ -228,7 +228,7 @@ public class UpdateLeaderBoardEventsHandler
             }
 
             // TODO: Add proper logging
-            Console.WriteLine($"FisherId: {newPosition.FisherId} - Position: {i + 1}\n\t TotalScore: {newPosition.TotalScore} - PositionsSum: {newPosition.PositionsSum} - AveragePosition: {newPosition.AveragePosition}\n\t PreviousPosition: {existing?.Position} - PreviousTotalScore: {existing?.TotalScore}");
+            // Console.WriteLine($"FisherId: {newPosition.FisherId} - Position: {i + 1}\n\t TotalScore: {newPosition.TotalScore} - PositionsSum: {newPosition.PositionsSum} - AveragePosition: {newPosition.AveragePosition}\n\t PreviousPosition: {existing?.Position} - PreviousTotalScore: {existing?.TotalScore}");
         }
 
         _readModelsUnitOfWork.Commit();
@@ -273,6 +273,6 @@ public class UpdateLeaderBoardEventsHandler
         }
 
         // TODO: log
-        Console.WriteLine($"FisherId: {fisherId}, Score: {newScore}, Position: {newPosition} - PreviousPosition: {previousPosition}, PreviousScore: {previousScore}");
+        // Console.WriteLine($"FisherId: {fisherId}, Score: {newScore}, Position: {newPosition} - PreviousPosition: {previousPosition}, PreviousScore: {previousScore}");
     }
 }

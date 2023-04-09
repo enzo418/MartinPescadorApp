@@ -54,6 +54,7 @@ public class AddScoreCommandHandler : IRequestHandler<AddScoreCommand, ErrorOr<U
         }
 
         Competition? competition = await _context.Competitions
+            .Include(c => c.Participations.Where(p => p.FisherId == fisherId.Value)) // This might not be super DDD friendly but it's super optimized!
             .FirstOrDefaultAsync(c => c.Id == competitionId.Value, cancellationToken);
 
         if (competition is null)

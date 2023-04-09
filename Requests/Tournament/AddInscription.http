@@ -1,9 +1,9 @@
-@tournamentId=5e4d77c8-7f76-49a6-9be1-802ecd5f8651
+@tournamentId=B84D7572-D177-40AD-843D-1CF8EF662B51
 
 POST {{host}}/tournaments/{{tournamentId}}/inscriptions
 Content-Type: application/json
 
 {
-    "fisherId": "058033ce-af73-472e-810f-57816edd8cbd",
-    "categoryId": "1"
+    "fisherId": "9FD8C5A9-6900-4CE2-974F-90AEBFE68221",
+    "categoryId": "5"
 }

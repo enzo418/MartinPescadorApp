@@ -1,12 +1,12 @@
 @host=http://localhost:5244
-@tID=5e4d77c8-7f76-49a6-9be1-802ecd5f8651
-@cID=60AB6993-4EF7-4CFE-AAC7-51593C4A901D
+@tID=B84D7572-D177-40AD-843D-1CF8EF662B51
+@cID=54A0C8B7-641B-4195-AB1C-8EC7659DAE85
 
 POST {{host}}/tournaments/{{tID}}/competitions/{{cID}}/scores
 Content-Type: application/json
 
 {
-    "FisherId": "0c1b3ccc-78e8-41e9-aae0-b6d9d80f76f2",
+    "FisherId": "7448D5D7-BDFE-48F8-A550-F7BA7C8F6CEC",
     "Score": 22
 }
 

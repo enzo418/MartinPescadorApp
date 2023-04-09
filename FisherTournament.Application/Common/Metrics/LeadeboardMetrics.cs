@@ -10,28 +10,30 @@ namespace FisherTournament.Application.Common.Metrics
 {
     public static partial class ApplicationMetrics
     {
-        public class LeadeboardMetrics
+        public class LeaderboardMetrics
         {
-            public static TimerOptions CompetitionLeadeboardUpdateTimer => new TimerOptions
+            public static TimerOptions CompetitionLeaderboardUpdate => new TimerOptions
             {
-                Name = "CompetitionLeaderboardUpdateTimer",
+                Name = "Leaderboard_Competition_Update",
                 MeasurementUnit = Unit.Events,
                 DurationUnit = TimeUnit.Milliseconds,
                 RateUnit = TimeUnit.Milliseconds
             };
 
-            public static TimerOptions TournamentLeadeboardUpdateTimer => new TimerOptions
+            public static TimerOptions TournamentLeaderboardUpdate => new TimerOptions
             {
-                Name = "TournamentLeaderboardUpdateTimer",
+                Name = "Leaderboard_Tournament_Update",
                 MeasurementUnit = Unit.Events,
                 DurationUnit = TimeUnit.Milliseconds,
                 RateUnit = TimeUnit.Milliseconds
             };
 
-            public static CounterOptions LeaderboardUpdateCounter => new CounterOptions
+            public static TimerOptions LeaderboardUpdate => new TimerOptions
             {
-                Name = "LeaderboardUpdateCounter",
-                MeasurementUnit = Unit.Events
+                Name = "Leaderboard_Update",
+                MeasurementUnit = Unit.Events,
+                DurationUnit = TimeUnit.Milliseconds,
+                RateUnit = TimeUnit.Milliseconds
             };
         }
     }

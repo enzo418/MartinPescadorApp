@@ -1,5 +1,5 @@
 @host=http://localhost:5244
-@tID=5e4d77c8-7f76-49a6-9be1-802ecd5f8651
+@tID=B84D7572-D177-40AD-843D-1CF8EF662B51
 
 POST {{host}}/tournaments/{{tID}}/competitions
 Content-Type: application/json
@@ -7,7 +7,7 @@ Content-Type: application/json
 {
     "Competitions": [
         {
-            "startDateTime": "2024-01-01T12:00:00Z",
+            "startDateTime": "{{$datetime iso8601 2 s}}",
             "location": {
                 "Country": "USA",
                 "State": "California",
