@@ -1,0 +1,75 @@
+version: '3.8'
+
+volumes:
+  prometheus_tournament_data: {}
+  grafana_tournament_data: {}
+  tempo_tournament_data: {}
+
+services:
+  grafana:
+    image: grafana/grafana
+    container_name: grafana_tournament
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_tournament_data:/var/lib/grafana/
+    environment:
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus_tournament
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_tournament_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-remote-write-receiver'
+    ports:
+      - 9090:9090
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib
+    container_name: otel-collector_tournament
+    depends_on:
+      - prometheus
+      - tempo
+      - loki
+    ports:
+      - "4317:4317"
+      - "8889:8889"
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    command: --config=/etc/otel-collector-config.yaml
+
+  tempo:
+    image: grafana/tempo
+    container_name: tempo_tournament
+    volumes:
+      - ./tempoconfig.yaml:/etc/tempo.yaml
+      - tempo_tournament_data:/tmp/tempo
+    depends_on:
+      - prometheus
+    ports:
+      - "3200:3200" # tempo
+      - "4319" # otlp grpc
+      - "4318" # otlp http
+    command: [ "-config.file=/etc/tempo.yaml" ]
+
+  loki:
+    image: grafana/loki
+    container_name: loki_tournament
+    ports:
+      - 3100:3100
+    command: -config.file=/etc/loki/local-config.yaml
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:3100/ready
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 10s

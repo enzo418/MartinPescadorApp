@@ -10,6 +10,7 @@ using FisherTournament.ReadModels.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace FisherTournament.Infrastracture;
@@ -26,6 +27,8 @@ public static partial class DependencyInjection
             // options.LogTo(System.Console.WriteLine);
             // options.EnableSensitiveDataLogging();
 
+            options.AddInterceptors(new TraceDbConnectionInterceptor(provider.GetRequiredService<ILogger<TraceDbConnectionInterceptor>>()));
+
             options.AddInterceptors(new RelaxSqliteDbConnectionInterceptor());
         });
 
@@ -38,12 +41,16 @@ public static partial class DependencyInjection
 
     private static void AddReadModels(IServiceCollection services)
     {
+        services.AddSingleton<RelaxSqliteDbConnectionInterceptor>();
+        services.AddSingleton<TraceDbConnectionInterceptor>();
+
         services.AddDbContext<ReadModelsDbContext>((provider, builder) =>
         {
             var dataBaseConnectionSettings = provider.GetRequiredService<DataBaseConnectionSettings>();
             builder.UseSqlite(dataBaseConnectionSettings.ReadModelsDbConnectionString);
 
-            builder.AddInterceptors(new RelaxSqliteDbConnectionInterceptor());
+            builder.AddInterceptors(provider.GetRequiredService<TraceDbConnectionInterceptor>());
+            builder.AddInterceptors(provider.GetRequiredService<RelaxSqliteDbConnectionInterceptor>());
         });
 
         services.AddScoped<IReadModelsUnitOfWork, ReadModelsUnitOfWork>();
@@ -52,13 +59,16 @@ public static partial class DependencyInjection
 
     public static IServiceCollection AddSettings(this IServiceCollection services, IConfiguration configuration)
     {
-        DataBaseConnectionSettings dataBaseConnectionSettings = new();
+        { // DB
+            DataBaseConnectionSettings dataBaseConnectionSettings = new();
 
-        configuration.Bind(
-            nameof(DataBaseConnectionSettings),
-            dataBaseConnectionSettings);
+            configuration.Bind(
+                nameof(DataBaseConnectionSettings),
+                dataBaseConnectionSettings);
 
-        services.AddSingleton(dataBaseConnectionSettings);
+            services.AddSingleton(dataBaseConnectionSettings);
+        }
+
 
         return services;
     }

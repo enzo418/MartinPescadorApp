@@ -1,4 +1,3 @@
-using App.Metrics;
 using FisherTournament.Infrastracture.Persistence.ReadModels.EntityFramework.Configurations;
 using FisherTournament.ReadModels.Models;
 using Microsoft.EntityFrameworkCore;
@@ -13,17 +12,14 @@ public class ReadModelsDbContext : DbContext
     public DbSet<LeaderboardCompetitionCategoryItem> LeaderboardCompetitionCategoryItems { get; set; } = null!;
     public DbSet<LeaderboardTournamentCategoryItem> LeaderboardTournamentCategoryItems { get; set; } = null!;
 
-    private readonly IMetrics _metrics = null!;
 
-    public ReadModelsDbContext(DbContextOptions<ReadModelsDbContext> options, IMetrics metrics)
+    public ReadModelsDbContext(DbContextOptions<ReadModelsDbContext> options)
         : base(options)
     {
-        _metrics = metrics;
     }
 
-    public ReadModelsDbContext(IMetrics metrics)
+    public ReadModelsDbContext()
     {
-        _metrics = metrics;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -36,20 +32,29 @@ public class ReadModelsDbContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
-    public override int SaveChanges()
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {
-        using var _ = _metrics.Measure.Timer.Time(ApplicationMetrics.DatabaseMetrics.SaveChangesReadModelsDbTimer);
+        Tag DbContextTag = new("DbContext", GetType().Name); // Create base DbContext?
 
-        int res = base.SaveChanges();
+        int changes;
+        using (var _ = ApplicationMetrics.DatabaseMetrics.SaveChangesHistogram.Time(new Tag("order", "base"), DbContextTag))
+        {
+            changes = await base.SaveChangesAsync(cancellationToken);
+        }
 
-        return res;
+        return changes;
     }
 
-    public async override Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+    public override int SaveChanges()
     {
-        using var _ = _metrics.Measure.Timer.Time(ApplicationMetrics.DatabaseMetrics.SaveChangesReadModelsDbTimer);
-        int res = await base.SaveChangesAsync(cancellationToken);
+        Tag DbContextTag = new("DbContext", GetType().Name); // Create base DbContext?
 
-        return res;
+        int changes;
+        using (var _ = ApplicationMetrics.DatabaseMetrics.SaveChangesHistogram.Time(new Tag("order", "base"), DbContextTag))
+        {
+            changes = base.SaveChanges();
+        }
+
+        return changes;
     }
 }

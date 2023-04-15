@@ -1,4 +1,3 @@
-using App.Metrics;
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.CompetitionAggregate.DomainEvents;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
@@ -10,6 +9,8 @@ using FisherTournament.ReadModels.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using FisherTournament.Application.Common.Metrics;
+using FisherTournament.Application.Common.Instrumentation;
+using Microsoft.Extensions.Logging;
 
 namespace FisherTournament.Application.DomainEventHandlers;
 
@@ -26,16 +27,20 @@ public class UpdateLeaderBoardEventsHandler
 {
     private readonly ITournamentFisherDbContext _context;
     private readonly IReadModelsUnitOfWork _readModelsUnitOfWork;
+    private readonly ApplicationInstrumentation _instrumentation;
 
-    private readonly IMetrics _metrics;
+    private readonly ILogger<UpdateLeaderBoardEventsHandler> _logger;
+
 
     public UpdateLeaderBoardEventsHandler(ITournamentFisherDbContext context,
                                           IReadModelsUnitOfWork readModelsUnitOfWork,
-                                          IMetrics metrics)
+                                          ApplicationInstrumentation instrumentation,
+                                          ILogger<UpdateLeaderBoardEventsHandler> logger)
     {
         _context = context;
         _readModelsUnitOfWork = readModelsUnitOfWork;
-        _metrics = metrics;
+        _instrumentation = instrumentation;
+        _logger = logger;
     }
 
     public async Task Handle(ScoreAddedDomainEvent notification,
@@ -64,6 +69,12 @@ public class UpdateLeaderBoardEventsHandler
                                             CategoryId categoryId,
                                             CancellationToken cancellationToken)
     {
+        using var leaderBoardTimer = ApplicationMetrics.LeaderboardMetrics.LeaderboardUpdate.Time();
+        using var activity = _instrumentation.ActivitySource.StartActivity("UpdateLeaderBoard");
+
+        leaderBoardTimer.AddTag("type", "all-tournament-competitions");
+        activity?.AddTag("type", "all-tournament-competitions");
+
         var competitionsIds = await _context.Competitions
             .Where(x => x.TournamentId == tournamentId)
             .Select(x => x.Id)
@@ -81,7 +92,11 @@ public class UpdateLeaderBoardEventsHandler
                                         FisherId fisherId,
                                         CancellationToken cancellationToken)
     {
-        using var _ = _metrics.Measure.Timer.Time(ApplicationMetrics.LeaderboardMetrics.LeaderboardUpdate);
+        using var leaderBoardTimer = ApplicationMetrics.LeaderboardMetrics.LeaderboardUpdate.Time(new Tag("function", "base"));
+        using var activity = _instrumentation.ActivitySource.StartActivity("UpdateLeaderBoard");
+
+        leaderBoardTimer.AddTag("type", "only-one-competition");
+        activity?.AddTag("type", "only-one-competition");
 
         var tournamentId = await _context.Competitions
             .Where(x => x.Id == competitionId)
@@ -105,19 +120,19 @@ public class UpdateLeaderBoardEventsHandler
             return;
         }
 
-        using (_metrics.Measure.Timer.Time(ApplicationMetrics.LeaderboardMetrics.CompetitionLeaderboardUpdate))
-        {
-            await UpdateCompetitionLeaderBoard(competitionId, categoryId);
-        }
+        await UpdateCompetitionLeaderBoard(competitionId, categoryId);
 
-        using (_metrics.Measure.Timer.Time(ApplicationMetrics.LeaderboardMetrics.TournamentLeaderboardUpdate))
-        {
-            await UpdateTournamentLeaderBoard(tournamentId, categoryId);
-        }
+        await UpdateTournamentLeaderBoard(tournamentId, categoryId);
     }
 
     private async Task UpdateCompetitionLeaderBoard(CompetitionId competitionId, CategoryId categoryId)
     {
+        using var _ = ApplicationMetrics.LeaderboardMetrics.LeaderboardUpdate.Time(new Tag("function", "competition-update"));
+        using var ___ = _instrumentation.ActivitySource.StartActivity("UpdateCompetitionLeaderBoard");
+
+        _logger.LogInformation("Updating competition {CompetitionId} leaderboard for category {CategoryId}",
+                                competitionId, categoryId);
+
         // 2. Get each fisher and score from the this category
         // TODO: This query screams for a refactor, don't worry
         var fishersFromCategoryWithScore = await (
@@ -154,6 +169,8 @@ public class UpdateLeaderBoardEventsHandler
         int currentPosition = 0;
         int previousScore = int.MaxValue;
 
+        _logger.LogInformation($"Will update {fishersFromCategoryWithScore.Count} fishers");
+
         foreach (var fisher in fishersFromCategoryWithScore)
         {
             if (fisher.Score != previousScore)
@@ -178,6 +195,11 @@ public class UpdateLeaderBoardEventsHandler
 
     private async Task UpdateTournamentLeaderBoard(TournamentId tournamentId, CategoryId categoryId)
     {
+        using var _ = ApplicationMetrics.LeaderboardMetrics.LeaderboardUpdate.Time(new Tag("function", "tournament-update"));
+        using var ___ = _instrumentation.ActivitySource.StartActivity("UpdateTournamentLeaderBoard");
+
+        _logger.LogInformation($"Updating leaderboard TournamentId: {tournamentId} - CategoryId: {categoryId}");
+
         var tournamentCompetitionsId = await _context.Competitions
             .Where(c => c.TournamentId == tournamentId)
             .Select(c => c.Id)
@@ -200,6 +222,8 @@ public class UpdateLeaderBoardEventsHandler
                             .ThenBy(p => p.FisherId) // else decide by fisherId 
 
                             .ToList();
+
+        _logger.LogInformation($"Will update {newPositions.Count} positions");
 
         // update the positions, starting from 1
         for (int i = 0; i < newPositions.Count; i++)
@@ -227,8 +251,7 @@ public class UpdateLeaderBoardEventsHandler
                     });
             }
 
-            // TODO: Add proper logging
-            // Console.WriteLine($"FisherId: {newPosition.FisherId} - Position: {i + 1}\n\t TotalScore: {newPosition.TotalScore} - PositionsSum: {newPosition.PositionsSum} - AveragePosition: {newPosition.AveragePosition}\n\t PreviousPosition: {existing?.Position} - PreviousTotalScore: {existing?.TotalScore}");
+            _logger.LogDebug($"FisherId: {newPosition.FisherId} - Position: {i + 1}\n\t TotalScore: {newPosition.TotalScore} - PositionsSum: {newPosition.PositionsSum} - AveragePosition: {newPosition.AveragePosition}\n\t PreviousPosition: {existing?.Position} - PreviousTotalScore: {existing?.TotalScore}");
         }
 
         _readModelsUnitOfWork.Commit();

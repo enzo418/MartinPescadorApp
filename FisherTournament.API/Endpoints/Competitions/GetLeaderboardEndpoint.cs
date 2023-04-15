@@ -35,7 +35,7 @@ public class GetLeaderboardEndpoint : IEndpoint<IResult, string, ISender>
 
     public async Task<IResult> HandleAsync(string competitionId, ISender _sender)
     {
-        var response = await _sender.Send(new GetLeaderBoardQuery(competitionId));
+        var response = await _sender.Send(new GetCompetitionLeaderBoardQuery(competitionId));
         return response.Match(
             value => Results.Ok(_mapper.Map<GetLeaderboardResponse>(value)),
             errors => Results.Extensions.Problem(errors)

@@ -1,0 +1,17 @@
+server:
+  http_listen_port: 3200 # grafana needs this
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4319
+
+storage:
+  trace:
+    backend: local                     # backend configuration to use
+    wal:
+      path: /tmp/tempo/wal             # where to store the the Write Ahead Log (WAL) locally
+    local:
+      path: /tmp/tempo/blocks

@@ -51,13 +51,13 @@ namespace FisherTournament.Infrastracture.Persistence.ReadModels.EntityFramework
 
         public List<TournamentCategoryLbCalculatedItem> CalculateTournamentCategoryLeaderBoard(TournamentId tournamentId, CategoryId categoryId, List<CompetitionId> tournamentCompetitionsId)
         {
-           return _dbContext.LeaderboardCompetitionCategoryItems
-                .Where(x => tournamentCompetitionsId.Contains(x.CompetitionId) && x.CategoryId == categoryId)
-                .GroupBy(x => x.FisherId)
-                .OrderBy(x => x.Sum(y => y.Position))
-                .Select(x => new TournamentCategoryLbCalculatedItem(x.Key, x.Sum(y => y.Position),
-                                                                    x.Average(y => y.Position), x.Sum(y => y.Score)))
-                .ToList();
+            return _dbContext.LeaderboardCompetitionCategoryItems
+                 .Where(x => tournamentCompetitionsId.Contains(x.CompetitionId) && x.CategoryId == categoryId)
+                 .GroupBy(x => x.FisherId)
+                 .OrderBy(x => x.Sum(y => y.Position))
+                 .Select(x => new TournamentCategoryLbCalculatedItem(x.Key, x.Sum(y => y.Position),
+                                                                     x.Average(y => y.Position), x.Sum(y => y.Score)))
+                 .ToList();
         }
 
         public List<LeaderboardCompetitionCategoryItem> GetCompetitionCategoryLeaderBoard(CompetitionId competitionId, CategoryId categoryId)

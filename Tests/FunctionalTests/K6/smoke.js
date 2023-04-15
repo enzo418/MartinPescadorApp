@@ -2,7 +2,7 @@ import http from "k6/http";
 import { check, sleep, fail } from "k6";
 
 export const options = {
-  vus: 5,
+  vus: 200,
   duration: "1m",
 };
 
@@ -29,16 +29,16 @@ export default function () {
     }
   }
 
-  const responses = http.batch(requests/*[
-    // ["GET", `${BASE_URL}/tournaments/${tournamentId}/competitions/${competitionID}/leaderboard`],
+  const responses = http.batch(/*requests/*/[
+    ["GET", `${BASE_URL}/tournaments/${tournamentId}/competitions/${competitionID}/leaderboard`],
     // ["GET", `${BASE_URL}/tournaments/${tournamentId}/leaderboard`],
-  ]*/);
+  ]);
 
   // console.log(responses);
 
-  if (!check(responses['add score'], { 'status 200': (r) => r.status === 200 })) {
-    fail('failed to add score');
-  }
+  // if (!check(responses['add score'], { 'status 200': (r) => r.status === 200 })) {
+  //   fail('failed to add score');
+  // }
 
   sleep(1);
 }

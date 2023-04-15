@@ -136,6 +136,9 @@ Possible implementations of read models:
    - Queries will use the repositories/context to read/update the read models. 
    - Queries requires at least one extra query to get the fishers data from their ids.
 
+### Optimization
+For now the tournament was updated every time a related event was fired in the domain. This introduces latency in to the user response.
+
 # Algorithms
 ## Tournament/Competition positions
 The algorithm needs achieve the following result:

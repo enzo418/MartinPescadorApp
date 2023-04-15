@@ -1,4 +1,5 @@
 using ErrorOr;
+using FisherTournament.Application.Common.Instrumentation;
 using FluentValidation;
 using MediatR;
 
@@ -13,10 +14,12 @@ public class ErrorOrBasedValidationBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
     private readonly IEnumerable<IValidator<TRequest>> _validators;
+    private readonly ApplicationInstrumentation _instrumentation;
 
-    public ErrorOrBasedValidationBehavior(IEnumerable<IValidator<TRequest>> validators)
+    public ErrorOrBasedValidationBehavior(IEnumerable<IValidator<TRequest>> validators, ApplicationInstrumentation instrumentation)
     {
         _validators = validators;
+        _instrumentation = instrumentation;
     }
 
     public async Task<TResponse> Handle(
@@ -24,6 +27,8 @@ public class ErrorOrBasedValidationBehavior<TRequest, TResponse>
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
+         var activity = _instrumentation.ActivitySource.StartActivity("ValidationBehavior");
+
         var validationFailures = _validators
             .Select(validator => validator.Validate(request))
             .SelectMany(validationResult => validationResult.Errors)
@@ -37,8 +42,12 @@ public class ErrorOrBasedValidationBehavior<TRequest, TResponse>
                     code: failure.PropertyName,
                     description: failure.ErrorMessage
                 ));
+
+            activity?.Stop();
             return (dynamic)errors;
         }
+
+        activity?.Stop();
 
         return await next();
     }

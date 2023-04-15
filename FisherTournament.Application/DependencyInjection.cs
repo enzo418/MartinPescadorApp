@@ -1,6 +1,7 @@
 using System.Reflection;
 using ErrorOr;
 using FisherTournament.Application.Common.Behavior;
+using FisherTournament.Application.Common.Instrumentation;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,12 @@ public static partial class DependencyInjection
         // if c# would have negative constraints on type parameters i would uncomment this line
         // services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ExceptionBasedValidationBehavior<,>));
 
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(TraceHandlerBehavior<,>));
+
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ErrorOrBasedValidationBehavior<,>));
+
+
+        services.AddSingleton<ApplicationInstrumentation>();
 
         StopIfUsingInvalidTypes();
 

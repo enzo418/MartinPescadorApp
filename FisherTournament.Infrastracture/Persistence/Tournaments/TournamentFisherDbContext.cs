@@ -1,4 +1,3 @@
-using App.Metrics;
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.CompetitionAggregate;
 using FisherTournament.Domain.FisherAggregate;
@@ -21,22 +20,18 @@ public class TournamentFisherDbContext : DbContext, ITournamentFisherDbContext
     public DbSet<Fisher> Fishers { get; set; } = null!;
 
     private readonly IMediator _mediator = null!;
-    private readonly IMetrics _metrics = null!;
 
     public TournamentFisherDbContext(
         DbContextOptions<TournamentFisherDbContext> options,
-        IMediator mediator,
-        IMetrics metrics)
+        IMediator mediator)
         : base(options)
     {
         _mediator = mediator;
-        _metrics = metrics;
     }
 
-    public TournamentFisherDbContext(IMediator mediator, IMetrics metrics)
+    public TournamentFisherDbContext(IMediator mediator)
     {
         _mediator = mediator;
-        _metrics = metrics;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -60,18 +55,20 @@ public class TournamentFisherDbContext : DbContext, ITournamentFisherDbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {
-        using (var timer = _metrics.Measure.Timer.Time(ApplicationMetrics.DatabaseMetrics.SaveChangesBeforeDispatchEventsTimer))
+        Tag DbContextTag = new("DbContext", GetType().Name); // Create base DbContext?
+
+        using (var _ = ApplicationMetrics.DatabaseMetrics.SaveChangesHistogram.Time(new Tag("order", "before"), DbContextTag))
         {
             await _mediator.DispatchDomainEventsBeforeSaveAsync(this, cancellationToken);
         }
 
         int changes;
-        using (var timer = _metrics.Measure.Timer.Time(ApplicationMetrics.DatabaseMetrics.SaveChangesTournamentDbTimer))
+        using (var _ = ApplicationMetrics.DatabaseMetrics.SaveChangesHistogram.Time(new Tag("order", "base"), DbContextTag))
         {
             changes = await base.SaveChangesAsync(cancellationToken);
         }
 
-        using (var timer = _metrics.Measure.Timer.Time(ApplicationMetrics.DatabaseMetrics.SaveChangesAfterDispatchEventsTimer))
+        using (var _ = ApplicationMetrics.DatabaseMetrics.SaveChangesHistogram.Time(new Tag("order", "after"), DbContextTag))
         {
             await _mediator.DispatchDomainEventsAfterSaveAsync(this, cancellationToken);
         }

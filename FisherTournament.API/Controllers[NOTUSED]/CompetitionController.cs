@@ -55,7 +55,7 @@ public class CompetitionController : ApiController
     [HttpGet("{competitionId}/Leaderboard")]
     public async Task<IActionResult> GetLeaderboard(string competitionId)
     {
-        var response = await _sender.Send(new GetLeaderBoardQuery(competitionId));
+        var response = await _sender.Send(new GetCompetitionLeaderBoardQuery(competitionId));
 
         return response.Match(
             onValue: value => Ok(value),
