@@ -1,5 +1,7 @@
 using FisherTournament.Application.Common.Persistence;
+using FisherTournament.Application.LeaderBoard;
 using FisherTournament.Domain.Common.Provider;
+using FisherTournament.Infrastracture.LeaderBoard;
 using FisherTournament.Infrastracture.Persistence.Common.Interceptors;
 using FisherTournament.Infrastracture.Persistence.ReadModels.EntityFramework;
 using FisherTournament.Infrastracture.Persistence.ReadModels.EntityFramework.Repositories;
@@ -12,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Quartz;
 
 namespace FisherTournament.Infrastracture;
 
@@ -35,8 +38,31 @@ public static partial class DependencyInjection
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
         AddReadModels(services);
+        AddLeaderBoardUpdateServices(services);
 
         return services;
+    }
+
+    private static void AddLeaderBoardUpdateServices(IServiceCollection services)
+    {
+        services.AddSingleton<ILeaderBoardUpdateScheduler, LeaderBoardUpdateScheduler>();
+        services.AddScoped<ILeaderBoardUpdater, LeaderBoardUpdater>();
+
+        services.AddQuartz(q =>
+        {
+            var jobKey = new JobKey(nameof(LeaderBoardUpdateJobExecuter));
+
+            q.AddJob<LeaderBoardUpdateJobExecuter>(opts => opts.WithIdentity(jobKey))
+                .AddTrigger(opt =>
+                        opt.ForJob(jobKey)
+                            .WithSimpleSchedule(s =>
+                            s.WithInterval(LeaderBoardUpdateScheduler.CallInterval)
+                             .RepeatForever()));
+
+            q.UseMicrosoftDependencyInjectionJobFactory();
+        });
+
+        services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
     }
 
     private static void AddReadModels(IServiceCollection services)

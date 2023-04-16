@@ -1,6 +1,10 @@
 # Project FisherTournament
 
 
+## Optimizations
+
+[**Leader board update**](Docs/optimizing_leaderboard.md)
+
 ## Structure
     
 ```
