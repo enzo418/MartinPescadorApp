@@ -78,15 +78,24 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
         {
             if (job.UpdateType == UpdateType.CompetitionsFromList)
             {
-                job.CompetitionsToUpdate.Add(competitionId);
+                if (!job.CompetitionsToUpdate.Contains(competitionId))
+                {
+                    job.CompetitionsToUpdate.Add(competitionId);
 
-                _logger.LogDebug("Scheduling leaderboard update for job {Job} to also update competition {CompetitionId} in {} seconds. Total competitions to update: {}",
-                                       job, competitionId, MaxUpdateInterval.TotalSeconds, job.CompetitionsToUpdate.Count);
+                    _logger.LogInformation("Scheduling leaderboard update for job {Job} to also update competition {CompetitionId} in {} seconds. Total competitions to update: {}",
+                                           job, competitionId, MaxUpdateInterval.TotalSeconds, job.CompetitionsToUpdate.Count);
+                }
+                else
+                {
+                    // else do nothing, we are already updating this competition.
+                    _logger.LogInformation("Scheduler did not modify job {Job} to also update competition {CompetitionId} because we are already updating it.",
+                                           job, competitionId);
+                }
             }
             else
             {
                 // else do nothing, we are already updating all competitions.
-                _logger.LogDebug("Scheduler did not modify job {Job} to also update competition {CompetitionId} because we are already updating all competitions.",
+                _logger.LogInformation("Scheduler did not modify job {Job} to also update competition {CompetitionId} because we are already updating all competitions.",
                                        job, competitionId);
             }
         }
@@ -95,7 +104,7 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
             if (_lastUpdate.TryGetValue((tournamentId, categoryId), out var lastUpdate)
                 && lastUpdate >= DateTimeOffset.UtcNow.Subtract(MaxUpdateInterval)) // last update was less than 5s ago
             {
-                _logger.LogDebug("Scheduling leaderboard update for tournament {TournamentId}, category {CategoryId} to update competition {CompetitionId} in {} seconds",
+                _logger.LogInformation("Scheduling leaderboard update for tournament {TournamentId}, category {CategoryId} to update competition {CompetitionId} in {} seconds",
                                        tournamentId, categoryId, competitionId, MaxUpdateInterval.TotalSeconds);
 
                 _jobs.TryAdd((tournamentId, categoryId),
@@ -106,7 +115,7 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
             }
             else
             {
-                _logger.LogDebug("Scheduling leaderboard update for tournament {TournamentId}, category {CategoryId} to update competition {CompetitionId} NOW",
+                _logger.LogInformation("Scheduling leaderboard update for tournament {TournamentId}, category {CategoryId} to update competition {CompetitionId} NOW",
                                        tournamentId, categoryId, competitionId);
 
                 _jobs.TryAdd((tournamentId, categoryId),
@@ -131,7 +140,7 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
 
         if (_jobs.TryGetValue((tournamentId, categoryId), out var job))
         {
-            _logger.LogDebug("Updated job for tournament {TournamentId}, category {CategoryId} to update all competitions",
+            _logger.LogInformation("Updated job for tournament {TournamentId}, category {CategoryId} to update all competitions",
                                    tournamentId, categoryId);
             job.SetUpdateType(UpdateType.AllCompetitions);
         }
@@ -140,7 +149,7 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
             if (_lastUpdate.TryGetValue((tournamentId, categoryId), out var lastUpdate)
                 && lastUpdate >= DateTimeOffset.UtcNow.Subtract(MaxUpdateInterval)) // last update was less than 5s ago
             {
-                _logger.LogDebug("Scheduling leaderboard update for tournament {TournamentId}, category {CategoryId} to update all competitions in {} seconds",
+                _logger.LogInformation("Scheduling leaderboard update for tournament {TournamentId}, category {CategoryId} to update all competitions in {} seconds",
                                        tournamentId, categoryId, MaxUpdateInterval.TotalSeconds);
 
                 _jobs.TryAdd((tournamentId, categoryId),
@@ -151,7 +160,7 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
             }
             else
             {
-                _logger.LogDebug("Scheduling leaderboard update for tournament {TournamentId}, category {CategoryId} to update all competitions NOW",
+                _logger.LogInformation("Scheduling leaderboard update for tournament {TournamentId}, category {CategoryId} to update all competitions NOW",
                                        tournamentId, categoryId);
 
                 _jobs.TryAdd((tournamentId, categoryId),
@@ -167,7 +176,7 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
 
     public Job? GetNextJob()
     {
-        _logger.LogDebug("Getting next job");
+        _logger.LogInformation("Getting next job");
 
         _mutex.WaitOne();
 
@@ -179,7 +188,14 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
             _jobs.Remove((job.TournamentId, job.CategoryId), out _);
 
             _lastUpdate[(job.TournamentId, job.CategoryId)] = job.ExecuteAt;
+
+            _logger.LogInformation("Next job is {Job}", job);
         }
+        else
+        {
+            _logger.LogInformation("No jobs ready");
+        }
+
 
         _mutex.ReleaseMutex();
 

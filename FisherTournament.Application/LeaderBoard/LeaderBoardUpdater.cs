@@ -144,7 +144,7 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
         using var _ = ApplicationMetrics.LeaderboardMetrics.LeaderboardUpdate.Time(new Tag("function", "tournament-update"));
         using var ___ = _instrumentation.ActivitySource.StartActivity("UpdateTournamentLeaderBoard");
 
-        _logger.LogInformation($"Updating leaderboard TournamentId: {tournamentId} - CategoryId: {categoryId}");
+        _logger.LogInformation("Updating leaderboard TournamentId: {TournamentId} - CategoryId: {CategoryId}", tournamentId, categoryId);
 
         var tournamentCompetitionsId = await _context.Competitions
             .Where(c => c.TournamentId == tournamentId)
