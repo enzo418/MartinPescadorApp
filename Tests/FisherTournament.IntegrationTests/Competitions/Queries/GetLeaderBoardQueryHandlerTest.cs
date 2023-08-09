@@ -32,7 +32,7 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             var categoryPrimary = tournament.AddCategory("Primary").Value;
             var categorySecondary = tournament.AddCategory("Secondary").Value;
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(CancellationToken.None);
 
             var inscriptionResults = new List<ErrorOr<Success>>()
             {
@@ -44,7 +44,7 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
 
             inscriptionResults.Should().NotContain(r => r.IsError);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(CancellationToken.None);
 
             var competition = await context.WithAsync(Competition.Create(
                 _fixture.DateTimeProvider.Now,
@@ -65,7 +65,7 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
                 });
 
             // Act
-            var result = await _fixture.SendAsync(new GetLeaderBoardQuery(competition.Id.ToString()));
+            var result = await _fixture.SendAsync(new GetCompetitionLeaderBoardQuery(competition.Id.ToString()));
 
             // Assert
             result.IsError.Should().BeFalse();
@@ -95,7 +95,7 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
         {
             // Arrange
             // Act
-            var result = await _fixture.SendAsync(new GetLeaderBoardQuery(Guid.NewGuid().ToString()));
+            var result = await _fixture.SendAsync(new GetCompetitionLeaderBoardQuery(Guid.NewGuid().ToString()));
 
             // Assert
             result.IsError.Should().BeFalse();

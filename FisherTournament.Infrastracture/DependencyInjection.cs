@@ -25,6 +25,7 @@ public static partial class DependencyInjection
         services.AddDbContext<ITournamentFisherDbContext, TournamentFisherDbContext>((provider, options) =>
         {
             var dataBaseConnectionSettings = provider.GetRequiredService<DataBaseConnectionSettings>();
+            ArgumentNullException.ThrowIfNull(dataBaseConnectionSettings.TournamentDbConnectionString);
             // options.UseSqlServer(dataBaseConnectionSettings.ConnectionString);
             options.UseSqlite(dataBaseConnectionSettings.TournamentDbConnectionString);
             // options.LogTo(System.Console.WriteLine);

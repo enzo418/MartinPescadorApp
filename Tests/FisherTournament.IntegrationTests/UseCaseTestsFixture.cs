@@ -2,12 +2,14 @@ using FisherTournament.Infrastracture.Persistence.Tournaments;
 
 namespace FisherTournament.IntegrationTests;
 
+using System.Diagnostics;
 using FisherTournament.Application;
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain;
 using FisherTournament.Domain.Common.Provider;
 using FisherTournament.Infrastracture;
 using FisherTournament.Infrastracture.Persistence;
+using FisherTournament.Infrastracture.Persistence.ReadModels.EntityFramework;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -42,16 +44,24 @@ public class UseCaseTestsFixture : IDisposable
             services.AddApplication();
             services.AddInfrastracture();
             services.AddSettings(configuration);
+
+            // add a ActivitySource, just so it can be resolved
+            services.AddSingleton(new ActivitySource("Test"));
         });
+
 
         var host = builder.Build();
 
         _scopeFactory = host.Services.GetRequiredService<IServiceScopeFactory>();
 
-        TournamentFisherDbContext context = (host.Services.GetRequiredService<ITournamentFisherDbContext>() as TournamentFisherDbContext)!;
+        TournamentFisherDbContext tournamentContext = (host.Services.GetRequiredService<ITournamentFisherDbContext>() as TournamentFisherDbContext)!;
+        ReadModelsDbContext readModelsDbContext = host.Services.GetRequiredService<ReadModelsDbContext>()!;
 
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
+        tournamentContext.Database.EnsureDeleted();
+        tournamentContext.Database.EnsureCreated();
+
+        readModelsDbContext.Database.EnsureDeleted();
+        readModelsDbContext.Database.EnsureCreated();
     }
 
     public void Dispose()
