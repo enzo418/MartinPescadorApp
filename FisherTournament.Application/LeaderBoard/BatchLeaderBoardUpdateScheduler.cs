@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FisherTournament.Application.LeaderBoard;
+using FisherTournament.Domain.Common.Provider;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using Microsoft.Extensions.Logging;
 
-namespace FisherTournament.Infrastracture.LeaderBoard;
+namespace FisherTournament.Application.LeaderBoard;
 
 public enum UpdateType
 {
@@ -23,7 +18,6 @@ public record ExtendedJob(TournamentId TournamentId,
                     DateTimeOffset ExecuteAt) : Job(TournamentId, CategoryId, CompetitionsToUpdate)
 {
     public UpdateType UpdateType => CompetitionsToUpdate.Any() ? UpdateType.CompetitionsFromList : UpdateType.AllCompetitions;
-    public bool IsReady => ExecuteAt <= DateTimeOffset.UtcNow;
     internal void SetUpdateType(UpdateType updateType)
     {
         if (updateType == UpdateType.AllCompetitions)
@@ -34,10 +28,11 @@ public record ExtendedJob(TournamentId TournamentId,
 }
 
 /// <summary>
-/// The LeaderBoardUpdateScheduler class is responsible for scheduling updates to the tournament leaderboard.
+/// The BatchLeaderBoardUpdateScheduler class is responsible for scheduling updates to the tournament leaderboard.
+/// It serves as a batch to update the leader board for multiple competitions at once, and to throttle the updates
+/// so they don't happen too often (MaxUpdateInterval).
 /// </summary>
-/// TODO: UNIT TEST
-public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
+public class BatchLeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
 {
     /// <summary>
     /// The maximum interval between updates.
@@ -53,11 +48,14 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
     /// </summary>
     public static readonly TimeSpan CallInterval = TimeSpan.FromSeconds(1);
 
-    private readonly ILogger<LeaderBoardUpdateScheduler> _logger;
+    private readonly ILogger<BatchLeaderBoardUpdateScheduler> _logger;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-    public LeaderBoardUpdateScheduler(ILogger<LeaderBoardUpdateScheduler> logger)
+    public BatchLeaderBoardUpdateScheduler(ILogger<BatchLeaderBoardUpdateScheduler> logger,
+                                      IDateTimeProvider dateTimeProvider)
     {
         _logger = logger;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     private readonly Dictionary<(TournamentId, CategoryId), ExtendedJob> _jobs = new();
@@ -103,7 +101,7 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
         else
         {
             if (_lastUpdate.TryGetValue((tournamentId, categoryId), out var lastUpdate)
-                && lastUpdate >= DateTimeOffset.UtcNow.Subtract(MaxUpdateInterval)) // last update was less than 5s ago
+                && lastUpdate >= _dateTimeProvider.Now.Subtract(MaxUpdateInterval)) // last update was less than 5s ago
             {
                 _logger.LogInformation("Scheduling leaderboard update for tournament {TournamentId}, category {CategoryId} to update competition {CompetitionId} in {} seconds",
                                        tournamentId, categoryId, competitionId, MaxUpdateInterval.TotalSeconds);
@@ -123,7 +121,7 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
                              new ExtendedJob(tournamentId,
                                      categoryId,
                                      new List<CompetitionId> { competitionId },
-                                     DateTimeOffset.UtcNow));
+                                     _dateTimeProvider.Now));
             }
         }
 
@@ -148,7 +146,7 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
         else
         {
             if (_lastUpdate.TryGetValue((tournamentId, categoryId), out var lastUpdate)
-                && lastUpdate >= DateTimeOffset.UtcNow.Subtract(MaxUpdateInterval)) // last update was less than 5s ago
+                && lastUpdate >= _dateTimeProvider.Now.Subtract(MaxUpdateInterval)) // last update was less than 5s ago
             {
                 _logger.LogInformation("Scheduling leaderboard update for tournament {TournamentId}, category {CategoryId} to update all competitions in {} seconds",
                                        tournamentId, categoryId, MaxUpdateInterval.TotalSeconds);
@@ -168,7 +166,7 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
                              new ExtendedJob(tournamentId,
                                      categoryId,
                                      new List<CompetitionId>(),
-                                     DateTimeOffset.UtcNow));
+                                     _dateTimeProvider.Now));
             }
         }
 
@@ -182,7 +180,11 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
         _mutex.WaitOne();
 
         // OPTIMIZE: use priority queue, priority = min(0, executeAt - now)
-        var job = _jobs.Values.OrderBy(x => x.ExecuteAt).FirstOrDefault(j => j.IsReady);
+        DateTime now = _dateTimeProvider.Now;
+        var job = _jobs.Values
+                            .OrderBy(x => x.ExecuteAt)
+                            /* is ready to execute if time execute at <= now */
+                            .FirstOrDefault(j => j.ExecuteAt <= now);
 
         if (job is not null)
         {
@@ -200,6 +202,6 @@ public class LeaderBoardUpdateScheduler : ILeaderBoardUpdateScheduler
 
         _mutex.ReleaseMutex();
 
-        return job as Job;
+        return job;
     }
 }

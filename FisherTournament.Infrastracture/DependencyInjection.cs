@@ -46,7 +46,7 @@ public static partial class DependencyInjection
 
     private static void AddLeaderBoardUpdateServices(IServiceCollection services)
     {
-        services.AddSingleton<ILeaderBoardUpdateScheduler, LeaderBoardUpdateScheduler>();
+        services.AddSingleton<ILeaderBoardUpdateScheduler, BatchLeaderBoardUpdateScheduler>();
         services.AddScoped<ILeaderBoardUpdater, LeaderBoardUpdater>();
 
         services.AddQuartz(q =>
@@ -57,7 +57,7 @@ public static partial class DependencyInjection
                 .AddTrigger(opt =>
                         opt.ForJob(jobKey)
                             .WithSimpleSchedule(s =>
-                            s.WithInterval(LeaderBoardUpdateScheduler.CallInterval)
+                            s.WithInterval(BatchLeaderBoardUpdateScheduler.CallInterval)
                              .RepeatForever()));
 
             q.UseMicrosoftDependencyInjectionJobFactory();
