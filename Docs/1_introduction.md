@@ -47,6 +47,11 @@ When a fisher is registered in a tournament but does not present to a competitio
 
 When two fishers have the same positions in a tournament, the best position is determined by the lower average of positions. If the average is the same, the best position is determined by the higher total score.
 
+If the tie happens in a competition, it will be broken by:
+1. The larger piece: biggest fish score
+2. The first larger piece: go to the first catch of both, the bigger one wins, if they are the same, go to the second catch, and so on.
+4. Random
+
 The club need the system to be portable because fishing locations might be remote, without internet and used in different laptops if one fails.
 
 ### Use cases

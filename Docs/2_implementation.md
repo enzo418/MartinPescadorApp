@@ -61,6 +61,10 @@ The system publish and handles the following domain events:
 
 > Why domain event? See [Tournament positions](private/3_learning.md##tournament-positions)
 
+# Tests
+## Leaderboard
+- The scheduler is unit tested
+- The leaderboard updater, which contains the leaderboard logic, is not unit tested, instead it's testing in the use cases.
 
 # Discussions
 ## 1. Domain events

@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using FisherTournament.ReadModels.Persistence;
 using FisherTournament.ReadModels.Models;
+using FisherTournament.Domain.CompetitionAggregate.Entities;
 
 namespace FisherTournament.Application.LeaderBoard;
 
@@ -19,6 +20,10 @@ public class FisherWithScore
 {
     public FisherId FisherId { get; init; } = null!;
     public int Score { get; init; }
+    public int LargerPiece { get; init; }
+
+    // a value to use when breaking ties
+    public int TieDiscriminator { get; set; } = -1;
 }
 
 public class LeaderBoardUpdater : ILeaderBoardUpdater
@@ -80,7 +85,7 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
                                 competitionId, categoryId);
 
         // 2. Get each fisher and score from the this category
-        // TODO: This query screams for a refactor, don't worry
+        // TODO: This query screams for a refactor -> This is a good candidate for a view or repository
         var fishersFromCategoryWithScore = await (
                     from c in _context.Competitions
                     where c.Id == competitionId
@@ -98,12 +103,44 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
                     select new FisherWithScore
                     {
                         FisherId = f.Id,
-                        Score = p == null ? -1 : p.TotalScore
+                        Score = p == null ? -1 : p.TotalScore,
+                        LargerPiece = p.FishCaught.Max(piece => piece.Score)
                     }
                 ).ToListAsync(cancellationToken);
 
-        // 3. Sort the fishers by descending score
-        fishersFromCategoryWithScore.Sort((x, y) => x.Score.CompareTo(y.Score) * -1);
+        // 3. Sort the fishers by descending score and break tie
+
+        // first let's prepare for the worts case scenario
+        var fishersToLoadCaughtFish = fishersFromCategoryWithScore
+                .GroupBy(f => new { f.Score, f.LargerPiece })
+                .Where(group => group.Key.Score != 0) // Filter out those that did not catch any fish
+                .Where(group => group.Count() > 1) // Only groups with more than 1 fisher
+                .Select(group => group.ToList());
+
+        // 3.1 Load the caught fish for the fishers that have the same score and larger piece
+        if (fishersToLoadCaughtFish.Any())
+        {
+            // load all the caught fish
+            Dictionary<FisherId, List<FishCaught>> fisherCaughtFish = new();
+            var flatten = fishersToLoadCaughtFish.SelectMany(d => d);
+            foreach (var fisher in flatten)
+            {
+                fisherCaughtFish[fisher.FisherId] = await _context.Competitions
+                    .Include(c => c.Participations)
+                    .Where(p => p.Participations.Any(p => p.FisherId == fisher.FisherId))
+                    .SelectMany(c => c.Participations.SelectMany(p => p.FishCaught))
+                    .AsNoTracking()
+                    .ToListAsync(cancellationToken);
+            }
+
+            BreakTieByFirstLargerPiece(fishersToBreakTie: fishersToLoadCaughtFish, fisherCaughtFish);
+        }
+
+        fishersFromCategoryWithScore
+                .OrderByDescending(f => f.Score)
+                .ThenByDescending(f => f.LargerPiece)
+                .ThenByDescending(f => f.TieDiscriminator)
+                .ThenByDescending(f => f.FisherId);
 
         // 4. Get the fishers positions respecting the system rules
         var leaderBoardRepository = _readModelsUnitOfWork.LeaderBoardRepository;
@@ -138,6 +175,46 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
         _readModelsUnitOfWork.Commit();
     }
 
+    /// <summary>
+    /// break the tie by "go to the first catch of both, the bigger one wins, if they are the same, go to the second catch, and so on."
+    /// </summary>
+    /// <param name="fishersToBreakTie"></param>
+    /// <param name="fisherCaughtFish"></param>
+    private static void BreakTieByFirstLargerPiece(IEnumerable<List<FisherWithScore>> fishersToBreakTie,
+                                                   Dictionary<FisherId, List<FishCaught>> fisherCaughtFish)
+    {
+        foreach (var fishers in fishersToBreakTie)
+        {
+            int maxCaughtFishCount = fishers.Max(f => fisherCaughtFish[f.FisherId].Count);
+            int tiesToBreak = fishers.Count;
+
+            for (int i = 0; i < maxCaughtFishCount; i++)
+            {
+                if (tiesToBreak == 1)
+                {
+                    // the reminder fisher will have -1 as tie discriminator, 
+                    // making it the last by descending order.
+                    break;
+                }
+
+                // 1. Get the larger piece in this index. 
+                int biggestCaughtPiece = fishers.Max(f => f.TieDiscriminator != -1
+                                                                ? 0 // Ignore the piece if the fisher has a valid tie discriminator
+                                                                : fisherCaughtFish[f.FisherId].ElementAtOrDefault(i)?.Score ?? 0);
+
+                // 2. Select all the fishers that have the same score and larger piece in this index.
+                var fishersWithSameLargerPiece = fishers.Where(f => fisherCaughtFish[f.FisherId].ElementAtOrDefault(i)?.Score == biggestCaughtPiece);
+
+                // 3. If there is only one fisher set the tie discriminator to the current value and decrease it
+                if (fishersWithSameLargerPiece.Count() == 1)
+                {
+                    fishersWithSameLargerPiece.First().TieDiscriminator = tiesToBreak--;
+                }
+
+                // else, keep going
+            }
+        }
+    }
 
     private async Task UpdateTournamentLeaderBoard(TournamentId tournamentId, CategoryId categoryId)
     {

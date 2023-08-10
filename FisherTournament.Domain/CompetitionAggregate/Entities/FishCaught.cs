@@ -4,6 +4,8 @@ using FisherTournament.Domain.FisherAggregate.ValueObjects;
 
 namespace FisherTournament.Domain.CompetitionAggregate.Entities;
 
+// TODO: Rename to CaughtFish :)
+
 public class FishCaught : Entity<int>
 {
     private FishCaught(
