@@ -20,7 +20,7 @@ namespace FisherTournament.Infrastracture;
 
 public static partial class DependencyInjection
 {
-    public static IServiceCollection AddInfrastracture(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
         services.AddDbContext<ITournamentFisherDbContext, TournamentFisherDbContext>((provider, options) =>
         {
@@ -51,7 +51,7 @@ public static partial class DependencyInjection
 
         services.AddQuartz(q =>
         {
-            var jobKey = new JobKey(nameof(LeaderBoardUpdateJobExecuter));
+            var jobKey = LeaderBoardUpdateJobExecuter.JobKey;
 
             q.AddJob<LeaderBoardUpdateJobExecuter>(opts => opts.WithIdentity(jobKey))
                 .AddTrigger(opt =>

@@ -55,7 +55,7 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
         leaderBoardTimer.AddTag("total-competitions-to-update", competitionsIds?.Count() ?? 0);
         activity?.AddTag("total-competitions-to-update", competitionsIds?.Count() ?? 0);
 
-        if (competitionsIds == null)
+        if (competitionsIds == null || !competitionsIds.Any())
         {
             competitionsIds = await _context.Competitions
                 .Where(x => x.TournamentId == tournamentId)

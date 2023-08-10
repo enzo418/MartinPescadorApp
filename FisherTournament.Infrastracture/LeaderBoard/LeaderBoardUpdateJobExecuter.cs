@@ -10,6 +10,8 @@ namespace FisherTournament.Infrastracture.LeaderBoard
 {
     public class LeaderBoardUpdateJobExecuter : IJob
     {
+        public static JobKey JobKey = new("LeaderBoardUpdateJob", "LeaderBoardUpdateJobGroup");
+
         private readonly ILeaderBoardUpdateScheduler _leaderBoardUpdateScheduler;
         private readonly ILeaderBoardUpdater _leaderBoardUpdater;
         private readonly ILogger<LeaderBoardUpdateJobExecuter> _logger;

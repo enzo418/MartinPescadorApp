@@ -5,6 +5,7 @@ namespace FisherTournament.IntegrationTests;
 using System.Diagnostics;
 using FisherTournament.Application;
 using FisherTournament.Application.Common.Persistence;
+using FisherTournament.Application.LeaderBoard;
 using FisherTournament.Domain;
 using FisherTournament.Domain.Common.Provider;
 using FisherTournament.Infrastracture;
@@ -22,7 +23,9 @@ public class UseCaseTestsFixture : IDisposable
 
     public IDateTimeProvider DateTimeProvider => _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<IDateTimeProvider>();
 
-    public TournamentFisherDbContext Context => (_scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ITournamentFisherDbContext>() as TournamentFisherDbContext)!;
+    public TournamentFisherDbContext TournamentContext => (_scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ITournamentFisherDbContext>() as TournamentFisherDbContext)!;
+
+    public ReadModelsDbContext ReadModelsContext => _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ReadModelsDbContext>()!;
 
     public UseCaseTestsFixture()
     {
@@ -42,7 +45,7 @@ public class UseCaseTestsFixture : IDisposable
         builder.ConfigureServices((hostContext, services) =>
         {
             services.AddApplication();
-            services.AddInfrastracture();
+            services.AddInfrastructure();
             services.AddSettings(configuration);
 
             // add a ActivitySource, just so it can be resolved
@@ -76,6 +79,27 @@ public class UseCaseTestsFixture : IDisposable
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
             return await mediator.Send(request);
         }
+    }
+
+    /// <summary>
+    /// Executes all pending leader board jobs.
+    /// </summary>
+    /// <returns>The number of executed jobs.</returns>
+    public async Task<int> ExecutePendingLeaderBoardJobs()
+    {
+        using var scope = _scopeFactory.CreateScope();
+
+        var scheduler = scope.ServiceProvider.GetRequiredService<ILeaderBoardUpdateScheduler>();
+        var updater = scope.ServiceProvider.GetRequiredService<ILeaderBoardUpdater>();
+
+        int executed = 0;
+        while (scheduler.GetNextJob() is var job && job != null)
+        {
+            await updater.UpdateLeaderBoard(job.TournamentId, job.CategoryId, job.CompetitionsToUpdate);
+            executed++;
+        }
+
+        return executed;
     }
 }
 
