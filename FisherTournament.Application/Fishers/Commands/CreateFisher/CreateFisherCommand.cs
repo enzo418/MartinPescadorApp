@@ -19,14 +19,14 @@ public class CreateFisherCommandHandler
         _context = context;
     }
 
-    public async Task<ErrorOr<CreateFisherCommandResponse>> Handle(CreateFisherCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<CreateFisherCommandResponse>> Handle(CreateFisherCommand request,
+                                                                   CancellationToken cancellationToken)
     {
-        User user = User.Create(request.FirstName, request.LastName);
-        await _context.Users.AddAsync(user);
-
-        Fisher fisher = Fisher.Create(user.Id);
-
+        Fisher fisher = Fisher.Create(request.FirstName, request.LastName);
         await _context.Fishers.AddAsync(fisher);
+
+        User user = User.Create(request.FirstName, request.LastName, fisher.Id);
+        await _context.Users.AddAsync(user);
 
         await _context.SaveChangesAsync(cancellationToken);
 

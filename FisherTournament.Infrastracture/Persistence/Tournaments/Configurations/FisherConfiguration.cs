@@ -12,15 +12,5 @@ public class FisherConfiguration : IEntityTypeConfiguration<Fisher>
     {
         builder.ToTable("Fishers");
         builder.HasGuidIdKey(f => f.Id);
-
-        // Configure 0..1:1 relationship between Fisher and User
-        builder.HasOne<User>()
-            .WithOne()
-            .HasForeignKey<Fisher>(f => f.UserId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Property(x => x.UserId)
-                    .HasGuidIdConversion();
     }
 }

@@ -44,6 +44,7 @@ public class Tournament : AggregateRoot<TournamentId>
 
     public ErrorOr<Success> AddInscription(FisherId fisherId,
                                            CategoryId categoryId,
+                                           int number,
                                            IDateTimeProvider dateTimeProvider)
     {
         if (Inscriptions.Any(i => i.FisherId == fisherId))
@@ -61,10 +62,10 @@ public class Tournament : AggregateRoot<TournamentId>
             return Errors.Categories.NotFound;
         }
 
-        _inscriptions.Add(TournamentInscription.Create(Id, fisherId, categoryId));
+        _inscriptions.Add(TournamentInscription.Create(Id, fisherId, categoryId, number));
 
         AddDomainEvent(new InscriptionAddedDomainEvent(fisherId, categoryId, Id));
-        
+
         return Result.Success;
     }
 

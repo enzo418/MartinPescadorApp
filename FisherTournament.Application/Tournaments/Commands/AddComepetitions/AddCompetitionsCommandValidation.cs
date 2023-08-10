@@ -11,10 +11,6 @@ public class CompetitionCommandValidation : AbstractValidator<AddCompetitionComm
         RuleFor(c => c.StartDateTime)
             .IsUtcDateTime()
             .GreaterThan(dateTime.Now);
-        RuleFor(c => c.City).NotEmpty();
-        RuleFor(c => c.State).NotEmpty();
-        RuleFor(c => c.Country).NotEmpty();
-        RuleFor(c => c.Place).NotEmpty();
     }
 }
 

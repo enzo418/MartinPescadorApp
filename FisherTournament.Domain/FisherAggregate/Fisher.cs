@@ -1,3 +1,4 @@
+using ErrorOr;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using FisherTournament.Domain.UserAggregate.ValueObjects;
 
@@ -5,16 +6,21 @@ namespace FisherTournament.Domain.FisherAggregate;
 
 public sealed class Fisher : AggregateRoot<FisherId>
 {
-    public UserId UserId { get; private set; }
+    public string Name { get; private set; }
 
-    private Fisher(FisherId id, UserId userId) : base(id)
+    private Fisher(FisherId id, string name) : base(id)
     {
-        UserId = userId;
+        Name = name;
     }
 
-    public static Fisher Create(UserId userId)
+    public static Fisher Create(string firstName, string secondName)
     {
-        return new Fisher(Guid.NewGuid(), userId);
+        return new Fisher(Guid.NewGuid(), $"{secondName} {firstName}");
+    }
+
+    public void ChangeName(string firstName, string secondName)
+    {
+        Name = $"{secondName} {firstName}";
     }
 
 #pragma warning disable CS8618

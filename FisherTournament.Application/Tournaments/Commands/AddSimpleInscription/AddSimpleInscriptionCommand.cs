@@ -1,36 +1,38 @@
 using ErrorOr;
 using FisherTournament.Application.Common.Persistence;
-using FisherTournament.Domain.FisherAggregate;
-using FisherTournament.Domain.FisherAggregate.ValueObjects;
-using FisherTournament.Domain.TournamentAggregate;
+using FisherTournament.Domain.Common.Provider;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using FisherTournament.Domain.Common.Errors;
-using FisherTournament.Domain.Common.Provider;
 
 namespace FisherTournament.Application.Tournaments.Commands.AddInscription;
 
-public record struct AddInscriptionCommand(
+using Domain.Common.Errors;
+using FisherTournament.Domain.FisherAggregate;
+using FisherTournament.Domain.TournamentAggregate;
+
+public record struct AddSimpleInscriptionCommand(
     string TournamentId,
-    string FisherId,
+    string FisherFirstName,
+    string FisherLastName,
     string CategoryId,
     int Number)
      : IRequest<ErrorOr<Created>>;
 
-public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionCommand, ErrorOr<Created>>
+public class AddSimpleInscriptionCommandHandler :
+    IRequestHandler<AddSimpleInscriptionCommand, ErrorOr<Created>>
 {
     private readonly ITournamentFisherDbContext _context;
     private readonly IDateTimeProvider _dateTimeProvider;
 
-    public AddInscriptionCommandHandler(ITournamentFisherDbContext context, IDateTimeProvider dateTimeProvider)
+    public AddSimpleInscriptionCommandHandler(ITournamentFisherDbContext context,
+                                              IDateTimeProvider dateTimeProvider)
     {
         _context = context;
         _dateTimeProvider = dateTimeProvider;
     }
 
-    public async Task<ErrorOr<Created>> Handle(AddInscriptionCommand request,
-                                               CancellationToken cancellationToken)
+    public async Task<ErrorOr<Created>> Handle(AddSimpleInscriptionCommand request,
+                                         CancellationToken cancellationToken)
     {
         ErrorOr<TournamentId> tournamentId = TournamentId.Create(request.TournamentId);
 
@@ -47,27 +49,14 @@ public class AddInscriptionCommandHandler : IRequestHandler<AddInscriptionComman
             return Errors.Tournaments.NotFound;
         }
 
-        ErrorOr<FisherId> fisherId = FisherId.Create(request.FisherId);
-
-        if (fisherId.IsError)
-        {
-            return Errors.Id.NotValidWithProperty(nameof(request.FisherId));
-        }
-
-        Fisher? fisher = await _context.Fishers
-            .FirstOrDefaultAsync(f => f.Id == fisherId.Value, cancellationToken);
-
-        if (fisher is null)
-        {
-            return Errors.Fishers.NotFound;
-        }
-
         ErrorOr<CategoryId> categoryId = CategoryId.Create(request.CategoryId);
 
         if (categoryId.IsError)
         {
             return Errors.Id.NotValidWithProperty(nameof(request.CategoryId));
         }
+
+        Fisher fisher = Fisher.Create(request.FisherFirstName, request.FisherLastName);
 
         ErrorOr<Success> result = tournament.AddInscription(fisher.Id,
                                                             categoryId.Value,

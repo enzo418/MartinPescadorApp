@@ -49,7 +49,7 @@ namespace FisherTournament.IntegrationTests.Competitions.Commands
         public async Task Handler_Should_NotAddScore_When_FisherDoesntExist()
         {
             // 
-            using var context = _fixture.Context;
+            using var context = _fixture.TournamentContext;
             var tournament = await context.WithAsync(Tournament.Create(
                 "Test Tournament",
                 _fixture.DateTimeProvider.Now.AddDays(1),
@@ -60,7 +60,7 @@ namespace FisherTournament.IntegrationTests.Competitions.Commands
                 tournament.Id,
                 Location.Create("Test City", "Test State", "Test Country", "Test Place")));
 
-            var fisher = Fisher.Create(Guid.NewGuid());
+            var fisher = Fisher.Create("First", "Last");
 
             var command = new AddScoreCommand(fisher.Id.ToString(), competition.Id.ToString(), 10);
 
@@ -76,7 +76,7 @@ namespace FisherTournament.IntegrationTests.Competitions.Commands
         public async Task Handler_Should_NotAddScore_When_CompetitionDoesntExist()
         {
             // 
-            using var context = _fixture.Context;
+            using var context = _fixture.TournamentContext;
             var fisher = await context.WithFisherAsync("First", "Last");
             var competition = Competition.Create(
                 _fixture.DateTimeProvider.Now.AddDays(1),
@@ -97,7 +97,7 @@ namespace FisherTournament.IntegrationTests.Competitions.Commands
         public async Task Handler_Should_NotAddScore_When_FisherIsNotEnrolled()
         {
             // 
-            using var context = _fixture.Context;
+            using var context = _fixture.TournamentContext;
             var tournament = await context.WithAsync(Tournament.Create(
                 "Test Tournament",
                 _fixture.DateTimeProvider.Now.AddDays(1),

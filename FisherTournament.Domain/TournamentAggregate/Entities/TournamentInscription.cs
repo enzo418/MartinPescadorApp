@@ -8,12 +8,14 @@ public sealed class TournamentInscription : Entity<int>
     private TournamentInscription(
         TournamentId tournamentId,
         FisherId fisherId,
-        CategoryId categoryId)
+        CategoryId categoryId,
+        int number)
         : base()
     {
         TournamentId = tournamentId;
         FisherId = fisherId;
         CategoryId = categoryId;
+        Number = number;
     }
 
     public TournamentId TournamentId { get; private set; }
@@ -21,12 +23,15 @@ public sealed class TournamentInscription : Entity<int>
 
     public CategoryId CategoryId { get; private set; }
 
+    public int Number { get; private set; }
+
     public static TournamentInscription Create(
         TournamentId tournamentId,
         FisherId fisherId,
-        CategoryId categoryId)
+        CategoryId categoryId,
+        int number)
     {
-        return new TournamentInscription(tournamentId, fisherId, categoryId);
+        return new TournamentInscription(tournamentId, fisherId, categoryId, number);
     }
 
 #pragma warning disable CS8618

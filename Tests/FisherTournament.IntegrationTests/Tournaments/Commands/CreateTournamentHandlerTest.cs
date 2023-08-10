@@ -11,7 +11,7 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
         public async Task Handler_Should_CreateTournament()
         {
             // 
-            using var context = _fixture.Context;
+            using var context = _fixture.TournamentContext;
             var command = new CreateTournamentCommand(
                 "Test Tournament",
                 _fixture.DateTimeProvider.Now.AddDays(1),

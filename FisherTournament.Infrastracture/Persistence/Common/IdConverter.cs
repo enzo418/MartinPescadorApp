@@ -28,6 +28,19 @@ public static partial class Extension
         return propertyBuilder;
     }
 
+    public static PropertyBuilder<T?> HasNullableGuidIdConversion<T>(
+            this PropertyBuilder<T?> propertyBuilder)
+        where T : GuidId<T>
+    {
+        var converter = new ValueConverter<T?, Guid?>(
+            x => x == null ? null : x.Value,
+            x => x.HasValue ? GuidId<T>.Create(x.Value).Value : null);
+
+        propertyBuilder.HasConversion(converter);
+
+        return propertyBuilder;
+    }
+
     public static PropertyBuilder HasGuidIdConversion<T>(
             this PropertyBuilder propertyBuilder)
         where T : GuidId<T>

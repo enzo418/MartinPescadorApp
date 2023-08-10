@@ -3,6 +3,7 @@ using System;
 using FisherTournament.Infrastracture.Persistence.Tournaments;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FisherTournament.Infrastracture.Persistence.Migrations.Tournament
 {
     [DbContext(typeof(TournamentFisherDbContext))]
-    partial class TournamentFisherDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230807223925_StandaloneFisher")]
+    partial class StandaloneFisher
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.3");

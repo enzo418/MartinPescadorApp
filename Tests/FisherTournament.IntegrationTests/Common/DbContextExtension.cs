@@ -13,10 +13,12 @@ public static partial class Extension
         return entity;
     }
 
-    public static Fisher PrepareFisher(this TournamentFisherDbContext context, string FirstName, string LastName)
+    public static Fisher PrepareFisher(
+        this TournamentFisherDbContext context,
+        string FirstName,
+        string LastName)
     {
-        var user = context.PrepareAdd(User.Create(FirstName, LastName));
-        var fisher = context.PrepareAdd(Fisher.Create(user.Id));
+        var fisher = context.PrepareAdd(Fisher.Create(FirstName, LastName));
         return fisher;
     }
 
@@ -26,14 +28,19 @@ public static partial class Extension
     //     return await context.Set<TEntity>().FindAsync(id);
     // }
 
-    public static async Task<IEnumerable<TEntity>> FindAllAsync<TEntity, TId>(this TournamentFisherDbContext context, IEnumerable<TId> Ids)
+    public static async Task<IEnumerable<TEntity>> FindAllAsync<TEntity, TId>(
+        this TournamentFisherDbContext context,
+        IEnumerable<TId> Ids)
         where TId : notnull
         where TEntity : AggregateRoot<TId>
     {
         return await context.Set<TEntity>().Where(c => Ids.Contains(c.Id)).ToListAsync();
     }
 
-    public static async Task<TEntity> WithAsync<TEntity>(this TournamentFisherDbContext context, TEntity entity, Action<TEntity>? beforeSave = null) where TEntity : class
+    public static async Task<TEntity> WithAsync<TEntity>(
+        this TournamentFisherDbContext context,
+        TEntity entity,
+        Action<TEntity>? beforeSave = null) where TEntity : class
     {
         await context.Set<TEntity>().AddAsync(entity);
 
@@ -46,7 +53,9 @@ public static partial class Extension
         return entity;
     }
 
-    public static async Task<IEnumerable<TEntity>> AddRangeAsync<TEntity>(this TournamentFisherDbContext context, IEnumerable<TEntity> entities) where TEntity : class
+    public static async Task<IEnumerable<TEntity>> AddRangeAsync<TEntity>(
+        this TournamentFisherDbContext context,
+        IEnumerable<TEntity> entities) where TEntity : class
     {
         await context.Set<TEntity>().AddRangeAsync(entities);
         await context.SaveChangesAsync(default);
@@ -58,7 +67,10 @@ public static partial class Extension
         return await context.Set<TEntity>().CountAsync();
     }
 
-    public static async Task<Fisher> WithFisherAsync(this TournamentFisherDbContext context, string FirstName, string LastName)
+    public static async Task<Fisher> WithFisherAsync(
+        this TournamentFisherDbContext context,
+        string FirstName,
+        string LastName)
     {
         var fisher = context.PrepareFisher(FirstName, LastName);
         await context.SaveChangesAsync(default);

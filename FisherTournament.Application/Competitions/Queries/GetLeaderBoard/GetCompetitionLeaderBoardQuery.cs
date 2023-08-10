@@ -14,11 +14,11 @@ namespace FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
 public record struct GetCompetitionLeaderBoardQuery(string CompetitionId)
      : IRequest<ErrorOr<IEnumerable<LeaderBoardCategory>>>;
 
-public record struct LeaderBoardItem(FisherId FisherId, string FirstName, string LastName, int Position, int TotalScore);
+public record struct LeaderBoardItem(FisherId FisherId, string Name, int Position, int TotalScore);
 
 public record struct LeaderBoardCategory(string Name, string Id, IEnumerable<LeaderBoardItem> LeaderBoard);
 
-public record FishersWithName(FisherId Id, string FirstName, string LastName);
+public record FishersWithName(FisherId Id, string Name);
 
 public class GetCompetitionLeaderBoardQueryHandler
  : IRequestHandler<GetCompetitionLeaderBoardQuery, ErrorOr<IEnumerable<LeaderBoardCategory>>>
@@ -59,8 +59,7 @@ public class GetCompetitionLeaderBoardQueryHandler
         {
             fishersNames = await _context.Fishers
                .Where(f => leaderBoard.Select(l => l.FisherId).Contains(f.Id))
-               .Join(_context.Users, f => f.UserId, u => u.Id, (f, u) => new { f.Id, u.FirstName, u.LastName })
-               .Select(f => new FishersWithName(f.Id, f.FirstName, f.LastName))
+               .Select(f => new FishersWithName(f.Id, f.Name))
                .ToListAsync(cancellationToken);
         }
 
@@ -77,8 +76,7 @@ public class GetCompetitionLeaderBoardQueryHandler
 
                         return new LeaderBoardItem(
                             r.FisherId,
-                            fisher?.FirstName ?? string.Empty,
-                            fisher?.LastName ?? string.Empty,
+                            fisher?.Name ?? string.Empty,
                             r.Position,
                             r.Score
                         );

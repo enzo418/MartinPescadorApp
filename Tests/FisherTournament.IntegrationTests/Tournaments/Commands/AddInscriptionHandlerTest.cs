@@ -11,7 +11,7 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
         [Fact]
         public async Task Handler_Should_AddInscription()
         {
-            using var context = _fixture.Context;
+            using var context = _fixture.TournamentContext;
 
             var tournament = context.PrepareAdd(Tournament.Create(
                 "Test Tournament",
@@ -20,14 +20,16 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
             );
 
             var category = tournament.AddCategory("test").Value;
-            var user = context.PrepareAdd(User.Create("First", "Last"));
-            var fisher = context.PrepareAdd(Fisher.Create(user.Id));
+            var fisher = context.PrepareAdd(Fisher.Create("First", "Last"));
 
             // EF NOTE: If you don't clear the change tracker, find will return the same as `tournament` variable,
             // since it was modified in the inscription command (different DB context instance).
             await context.SaveChangesAndClear();
 
-            var command = new AddInscriptionCommand(tournament.Id.ToString(), fisher.Id.ToString(), category.Id);
+            var command = new AddInscriptionCommand(tournament.Id.ToString(),
+                                                    fisher.Id.ToString(),
+                                                    category.Id,
+                                                    1);
 
             // Act
             var result = await _fixture.SendAsync(command);

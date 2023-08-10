@@ -20,8 +20,10 @@ namespace FisherTournament.API;
 
 public static partial class DependencyInjection
 {
-    public static IServiceCollection AddApi(
-        this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment, ILoggingBuilder loggingBuilder)
+    public static IServiceCollection AddApi(this IServiceCollection services,
+                                            IConfiguration configuration,
+                                            IHostEnvironment environment,
+                                            ILoggingBuilder loggingBuilder)
     {
         services.AddCors(options =>
         {

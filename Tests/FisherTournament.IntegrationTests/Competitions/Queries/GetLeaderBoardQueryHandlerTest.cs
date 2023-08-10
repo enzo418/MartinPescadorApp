@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ErrorOr;
 using FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
 using FisherTournament.Domain.CompetitionAggregate.Entities;
@@ -36,10 +32,10 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
 
             var inscriptionResults = new List<ErrorOr<Success>>()
             {
-                tournament.AddInscription(fisher1.Id, categoryPrimary.Id, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher2.Id, categoryPrimary.Id, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher3.Id, categorySecondary.Id, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher4.Id, categorySecondary.Id, _fixture.DateTimeProvider)
+                tournament.AddInscription(fisher1.Id, categoryPrimary.Id, 1, _fixture.DateTimeProvider),
+                tournament.AddInscription(fisher2.Id, categoryPrimary.Id, 2, _fixture.DateTimeProvider),
+                tournament.AddInscription(fisher3.Id, categorySecondary.Id, 3, _fixture.DateTimeProvider),
+                tournament.AddInscription(fisher4.Id, categorySecondary.Id, 4, _fixture.DateTimeProvider)
             };
 
             inscriptionResults.Should().NotContain(r => r.IsError);

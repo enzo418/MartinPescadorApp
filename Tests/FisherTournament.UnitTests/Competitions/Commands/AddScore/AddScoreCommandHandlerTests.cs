@@ -16,6 +16,8 @@ namespace FisherTournament.UnitTests.Competitions.Commands.AddScore
 
         private Location FakeLocation => Location.Create("city", "state", "country", "place");
 
+        private int Number => 1;
+
         public AddScoreCommandHandlerTests()
         {
             _dateTimeProviderMock.Setup(x => x.Now).Returns(DateTime.UtcNow);
@@ -25,7 +27,7 @@ namespace FisherTournament.UnitTests.Competitions.Commands.AddScore
         public async Task Handler_ShouldNot_AddScore_WhenCompetitionDoesNotExist()
         {
             // Arrange
-            var fisher = Fisher.Create(UserId.Create(Guid.Empty).Value);
+            var fisher = Fisher.Create("First Name", "Last Name");
 
             _contextMock.SetupCompetitions(new List<Competition>())
                         .SetupFisher(fisher);
@@ -71,7 +73,7 @@ namespace FisherTournament.UnitTests.Competitions.Commands.AddScore
         public async Task Handler_ShouldNot_AddScore_WhenCompetitionHasNotStarted()
         {
             // Arrange
-            var fisher = Fisher.Create(UserId.Create(Guid.Empty).Value);
+            var fisher = Fisher.Create("First Name", "Last Name");
             Tournament tournament = GetFakeTournament();
             var competition = Competition.Create(_dateTimeProviderMock.Object.Now.AddDays(1),
                                                  tournament.Id,
@@ -79,6 +81,7 @@ namespace FisherTournament.UnitTests.Competitions.Commands.AddScore
 
             tournament.AddInscription(fisher.Id,
                                       tournament.Categories.First().Id,
+                                      Number,
                                       _dateTimeProviderMock.Object);
 
             _contextMock.SetupCompetition(competition)
@@ -101,11 +104,12 @@ namespace FisherTournament.UnitTests.Competitions.Commands.AddScore
         public async Task Handler_ShouldNot_AddScore_WhenCompetitionIsFinished()
         {
             // Arrange
-            var fisher = Fisher.Create(UserId.Create(Guid.Empty).Value);
+            var fisher = Fisher.Create("First Name", "Last Name");
             Tournament tournament = GetFakeTournament();
 
             tournament.AddInscription(fisher.Id,
                                       tournament.Categories.First().Id,
+                                      Number,
                                       _dateTimeProviderMock.Object);
 
             var competition = Competition.Create(_dateTimeProviderMock.Object.Now.AddDays(-1),
@@ -134,7 +138,7 @@ namespace FisherTournament.UnitTests.Competitions.Commands.AddScore
         public async Task Handler_ShouldNot_AddScore_WhenFisherIsNotEnrolled()
         {
             // Arrange
-            var fisher = Fisher.Create(UserId.Create(Guid.Empty).Value);
+            var fisher = Fisher.Create("First Name", "Last Name");
             Tournament tournament = GetFakeTournament();
 
             var competition = Competition.Create(_dateTimeProviderMock.Object.Now.AddDays(1),

@@ -132,100 +132,100 @@ namespace FisherTournament.UnitTests.Tournaments.Commands
             result.ShouldHaveAnyValidationError();
         }
 
-        [Theory]
-        [ClassData(typeof(NullEmptyStringTesData))]
-        public async Task Validator_Error_WhenPassedEmptyCity(string city)
-        {
-            //
-            var command = new AddCompetitionsCommand(
-                "TournamentId",
-                new List<AddCompetitionCommand>
-                {
-                    new AddCompetitionCommand(
-                        _dateTimeProvider.Object.Now.AddDays(1),
-                        city,
-                        "State",
-                        "Country",
-                        "Place")
-                });
+        // [Theory]
+        // [ClassData(typeof(NullEmptyStringTesData))]
+        // public async Task Validator_Error_WhenPassedEmptyCity(string city)
+        // {
+        //     //
+        //     var command = new AddCompetitionsCommand(
+        //         "TournamentId",
+        //         new List<AddCompetitionCommand>
+        //         {
+        //             new AddCompetitionCommand(
+        //                 _dateTimeProvider.Object.Now.AddDays(1),
+        //                 city,
+        //                 "State",
+        //                 "Country",
+        //                 "Place")
+        //         });
 
-            //
-            var result = await _validator.TestValidateAsync(command);
+        //     //
+        //     var result = await _validator.TestValidateAsync(command);
 
-            // 
-            result.ShouldHaveAnyValidationError();
-        }
+        //     // 
+        //     result.ShouldHaveAnyValidationError();
+        // }
 
-        [Theory]
-        [ClassData(typeof(NullEmptyStringTesData))]
-        public async Task Validator_Error_WhenPassedEmptyState(string state)
-        {
-            //
-            var command = new AddCompetitionsCommand(
-                "TournamentId",
-                new List<AddCompetitionCommand>
-                {
-                    new AddCompetitionCommand(
-                        _dateTimeProvider.Object.Now.AddDays(1),
-                        "City",
-                        state,
-                        "Country",
-                        "Place")
-                });
+        // [Theory]
+        // [ClassData(typeof(NullEmptyStringTesData))]
+        // public async Task Validator_Error_WhenPassedEmptyState(string state)
+        // {
+        //     //
+        //     var command = new AddCompetitionsCommand(
+        //         "TournamentId",
+        //         new List<AddCompetitionCommand>
+        //         {
+        //             new AddCompetitionCommand(
+        //                 _dateTimeProvider.Object.Now.AddDays(1),
+        //                 "City",
+        //                 state,
+        //                 "Country",
+        //                 "Place")
+        //         });
 
-            //
-            var result = await _validator.TestValidateAsync(command);
+        //     //
+        //     var result = await _validator.TestValidateAsync(command);
 
-            // 
-            result.ShouldHaveAnyValidationError();
-        }
+        //     // 
+        //     result.ShouldHaveAnyValidationError();
+        // }
 
-        [Theory]
-        [ClassData(typeof(NullEmptyStringTesData))]
-        public async Task Validator_Error_WhenPassedEmptyCountry(string country)
-        {
-            //
-            var command = new AddCompetitionsCommand(
-                "TournamentId",
-                new List<AddCompetitionCommand>
-                {
-                    new AddCompetitionCommand(
-                        _dateTimeProvider.Object.Now.AddDays(1),
-                        "City",
-                        "State",
-                        country,
-                        "Place")
-                });
+        // [Theory]
+        // [ClassData(typeof(NullEmptyStringTesData))]
+        // public async Task Validator_Error_WhenPassedEmptyCountry(string country)
+        // {
+        //     //
+        //     var command = new AddCompetitionsCommand(
+        //         "TournamentId",
+        //         new List<AddCompetitionCommand>
+        //         {
+        //             new AddCompetitionCommand(
+        //                 _dateTimeProvider.Object.Now.AddDays(1),
+        //                 "City",
+        //                 "State",
+        //                 country,
+        //                 "Place")
+        //         });
 
-            //
-            var result = await _validator.TestValidateAsync(command);
+        //     //
+        //     var result = await _validator.TestValidateAsync(command);
 
-            // 
-            result.ShouldHaveAnyValidationError();
-        }
+        //     // 
+        //     result.ShouldHaveAnyValidationError();
+        // }
 
-        [Theory]
-        [ClassData(typeof(NullEmptyStringTesData))]
-        public async Task Validator_Error_WhenPassedEmptyPlace(string place)
-        {
-            //
-            var command = new AddCompetitionsCommand(
-                "TournamentId",
-                new List<AddCompetitionCommand>
-                {
-                    new AddCompetitionCommand(
-                        _dateTimeProvider.Object.Now.AddDays(1),
-                        "City",
-                        "State",
-                        "Country",
-                        place)
-                });
+        // [Theory]
+        // [ClassData(typeof(NullEmptyStringTesData))]
+        // public async Task Validator_Error_WhenPassedEmptyPlace(string place)
+        // {
+        //     //
+        //     var command = new AddCompetitionsCommand(
+        //         "TournamentId",
+        //         new List<AddCompetitionCommand>
+        //         {
+        //             new AddCompetitionCommand(
+        //                 _dateTimeProvider.Object.Now.AddDays(1),
+        //                 "City",
+        //                 "State",
+        //                 "Country",
+        //                 place)
+        //         });
 
-            //
-            var result = await _validator.TestValidateAsync(command);
+        //     //
+        //     var result = await _validator.TestValidateAsync(command);
 
-            // 
-            result.ShouldHaveAnyValidationError();
-        }
+        //     // 
+        //     result.ShouldHaveAnyValidationError();
+        // }
     }
 }

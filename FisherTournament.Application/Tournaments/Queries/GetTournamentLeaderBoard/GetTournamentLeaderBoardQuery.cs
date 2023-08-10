@@ -14,8 +14,7 @@ public record GetTournamentLeaderBoardQuery(string TournamentId)
 
 public record struct CompetitionLeaderBoardItem(
     FisherId FisherId,
-    string FirstName,
-    string LastName,
+    string Name,
     int Position,
     int TotalScore
 );
@@ -48,14 +47,13 @@ public class GetTournamentLeaderBoardQueryHandler
         {
             return Errors.Id.NotValidWithProperty(nameof(request.TournamentId));
         }
-        
+
         var leaderBoard = _leaderBoardRepository.GetTournamentLeaderBoard(tournamentId.Value);
-        
+
         // OPTIMIZE: Cache fisher names instead of a join?
         var fishersNames = await _context.Fishers
             .Where(f => leaderBoard.Select(l => l.FisherId).Contains(f.Id))
-            .Join(_context.Users, f => f.UserId, u => u.Id, (f, u) => new { f.Id, u.FirstName, u.LastName })
-            .Select(f => new { f.Id, f.FirstName, f.LastName })
+            .Select(f => new { f.Id, f.Name })
             .ToListAsync(cancellationToken);
 
         // FIXME: we need the categories names!!! category.key is using the id
@@ -68,11 +66,10 @@ public class GetTournamentLeaderBoardQueryHandler
                     category.Select(r =>
                     {
                         var fisher = fishersNames.FirstOrDefault(f => f.Id == r.FisherId);
-                        
+
                         return new CompetitionLeaderBoardItem(
                             r.FisherId,
-                            fisher?.FirstName ?? string.Empty,
-                            fisher?.LastName ?? string.Empty,
+                            fisher?.Name ?? string.Empty,
                             r.Position,
                             r.TotalScore
                         );

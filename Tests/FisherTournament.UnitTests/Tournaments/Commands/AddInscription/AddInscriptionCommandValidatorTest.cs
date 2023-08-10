@@ -21,7 +21,8 @@ namespace FisherTournament.UnitTests.Tournaments.Commands.AddInscription
             var command = new AddInscriptionCommand(
                 tournamentId,
                 Guid.NewGuid().ToString(),
-                "0");
+                "0",
+                1);
 
             // Act
             var result = _validator.TestValidate(command);
@@ -38,7 +39,8 @@ namespace FisherTournament.UnitTests.Tournaments.Commands.AddInscription
             var command = new AddInscriptionCommand(
                 Guid.NewGuid().ToString(),
                 fisherId,
-                "0");
+                "0",
+                1);
 
             // Act
             var result = _validator.TestValidate(command);
@@ -54,7 +56,8 @@ namespace FisherTournament.UnitTests.Tournaments.Commands.AddInscription
             var command = new AddInscriptionCommand(
                 Guid.NewGuid().ToString(),
                 Guid.NewGuid().ToString(),
-                "0");
+                "0",
+                1);
 
             // Act
             var result = _validator.TestValidate(command);
@@ -71,7 +74,8 @@ namespace FisherTournament.UnitTests.Tournaments.Commands.AddInscription
             var command = new AddInscriptionCommand(
                 Guid.NewGuid().ToString(),
                 Guid.NewGuid().ToString(),
-                categoryId);
+                categoryId,
+                1);
 
             // Act
             var result = _validator.TestValidate(command);
