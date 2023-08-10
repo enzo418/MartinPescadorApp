@@ -8,6 +8,8 @@ using FisherTournament.Domain.Common.Errors;
 using FisherTournament.ReadModels.Models;
 using FisherTournament.ReadModels.Persistence;
 using FisherTournament.Application.Common.Instrumentation;
+using FisherTournament.Domain.TournamentAggregate.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
 
@@ -26,14 +28,17 @@ public class GetCompetitionLeaderBoardQueryHandler
     private readonly ITournamentFisherDbContext _context;
     private readonly ILeaderBoardRepository _leaderBoardRepository;
     private readonly ApplicationInstrumentation _instrumentation;
+    private readonly ILogger<GetCompetitionLeaderBoardQueryHandler> _logger;
 
     public GetCompetitionLeaderBoardQueryHandler(ITournamentFisherDbContext context,
                                                  ILeaderBoardRepository leaderBoardRepository,
-                                                 ApplicationInstrumentation instrumentation)
+                                                 ApplicationInstrumentation instrumentation,
+                                                 ILogger<GetCompetitionLeaderBoardQueryHandler> logger)
     {
         _context = context;
         _leaderBoardRepository = leaderBoardRepository;
         _instrumentation = instrumentation;
+        _logger = logger;
     }
 
     public async Task<ErrorOr<IEnumerable<LeaderBoardCategory>>> Handle(
@@ -60,16 +65,34 @@ public class GetCompetitionLeaderBoardQueryHandler
             fishersNames = await _context.Fishers
                .Where(f => leaderBoard.Select(l => l.FisherId).Contains(f.Id))
                .Select(f => new FishersWithName(f.Id, f.Name))
+               .AsNoTracking()
                .ToListAsync(cancellationToken);
         }
 
-        // FIXME: we need the categories names!!! category.key is using the id
+        // OPTIMIZE: Also a very good cache candidate
+        IReadOnlyCollection<Category>? tournamentCategories;
+        using (_instrumentation.ActivitySource.StartActivity("GetCategories"))
+        {
+            tournamentCategories = (await _context.Competitions
+                .Where(c => c.Id == competitionId.Value)
+                .Join(_context.Tournaments, c => c.TournamentId, trn => trn.Id, (c, trn) => trn)
+                .Select(t => t.Categories)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken)
+            ).FirstOrDefault();
+        }
+
+        if (tournamentCategories is null)
+        {
+            _logger.LogError("Tournament categories not found for competition {CompetitionId}", competitionId.Value);
+            return Error.Failure();
+        }
 
         var categories = leaderBoard
             .GroupBy(r => r.CategoryId)
             .Select(category => new LeaderBoardCategory(
+                    tournamentCategories.First(c => c.Id == category.Key)?.Name ?? category.Key,
                     category.Key,
-                    category.First().CategoryId,
                     category.Select(r =>
                     {
                         var fisher = fishersNames.FirstOrDefault(f => f.Id == r.FisherId);

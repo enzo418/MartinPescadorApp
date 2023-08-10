@@ -72,8 +72,7 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             result.Value.Should().NotBeNull();
             result.Value!.Should().HaveCount(2);
 
-            // TODO: Use the category name when it's available
-            var primaryCategory = result.Value.FirstOrDefault(c => c.Id == categoryPrimary.Id.Value.ToString() /*&& c.Name == categoryPrimary.Name*/);
+            var primaryCategory = result.Value.FirstOrDefault(c => c.Id == categoryPrimary.Id.Value.ToString() && c.Name == categoryPrimary.Name);
             primaryCategory.Should().NotBeNull();
 
             primaryCategory!.LeaderBoard.Should().HaveCount(2);
@@ -84,8 +83,7 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             primaryCategory.LeaderBoard.Last().FisherId.Should().Be(fisher1.Id);
             primaryCategory.LeaderBoard.Last().TotalScore.Should().Be(11);
 
-            // TODO: Use the category name when it's available
-            var secondaryCategory = result.Value.FirstOrDefault(c => c.Id == categorySecondary.Id.Value.ToString() /*&& c.Name == categorySecondary.Name*/);
+            var secondaryCategory = result.Value.FirstOrDefault(c => c.Id == categorySecondary.Id.Value.ToString() && c.Name == categorySecondary.Name);
             secondaryCategory.Should().NotBeNull();
             secondaryCategory.LeaderBoard.Should().HaveCount(2);
             secondaryCategory!.LeaderBoard.First().FisherId.Should().Be(fisher3.Id);
