@@ -121,26 +121,30 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
         if (fishersToLoadCaughtFish.Any())
         {
             // load all the caught fish
-            Dictionary<FisherId, List<FishCaught>> fisherCaughtFish = new();
+            Dictionary<FisherId, IEnumerable<FishCaught>> fisherCaughtFish = new();
             var flatten = fishersToLoadCaughtFish.SelectMany(d => d);
             foreach (var fisher in flatten)
             {
-                fisherCaughtFish[fisher.FisherId] = await _context.Competitions
-                    .Include(c => c.Participations)
-                    .Where(p => p.Participations.Any(p => p.FisherId == fisher.FisherId))
-                    .SelectMany(c => c.Participations.SelectMany(p => p.FishCaught))
-                    .AsNoTracking()
-                    .ToListAsync(cancellationToken);
+                fisherCaughtFish[fisher.FisherId] = (
+                    from c in _context.Competitions
+                    where c.Id == competitionId
+
+                    // left join - if the fisher is not in the competition, p is null
+                    from p in c.Participations.Where(p => p.FisherId == fisher.FisherId).DefaultIfEmpty()
+
+                    select p.FishCaught
+                ).AsNoTracking().ToList().SelectMany(p => p);
             }
 
             BreakTieByFirstLargerPiece(fishersToBreakTie: fishersToLoadCaughtFish, fisherCaughtFish);
         }
 
-        fishersFromCategoryWithScore
+        fishersFromCategoryWithScore = fishersFromCategoryWithScore
                 .OrderByDescending(f => f.Score)
                 .ThenByDescending(f => f.LargerPiece)
                 .ThenByDescending(f => f.TieDiscriminator)
-                .ThenByDescending(f => f.FisherId);
+                .ThenByDescending(f => f.FisherId)
+                .ToList();
 
         // 4. Get the fishers positions respecting the system rules
         var leaderBoardRepository = _readModelsUnitOfWork.LeaderBoardRepository;
@@ -181,11 +185,11 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
     /// <param name="fishersToBreakTie"></param>
     /// <param name="fisherCaughtFish"></param>
     private static void BreakTieByFirstLargerPiece(IEnumerable<List<FisherWithScore>> fishersToBreakTie,
-                                                   Dictionary<FisherId, List<FishCaught>> fisherCaughtFish)
+                                                   Dictionary<FisherId, IEnumerable<FishCaught>> fisherCaughtFish)
     {
         foreach (var fishers in fishersToBreakTie)
         {
-            int maxCaughtFishCount = fishers.Max(f => fisherCaughtFish[f.FisherId].Count);
+            int maxCaughtFishCount = fishers.Max(f => fisherCaughtFish[f.FisherId].Count());
             int tiesToBreak = fishers.Count;
 
             for (int i = 0; i < maxCaughtFishCount; i++)
@@ -242,7 +246,7 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
                             // Disambiguation rules
                             .ThenBy(p => p.AveragePosition) // lower average position is better
                             .ThenByDescending(p => p.TotalScore) // higher total score is better
-                            .ThenBy(p => p.FisherId) // else decide by fisherId 
+                            .ThenBy(p => p.FisherId.Value) // else decide by fisherId 
 
                             .ToList();
 
