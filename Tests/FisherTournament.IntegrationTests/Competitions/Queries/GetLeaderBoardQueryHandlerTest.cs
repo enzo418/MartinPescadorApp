@@ -1,9 +1,41 @@
 using ErrorOr;
+using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
+using FisherTournament.Domain.Common.Provider;
 using FisherTournament.Domain.CompetitionAggregate.Entities;
+using FisherTournament.Domain.FisherAggregate.ValueObjects;
+using FisherTournament.Domain.TournamentAggregate.ValueObjects;
+using FisherTournament.IntegrationTests.Common;
 
 namespace FisherTournament.IntegrationTests.Competitions.Queries
 {
+    // Fluent Assertion for the leaderboard tests, this makes it easier to write/read but difficult to pinpoint the exact error
+    // just form the console without debugging.
+    public static class LeaderBoardAssert
+    {
+        public static LeaderBoardCategory ShouldHaveCategoryLeaderBoard(this IEnumerable<LeaderBoardCategory> leaderBoardCategories, string Name, CategoryId Id)
+        {
+            var category = leaderBoardCategories.Single(c => c.Id == Id);
+            category.Name.Should().Be(Name);
+            return category;
+        }
+
+        public static IEnumerable<LeaderBoardItem> ShouldHaveNPositions(this LeaderBoardCategory leaderBoardCategory, int n)
+        {
+            leaderBoardCategory.LeaderBoard.Should().HaveCount(n);
+            return leaderBoardCategory.LeaderBoard;
+        }
+
+        public static IEnumerable<LeaderBoardItem> ShouldHavePosition(this IEnumerable<LeaderBoardItem> leaderBoard, int position, FisherId fisherId, int totalScore)
+        {
+            var leaderBoardPosition = leaderBoard.ElementAt(position - 1);
+            leaderBoardPosition.FisherId.Should().Be(fisherId);
+            leaderBoardPosition.TotalScore.Should().Be(totalScore);
+            return leaderBoard;
+        }
+    }
+
+
     public class GetLeaderBoardQueryHandlerTest : BaseUseCaseTest
     {
         public GetLeaderBoardQueryHandlerTest(UseCaseTestsFixture fixture) : base(fixture)
@@ -33,45 +65,36 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             var fisher3 = context.PrepareFisher("First3", "Last3");
             var fisher4 = context.PrepareFisher("First4", "Last4");
 
-            var tournament = context.PrepareAdd(Tournament.Create(
-                "Test Tournament",
-                _fixture.DateTimeProvider.Now,
-                _fixture.DateTimeProvider.Now.AddDays(2)));
+            var tournament = await TournamentBuilder.Create(context, _fixture.DateTimeProvider)
+                .WithName("Test Tournament")
+                .WithStartDate(_fixture.DateTimeProvider.Now)
+                .WithEndDate(_fixture.DateTimeProvider.Now.AddDays(1))
 
-            var categoryPrimary = tournament.AddCategory("Primary").Value;
-            var categorySecondary = tournament.AddCategory("Secondary").Value;
+                .WithCategory("Primary")
+                .WithCategory("Secondary")
 
-            await context.SaveChangesAsync(CancellationToken.None);
+                .WithInscription(fisher1.Id, 1, "Primary")
+                .WithInscription(fisher2.Id, 2, "Primary")
+                .WithInscription(fisher3.Id, 3, "Secondary")
+                .WithInscription(fisher4.Id, 4, "Secondary")
 
-            var inscriptionResults = new List<ErrorOr<Success>>()
-            {
-                tournament.AddInscription(fisher1.Id, categoryPrimary.Id, 1, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher2.Id, categoryPrimary.Id, 2, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher3.Id, categorySecondary.Id, 3, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher4.Id, categorySecondary.Id, 4, _fixture.DateTimeProvider)
-            };
+                .Build(CancellationToken.None);
 
-            inscriptionResults.Should().NotContain(r => r.IsError);
+            var categoryPrimary = tournament.Categories.First(c => c.Name == "Primary");
+            var categorySecondary = tournament.Categories.First(c => c.Name == "Secondary");
 
-            await context.SaveChangesAsync(CancellationToken.None);
+            var competition = await context.WithAsync(CompetitionBuilder.Create(_fixture.DateTimeProvider)
+                .WithTournament(tournament.Id)
+                .WithLocation(Location.Create("Test City", "Test State", "Test Country", "Test Place"))
 
-            var competition = await context.WithAsync(Competition.Create(
-                _fixture.DateTimeProvider.Now,
-                tournament.Id,
-                Location.Create("Test City", "Test State", "Test Country", "Test Place")),
-                beforeSave: comp =>
-                {
-                    var results = new List<ErrorOr<Success>>()
-                    {
-                        comp.AddScore(fisher1.Id, 1, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher1.Id, 10, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher2.Id, 200, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher3.Id, 100, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher4.Id, 5, _fixture.DateTimeProvider)
-                    };
+                .WithScore(fisher1.Id, 1)
+                .WithScore(fisher1.Id, 10)
 
-                    results.Should().NotContain(r => r.IsError);
-                });
+                .WithScore(fisher2.Id, 200)
+                .WithScore(fisher3.Id, 100)
+                .WithScore(fisher4.Id, 5)
+
+                .Build());
 
             int jobsExecuted = await _fixture.ExecutePendingLeaderBoardJobs();
 
@@ -85,22 +108,15 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             result.Value.Should().NotBeNull();
             result.Value!.Should().HaveCount(2);
 
-            var primaryCategory = result.Value.FirstOrDefault(c => c.Id == categoryPrimary.Id.Value.ToString() && c.Name == categoryPrimary.Name);
-            primaryCategory.Should().NotBeNull();
+            result.Value.ShouldHaveCategoryLeaderBoard("Primary", categoryPrimary.Id)
+                        .ShouldHaveNPositions(2)
+                        .ShouldHavePosition(1, fisher2.Id, 200)
+                        .ShouldHavePosition(2, fisher1.Id, 11);
 
-            primaryCategory!.LeaderBoard.Should().HaveCount(2);
-
-            primaryCategory.LeaderBoard.First().FisherId.Should().Be(fisher2.Id);
-            primaryCategory.LeaderBoard.First().TotalScore.Should().Be(200);
-
-            primaryCategory.LeaderBoard.Last().FisherId.Should().Be(fisher1.Id);
-            primaryCategory.LeaderBoard.Last().TotalScore.Should().Be(11);
-
-            var secondaryCategory = result.Value.FirstOrDefault(c => c.Id == categorySecondary.Id.Value.ToString() && c.Name == categorySecondary.Name);
-            secondaryCategory.Should().NotBeNull();
-            secondaryCategory.LeaderBoard.Should().HaveCount(2);
-            secondaryCategory!.LeaderBoard.First().FisherId.Should().Be(fisher3.Id);
-            secondaryCategory.LeaderBoard.First().TotalScore.Should().Be(100);
+            result.Value.ShouldHaveCategoryLeaderBoard("Secondary", categorySecondary.Id)
+                        .ShouldHaveNPositions(2)
+                        .ShouldHavePosition(1, fisher3.Id, 100)
+                        .ShouldHavePosition(2, fisher4.Id, 5);
         }
 
         // loads two competitions, some scores on them and check that the scores are not mixed between competitions
@@ -114,62 +130,47 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             var fisher3 = context.PrepareFisher("First3", "Last3");
             var fisher4 = context.PrepareFisher("First4", "Last4");
 
-            var tournament = context.PrepareAdd(Tournament.Create(
-                "Test Tournament",
-                _fixture.DateTimeProvider.Now,
-                _fixture.DateTimeProvider.Now.AddDays(2)));
+            var tournament = await TournamentBuilder.Create(context, _fixture.DateTimeProvider)
+                .WithName("Test Tournament")
+                .WithStartDate(_fixture.DateTimeProvider.Now)
+                .WithEndDate(_fixture.DateTimeProvider.Now.AddDays(2))
 
-            var categoryPrimary = tournament.AddCategory("Primary").Value;
-            var categorySecondary = tournament.AddCategory("Secondary").Value;
+                .WithCategory("Primary")
+                .WithCategory("Secondary")
 
-            await context.SaveChangesAsync(CancellationToken.None);
+                .WithInscription(fisher1.Id, 1, "Primary")
+                .WithInscription(fisher2.Id, 2, "Primary")
+                .WithInscription(fisher3.Id, 3, "Secondary")
+                .WithInscription(fisher4.Id, 4, "Secondary")
 
-            var inscriptionResults = new List<ErrorOr<Success>>()
-            {
-                tournament.AddInscription(fisher1.Id, categoryPrimary.Id, 1, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher2.Id, categoryPrimary.Id, 2, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher3.Id, categorySecondary.Id, 3, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher4.Id, categorySecondary.Id, 4, _fixture.DateTimeProvider)
-            };
+                .Build(CancellationToken.None);
 
-            inscriptionResults.Should().NotContain(r => r.IsError);
+            var categoryPrimary = tournament.Categories.First(c => c.Name == "Primary");
+            var categorySecondary = tournament.Categories.First(c => c.Name == "Secondary");
 
-            await context.SaveChangesAsync(CancellationToken.None);
+            var competition1 = await context.WithAsync(CompetitionBuilder.Create(_fixture.DateTimeProvider)
+                .WithTournament(tournament.Id)
+                .WithLocation(Location.Create("Test City", "Test State", "Test Country", "Test Place"))
 
-            var competition1 = await context.WithAsync(Competition.Create(
-                _fixture.DateTimeProvider.Now,
-                tournament.Id,
-                Location.Create("Test City", "Test State", "Test Country", "Test Place")),
-                beforeSave: comp =>
-                {
-                    var results = new List<ErrorOr<Success>>()
-                    {
-                        comp.AddScore(fisher1.Id, 1, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher1.Id, 10, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher2.Id, 200, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher3.Id, 100, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher4.Id, 5, _fixture.DateTimeProvider)
-                    };
+                .WithScore(fisher1.Id, 1)
+                .WithScore(fisher1.Id, 10)
 
-                    results.Should().NotContain(r => r.IsError);
-                });
+                .WithScore(fisher2.Id, 200)
+                .WithScore(fisher3.Id, 100)
+                .WithScore(fisher4.Id, 5)
 
-            var competition2 = await context.WithAsync(Competition.Create(
-                _fixture.DateTimeProvider.Now,
-                tournament.Id,
-                Location.Create("Test City", "Test State", "Test Country", "Test Place")),
-                beforeSave: comp =>
-                {
-                    var results = new List<ErrorOr<Success>>()
-                    {
-                        comp.AddScore(fisher1.Id, 100, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher2.Id, 200, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher3.Id, 300, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher4.Id, 400, _fixture.DateTimeProvider)
-                    };
+                .Build());
 
-                    results.Should().NotContain(r => r.IsError);
-                });
+            var competition2 = await context.WithAsync(CompetitionBuilder.Create(_fixture.DateTimeProvider)
+                .WithTournament(tournament.Id)
+                .WithLocation(Location.Create("Test City", "Test State", "Test Country", "Test Place"))
+
+                .WithScore(fisher1.Id, 100)
+                .WithScore(fisher2.Id, 200)
+                .WithScore(fisher3.Id, 300)
+                .WithScore(fisher4.Id, 400)
+
+                .Build());
 
             await context.SaveChangesAsync(CancellationToken.None);
 
@@ -185,27 +186,15 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             result.Value.Should().NotBeNull();
             result.Value!.Should().HaveCount(2);
 
-            var primaryCategory = result.Value.FirstOrDefault(c => c.Id == categoryPrimary.Id.Value.ToString() && c.Name == categoryPrimary.Name);
-            primaryCategory.Should().NotBeNull();
+            result.Value.ShouldHaveCategoryLeaderBoard("Primary", categoryPrimary.Id)
+                        .ShouldHaveNPositions(2)
+                        .ShouldHavePosition(1, fisher2.Id, 200)
+                        .ShouldHavePosition(2, fisher1.Id, 11);
 
-            primaryCategory!.LeaderBoard.Should().HaveCount(2);
-
-            primaryCategory.LeaderBoard.First().FisherId.Should().Be(fisher2.Id);
-            primaryCategory.LeaderBoard.First().TotalScore.Should().Be(200);
-
-            primaryCategory.LeaderBoard.Last().FisherId.Should().Be(fisher1.Id);
-            primaryCategory.LeaderBoard.Last().TotalScore.Should().Be(11);
-
-            var secondaryCategory = result.Value.FirstOrDefault(c => c.Id == categorySecondary.Id.Value.ToString() && c.Name == categorySecondary.Name);
-            secondaryCategory.Should().NotBeNull();
-
-            secondaryCategory!.LeaderBoard.Should().HaveCount(2);
-
-            secondaryCategory.LeaderBoard.First().FisherId.Should().Be(fisher3.Id);
-            secondaryCategory.LeaderBoard.First().TotalScore.Should().Be(100);
-
-            secondaryCategory.LeaderBoard.Last().FisherId.Should().Be(fisher4.Id);
-            secondaryCategory.LeaderBoard.Last().TotalScore.Should().Be(5);
+            result.Value.ShouldHaveCategoryLeaderBoard("Secondary", categorySecondary.Id)
+                        .ShouldHaveNPositions(2)
+                        .ShouldHavePosition(1, fisher3.Id, 100)
+                        .ShouldHavePosition(2, fisher4.Id, 5);
         }
 
         [Fact]
@@ -217,50 +206,38 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             var fisher2 = context.PrepareFisher("First2", "Last2");
             var fisher3 = context.PrepareFisher("First3", "Last3");
 
-            var tournament = context.PrepareAdd(Tournament.Create(
-                "Test Tournament",
-                _fixture.DateTimeProvider.Now,
-                _fixture.DateTimeProvider.Now.AddDays(2)));
+            var tournament = await TournamentBuilder.Create(context, _fixture.DateTimeProvider)
+                .WithName("Test Tournament")
+                .WithStartDate(_fixture.DateTimeProvider.Now)
+                .WithEndDate(_fixture.DateTimeProvider.Now.AddDays(2))
 
-            var categoryPrimary = tournament.AddCategory("Primary").Value;
-            var categorySecondary = tournament.AddCategory("Secondary").Value;
+                .WithCategory("Primary")
+                .WithCategory("Secondary")
 
-            await context.SaveChangesAsync(CancellationToken.None);
+                .WithInscription(fisher1.Id, 1, "Primary")
+                .WithInscription(fisher2.Id, 2, "Primary")
+                .WithInscription(fisher3.Id, 3, "Primary")
 
-            var inscriptionResults = new List<ErrorOr<Success>>()
-            {
-                tournament.AddInscription(fisher1.Id, categoryPrimary.Id, 1, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher2.Id, categoryPrimary.Id, 2, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher3.Id, categoryPrimary.Id, 3, _fixture.DateTimeProvider)
-            };
+                .Build(CancellationToken.None);
 
-            inscriptionResults.Should().NotContain(r => r.IsError);
+            var categoryPrimary = tournament.Categories.First(c => c.Name == "Primary");
 
-            await context.SaveChangesAsync(CancellationToken.None);
+            var competition = await context.WithAsync(CompetitionBuilder.Create(_fixture.DateTimeProvider)
+                .WithTournament(tournament.Id)
+                .WithLocation(Location.Create("Test City", "Test State", "Test Country", "Test Place"))
 
-            var competition = await context.WithAsync(Competition.Create(
-                _fixture.DateTimeProvider.Now,
-                tournament.Id,
-                Location.Create("Test City", "Test State", "Test Country", "Test Place")),
-                beforeSave: comp =>
-                {
-                    var results = new List<ErrorOr<Success>>()
-                    {
-                        // fisher 1 is 1°
-                        comp.AddScore(fisher1.Id, 50, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher1.Id, 10, _fixture.DateTimeProvider),
+                .WithScore(fisher1.Id, 50)
+                .WithScore(fisher1.Id, 10)
 
-                        comp.AddScore(fisher2.Id, 10, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher2.Id, 20, _fixture.DateTimeProvider),
+                .WithScore(fisher2.Id, 10)
+                .WithScore(fisher2.Id, 20)
 
-                        // fisher3 and fisher2 are tied, but fisher3 has a larger piece
-                        // (25 vs 20) so it's 2° and fisher2 is 3°
-                        comp.AddScore(fisher3.Id, 25, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher3.Id, 5, _fixture.DateTimeProvider),
-                    };
+                // fisher3 and fisher2 are tied, but fisher3 has a larger piece
+                // (25 vs 20) so it's 2° and fisher2 is 3°
+                .WithScore(fisher3.Id, 25)
+                .WithScore(fisher3.Id, 5)
 
-                    results.Should().NotContain(r => r.IsError);
-                });
+                .Build());
 
             int jobsExecuted = await _fixture.ExecutePendingLeaderBoardJobs();
 
@@ -274,19 +251,11 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             result.Value.Should().NotBeNull();
             result.Value!.Should().HaveCount(1);
 
-            var primaryCategory = result.Value.FirstOrDefault(c => c.Id == categoryPrimary.Id.Value.ToString() && c.Name == categoryPrimary.Name);
-            primaryCategory.Should().NotBeNull();
-
-            primaryCategory!.LeaderBoard.Should().HaveCount(3);
-
-            primaryCategory.LeaderBoard.ElementAt(0).FisherId.Should().Be(fisher1.Id);
-            primaryCategory.LeaderBoard.ElementAt(0).TotalScore.Should().Be(60);
-
-            primaryCategory.LeaderBoard.ElementAt(1).FisherId.Should().Be(fisher3.Id);
-            primaryCategory.LeaderBoard.ElementAt(1).TotalScore.Should().Be(30);
-
-            primaryCategory.LeaderBoard.ElementAt(2).FisherId.Should().Be(fisher2.Id);
-            primaryCategory.LeaderBoard.ElementAt(2).TotalScore.Should().Be(30);
+            result.Value.ShouldHaveCategoryLeaderBoard("Primary", categoryPrimary.Id)
+                        .ShouldHaveNPositions(3)
+                        .ShouldHavePosition(1, fisher1.Id, 60)
+                        .ShouldHavePosition(2, fisher3.Id, 30)
+                        .ShouldHavePosition(3, fisher2.Id, 30);
         }
 
         [Fact]
@@ -298,69 +267,52 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             var fisher2 = context.PrepareFisher("First2", "Last2");
             var fisher3 = context.PrepareFisher("First3", "Last3");
 
-            var tournament = context.PrepareAdd(Tournament.Create(
-                "Test Tournament",
-                _fixture.DateTimeProvider.Now,
-                _fixture.DateTimeProvider.Now.AddDays(2)));
+            var tournament = await TournamentBuilder.Create(context, _fixture.DateTimeProvider)
+                .WithName("Test Tournament")
+                .WithStartDate(_fixture.DateTimeProvider.Now)
+                .WithEndDate(_fixture.DateTimeProvider.Now.AddDays(2))
 
-            var categoryPrimary = tournament.AddCategory("Primary").Value;
-            var categorySecondary = tournament.AddCategory("Secondary").Value;
+                .WithCategory("Primary")
+                .WithCategory("Secondary")
 
-            await context.SaveChangesAsync(CancellationToken.None);
+                .WithInscription(fisher1.Id, 1, "Primary")
+                .WithInscription(fisher2.Id, 2, "Primary")
+                .WithInscription(fisher3.Id, 3, "Primary")
 
-            var inscriptionResults = new List<ErrorOr<Success>>()
-            {
-                tournament.AddInscription(fisher1.Id, categoryPrimary.Id, 1, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher2.Id, categoryPrimary.Id, 2, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher3.Id, categoryPrimary.Id, 3, _fixture.DateTimeProvider)
-            };
+                .Build(CancellationToken.None);
 
-            inscriptionResults.Should().NotContain(r => r.IsError);
+            var competition1 = await context.WithAsync(CompetitionBuilder.Create(_fixture.DateTimeProvider)
+                .WithTournament(tournament.Id)
+                .WithLocation(Location.Create("Test City", "Test State", "Test Country", "Test Place"))
 
-            await context.SaveChangesAsync(CancellationToken.None);
+                .WithScore(fisher1.Id, 50)
+                .WithScore(fisher1.Id, 10)
 
-            var competition1 = await context.WithAsync(Competition.Create(
-                _fixture.DateTimeProvider.Now,
-                tournament.Id,
-                Location.Create("Test City", "Test State", "Test Country", "Test Place")),
-                beforeSave: comp =>
-                {
-                    var results = new List<ErrorOr<Success>>()
-                    {
-                        // fisher 1 is 1°
-                        comp.AddScore(fisher1.Id, 50, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher1.Id, 10, _fixture.DateTimeProvider),
+                .WithScore(fisher2.Id, 10)
+                .WithScore(fisher2.Id, 20)
 
-                        comp.AddScore(fisher2.Id, 10, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher2.Id, 20, _fixture.DateTimeProvider),
+                // fisher3 and fisher2 are tied, but fisher3 has a larger piece
+                // (25 vs 20) so it's 2° and fisher2 is 3°
+                .WithScore(fisher3.Id, 25)
+                .WithScore(fisher3.Id, 5)
 
-                        // fisher3 and fisher2 are tied, but fisher3 has a larger piece
-                        // (25 vs 20) so it's 2° and fisher2 is 3°
-                        comp.AddScore(fisher3.Id, 25, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher3.Id, 5, _fixture.DateTimeProvider),
-                    };
+                .Build());
 
-                    results.Should().NotContain(r => r.IsError);
-                });
+
+            var categoryPrimary = tournament.Categories.First(c => c.Name == "Primary");
 
             // competition to verify that the competition leader board is not affected by other competitions
-            var competition2 = await context.WithAsync(Competition.Create(
-            _fixture.DateTimeProvider.Now,
-            tournament.Id,
-            Location.Create("Test City", "Test State", "Test Country", "Test Place")),
-            beforeSave: comp =>
-            {
-                var results = new List<ErrorOr<Success>>()
-                {
-                        comp.AddScore(fisher1.Id, 10, _fixture.DateTimeProvider),
+            var competition2 = await context.WithAsync(CompetitionBuilder.Create(_fixture.DateTimeProvider)
+                .WithTournament(tournament.Id)
+                .WithLocation(Location.Create("Test City", "Test State", "Test Country", "Test Place"))
 
-                        comp.AddScore(fisher2.Id, 500, _fixture.DateTimeProvider),
+                .WithScore(fisher1.Id, 10)
 
-                        comp.AddScore(fisher3.Id, 50, _fixture.DateTimeProvider),
-                };
+                .WithScore(fisher2.Id, 500)
 
-                results.Should().NotContain(r => r.IsError);
-            });
+                .WithScore(fisher3.Id, 50)
+
+                .Build());
 
             int jobsExecuted = await _fixture.ExecutePendingLeaderBoardJobs();
 
@@ -374,19 +326,11 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             result.Value.Should().NotBeNull();
             result.Value!.Should().HaveCount(1);
 
-            var primaryCategory = result.Value.FirstOrDefault(c => c.Id == categoryPrimary.Id.Value.ToString() && c.Name == categoryPrimary.Name);
-            primaryCategory.Should().NotBeNull();
-
-            primaryCategory!.LeaderBoard.Should().HaveCount(3);
-
-            primaryCategory.LeaderBoard.ElementAt(0).FisherId.Should().Be(fisher1.Id);
-            primaryCategory.LeaderBoard.ElementAt(0).TotalScore.Should().Be(60);
-
-            primaryCategory.LeaderBoard.ElementAt(1).FisherId.Should().Be(fisher3.Id);
-            primaryCategory.LeaderBoard.ElementAt(1).TotalScore.Should().Be(30);
-
-            primaryCategory.LeaderBoard.ElementAt(2).FisherId.Should().Be(fisher2.Id);
-            primaryCategory.LeaderBoard.ElementAt(2).TotalScore.Should().Be(30);
+            result.Value.ShouldHaveCategoryLeaderBoard("Primary", categoryPrimary.Id)
+                        .ShouldHaveNPositions(3)
+                        .ShouldHavePosition(1, fisher1.Id, 60)
+                        .ShouldHavePosition(2, fisher3.Id, 30)
+                        .ShouldHavePosition(3, fisher2.Id, 30);
         }
 
         [Fact]
@@ -398,51 +342,40 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             var fisher2 = context.PrepareFisher("First2", "Last2");
             var fisher3 = context.PrepareFisher("First3", "Last3");
 
-            var tournament = context.PrepareAdd(Tournament.Create(
-                "Test Tournament",
-                _fixture.DateTimeProvider.Now,
-                _fixture.DateTimeProvider.Now.AddDays(2)));
+            var tournament = await TournamentBuilder.Create(context, _fixture.DateTimeProvider)
+                .WithName("Test Tournament")
+                .WithStartDate(_fixture.DateTimeProvider.Now)
+                .WithEndDate(_fixture.DateTimeProvider.Now.AddDays(2))
 
-            var categoryPrimary = tournament.AddCategory("Primary").Value;
+                .WithCategory("Primary")
+                .WithCategory("Secondary")
 
-            await context.SaveChangesAsync(CancellationToken.None);
+                .WithInscription(fisher1.Id, 1, "Primary")
+                .WithInscription(fisher2.Id, 2, "Primary")
+                .WithInscription(fisher3.Id, 3, "Primary")
 
-            var inscriptionResults = new List<ErrorOr<Success>>()
-            {
-                tournament.AddInscription(fisher1.Id, categoryPrimary.Id, 1, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher2.Id, categoryPrimary.Id, 2, _fixture.DateTimeProvider),
-                tournament.AddInscription(fisher3.Id, categoryPrimary.Id, 3, _fixture.DateTimeProvider)
-            };
+                .Build(CancellationToken.None);
 
-            inscriptionResults.Should().NotContain(r => r.IsError);
+            var categoryPrimary = tournament.Categories.First(c => c.Name == "Primary");
 
-            await context.SaveChangesAsync(CancellationToken.None);
+            var competition = await context.WithAsync(CompetitionBuilder.Create(_fixture.DateTimeProvider)
+                .WithTournament(tournament.Id)
+                .WithLocation(Location.Create("Test City", "Test State", "Test Country", "Test Place"))
 
-            var competition = await context.WithAsync(Competition.Create(
-                _fixture.DateTimeProvider.Now,
-                tournament.Id,
-                Location.Create("Test City", "Test State", "Test Country", "Test Place")),
-                beforeSave: comp =>
-                {
-                    var results = new List<ErrorOr<Success>>()
-                    {
-                        // fisher 1 is 1°
-                        comp.AddScore(fisher1.Id, 50, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher1.Id, 10, _fixture.DateTimeProvider),
+                .WithScore(fisher1.Id, 50)
+                .WithScore(fisher1.Id, 10)
 
-                        comp.AddScore(fisher2.Id, 6, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher2.Id, 15, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher2.Id, 14, _fixture.DateTimeProvider),
+                .WithScore(fisher2.Id, 6)
+                .WithScore(fisher2.Id, 15)
+                .WithScore(fisher2.Id, 14)
 
-                        // fisher3 and fisher2 are tied and have the same larger piece (15),
-                        // but fisher2 has a larger piece (6 vs 5) so it's 2° and fisher3 is 3°
-                        comp.AddScore(fisher3.Id, 5, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher3.Id, 15, _fixture.DateTimeProvider),
-                        comp.AddScore(fisher3.Id, 15, _fixture.DateTimeProvider),
-                    };
+                // fisher3 and fisher2 are tied and have the same larger piece (15),
+                // but fisher2 has a larger piece (6 vs 5) so it's 2° and fisher3 is 3°
+                .WithScore(fisher3.Id, 5)
+                .WithScore(fisher3.Id, 15)
+                .WithScore(fisher3.Id, 15)
 
-                    results.Should().NotContain(r => r.IsError);
-                });
+                .Build());
 
             int jobsExecuted = await _fixture.ExecutePendingLeaderBoardJobs();
 
@@ -456,19 +389,11 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
             result.Value.Should().NotBeNull();
             result.Value!.Should().HaveCount(1);
 
-            var primaryCategory = result.Value.FirstOrDefault(c => c.Id == categoryPrimary.Id.Value.ToString() && c.Name == categoryPrimary.Name);
-            primaryCategory.Should().NotBeNull();
-
-            primaryCategory!.LeaderBoard.Should().HaveCount(3);
-
-            primaryCategory.LeaderBoard.ElementAt(0).FisherId.Should().Be(fisher1.Id);
-            primaryCategory.LeaderBoard.ElementAt(0).TotalScore.Should().Be(60);
-
-            primaryCategory.LeaderBoard.ElementAt(1).FisherId.Should().Be(fisher2.Id);
-            primaryCategory.LeaderBoard.ElementAt(1).TotalScore.Should().Be(35);
-
-            primaryCategory.LeaderBoard.ElementAt(2).FisherId.Should().Be(fisher3.Id);
-            primaryCategory.LeaderBoard.ElementAt(2).TotalScore.Should().Be(35);
+            result.Value.ShouldHaveCategoryLeaderBoard("Primary", categoryPrimary.Id)
+                        .ShouldHaveNPositions(3)
+                        .ShouldHavePosition(1, fisher1.Id, 60)
+                        .ShouldHavePosition(2, fisher2.Id, 35)
+                        .ShouldHavePosition(3, fisher3.Id, 35);
         }
     }
 }

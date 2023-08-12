@@ -85,7 +85,7 @@ public class GetCompetitionLeaderBoardQueryHandler
         if (tournamentCategories is null)
         {
             _logger.LogError("Tournament categories not found for competition {CompetitionId}", competitionId.Value);
-            return Error.Failure();
+            return new List<LeaderBoardCategory>();
         }
 
         var categories = leaderBoard
