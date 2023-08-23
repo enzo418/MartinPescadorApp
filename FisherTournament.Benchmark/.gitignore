@@ -1,0 +1,6 @@
+*
+
+!.gitignore
+!FisherTournament.Benchmark.csproj
+!Program.cs
+!Sample.cs
