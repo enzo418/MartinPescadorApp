@@ -12,4 +12,9 @@ public class LeaderboardTournamentCategoryItem : EntityModel
     public int Position { get; set; }
     public CategoryId CategoryId { get; set; } = null!;
     public int TotalScore { get; set; }
+
+    /// <summary>
+    /// List of positions in each competition, ordered by competition date.
+    /// </summary>
+    public List<int> Positions { get; set; } = null!;
 }

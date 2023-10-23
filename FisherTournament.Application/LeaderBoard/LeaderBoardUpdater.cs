@@ -229,6 +229,7 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
 
         var tournamentCompetitionsId = await _context.Competitions
             .Where(c => c.TournamentId == tournamentId)
+            .OrderBy(c => c.StartDateTime) // asc
             .Select(c => c.Id)
             .ToListAsync();
 
@@ -241,10 +242,18 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
         var previousPositions = leaderBoardRepository.GetTournamentCategoryLeaderBoard(tournamentId,
                                                                                       categoryId);
 
-        // sort newPositions ascending by sum of positions and apply disambiguation rules
+        var fisherCompetitionPositions = leaderBoardRepository.GetFisherCompetitionPositions(tournamentCompetitionsId, categoryId);
+
+        // sort competitions
+        foreach (var fisherPositions in fisherCompetitionPositions.Values)
+        {
+            fisherPositions.Sort((a, b) => tournamentCompetitionsId.IndexOf(a.Item1)
+                                                                   .CompareTo(tournamentCompetitionsId.IndexOf(b.Item1)));
+        }
+
+        // sort newPositions ascending by sum of positions and apply tie-breaking rules
         newPositions = newPositions.OrderBy(p => p.PositionsSum)
-                            // Disambiguation rules
-                            .ThenBy(p => p.AveragePosition) // lower average position is better
+                            // TODO: Here it goes -2 positions?
                             .ThenByDescending(p => p.TotalScore) // higher total score is better
                             .ThenBy(p => p.FisherId.Value) // else decide by fisherId 
 
@@ -257,11 +266,13 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
         {
             var newPosition = newPositions[i];
             var existing = previousPositions.FirstOrDefault(p => p.FisherId == newPosition.FisherId);
+            var positions = fisherCompetitionPositions[newPosition.FisherId].Select(p => p.Item2).ToList();
 
             if (existing is not null)
             {
                 existing.Position = i + 1;
                 existing.TotalScore = newPosition.TotalScore;
+                existing.Positions = positions;
 
                 leaderBoardRepository.UpdateTournamentLeaderBoardItem(existing);
             }
@@ -274,11 +285,12 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
                         CategoryId = categoryId,
                         FisherId = newPosition.FisherId,
                         Position = i + 1,
-                        TotalScore = newPosition.TotalScore
+                        TotalScore = newPosition.TotalScore,
+                        Positions = positions
                     });
             }
 
-            _logger.LogDebug($"FisherId: {newPosition.FisherId} - Position: {i + 1}\n\t TotalScore: {newPosition.TotalScore} - PositionsSum: {newPosition.PositionsSum} - AveragePosition: {newPosition.AveragePosition}\n\t PreviousPosition: {existing?.Position} - PreviousTotalScore: {existing?.TotalScore}");
+            _logger.LogDebug($"FisherId: {newPosition.FisherId} - Position: {i + 1}\n\t TotalScore: {newPosition.TotalScore} - PositionsSum: {newPosition.PositionsSum} \n\t PreviousPosition: {existing?.Position} - PreviousTotalScore: {existing?.TotalScore}");
         }
 
         _readModelsUnitOfWork.Commit();

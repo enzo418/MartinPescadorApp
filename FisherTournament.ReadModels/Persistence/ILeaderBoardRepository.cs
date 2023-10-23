@@ -6,7 +6,10 @@ using FisherTournament.ReadModels.Models;
 
 namespace FisherTournament.ReadModels.Persistence;
 
-public record TournamentCategoryLbCalculatedItem(FisherId FisherId, int PositionsSum, double AveragePosition, int TotalScore);
+public record TournamentCategoryLbCalculatedItem(
+    FisherId FisherId,
+    int PositionsSum,
+    int TotalScore);
 
 // TODO: refactor into single repositories for tournaments and competitions
 public interface ILeaderBoardRepository
@@ -38,9 +41,18 @@ public interface ILeaderBoardRepository
                                                                                     List<CompetitionId> tournamentCompetitionsId);
 
 
+    /// <summary>
+    /// Gets the positions of the fishers in these competitions
+    /// </summary>
+    /// <param name="competitionsId"></param>
+    /// <param name="categoryId"></param>
+    /// <returns></returns>
+    Dictionary<FisherId, List<(CompetitionId, int)>> GetFisherCompetitionPositions(List<CompetitionId> competitionsId,
+                                                                                    CategoryId categoryId);
+
     void AddTournamentLeaderBoardItem(LeaderboardTournamentCategoryItem leaderboardTournamentCategoryItem);
 
     IEnumerable<LeaderboardCompetitionCategoryItem> GetCompetitionLeaderBoard(CompetitionId competitionId);
-    
+
     IEnumerable<LeaderboardTournamentCategoryItem> GetTournamentLeaderBoard(TournamentId tournamentIdValue);
 }
