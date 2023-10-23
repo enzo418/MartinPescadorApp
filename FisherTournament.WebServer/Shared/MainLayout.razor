@@ -1,0 +1,50 @@
+﻿@using Microsoft.Fast.Components.FluentUI.DesignTokens
+
+@namespace FisherTournament.WebServer.Shared
+
+@inherits LayoutComponentBase
+
+@inject BaseLayerLuminance BaseLayerLuminance
+@inject GlobalState GlobalState
+
+<PageTitle>FisherTournament.WebServer</PageTitle>
+
+<div class="page" @ref="container">
+    <div class="top-bar">
+        <NavMenu OnToggleTheme="@SwitchTheme" IsInDarkMode="@IsInDarkMode" />
+    </div>
+
+    <main>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    StandardLuminance _baseLayerLuminance = StandardLuminance.LightMode;
+
+    private bool IsInDarkMode = false;
+
+    protected override void OnInitialized()
+    {
+        IsInDarkMode = _baseLayerLuminance == StandardLuminance.DarkMode;
+        base.OnInitialized();
+    }
+
+    public async void SwitchTheme()
+    {
+        IsInDarkMode = !IsInDarkMode;
+
+        await Task.Delay(50);
+
+        if (_baseLayerLuminance == StandardLuminance.LightMode)
+            _baseLayerLuminance = StandardLuminance.DarkMode;
+        else
+            _baseLayerLuminance = StandardLuminance.LightMode;
+
+        await BaseLayerLuminance.SetValueFor(container, _baseLayerLuminance.GetLuminanceValue());
+
+        GlobalState.SetLuminance(_baseLayerLuminance);
+    }
+}

@@ -1,0 +1,42 @@
+﻿@page "/"
+
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components
+@using FisherTournament.WebServer.Navigation
+
+@namespace FisherTournament.WebServer.Pages
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@inject NavigationManager _nav
+@inject NavigationHistory _history
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+
+    @* <link href="css/site.css" rel="stylesheet" /> *@
+    <link href="FisherTournament.WebServer.styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/styles.css" asp-append-version="true" />
+    <link href="_content/Microsoft.Fast.Components.FluentUI/css/reboot.css" rel="stylesheet" />
+
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+
+<body class="font-body">
+    <component type="typeof(App)" render-mode="ServerPrerendered" />
+
+    <script src="_framework/blazor.server.js"></script>
+</body>
+
+</html>
+
+@{
+    _nav.LocationChanged += _history.OnLocationChanged;
+}

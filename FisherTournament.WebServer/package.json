@@ -1,0 +1,17 @@
+{
+  "name": "fishertournament.webserver",
+  "version": "1.0.0",
+  "description": "Web server for the FisherTournament admin page",
+  "main": "index.js",
+  "scripts": {
+    "build-css": "npx tailwindcss -i ./wwwroot/css/site.css -o ./wwwroot/css/styles.css --minify",
+    "watch-and-build-css": "npx onchange '**/*.razor' '**/*.cshtml' -- npm run build-css"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "onchange": "^7.1.0",
+    "tailwindcss": "^3.3.3"
+  }
+}

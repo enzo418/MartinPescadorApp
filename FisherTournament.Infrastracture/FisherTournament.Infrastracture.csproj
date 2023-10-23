@@ -3,9 +3,12 @@
   <ItemGroup>
     <ProjectReference Include="..\FisherTournament.Application\FisherTournament.Application.csproj" />
     <ProjectReference Include="..\FisherTournament.ReadModels\FisherTournament.ReadModels.csproj" />
+    <ProjectReference Include="..\FisherTournament.Contracts\FisherTournament.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Mapster" Version="7.3.0" />
+    <PackageReference Include="Mapster.DependencyInjection" Version="1.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

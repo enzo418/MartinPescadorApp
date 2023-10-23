@@ -1,0 +1,41 @@
+/* TODO: USE LOCAL */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+/* @tailwind base; */
+/* base gives trouble with divider by setting border color to 0 to "*" selector */
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------ */
+/*                  LAYOUT NORMALIZATION                  */
+/* ------------------------------------------------------ */
+
+html,
+body,
+.page {
+    height: 100%;
+    background-color: var(--neutral-layer-1);
+}
+
+main,
+main>article {
+    height: calc(100% - 65px);
+}
+
+/* ------------------------------------------------------ */
+/*                     STANDARD COLORS                    */
+/* ------------------------------------------------------ */
+
+.error,
+.red {
+    color: var(--error);
+}
+
+.validation-message {
+    color: var(--error);
+}
+
+h1.page-title {
+    @apply uppercase pt-7 font-normal;
+    color: var(--neutral-foreground-hint) !important;
+}

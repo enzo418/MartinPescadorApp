@@ -1,0 +1,37 @@
+@page "/demo"
+
+<p>Click this button to open a Menu.</p>
+<FluentButton id="btnOpen1" Appearance="Appearance.Accent" @onclick="@(() => open = !open)">
+    Open menu
+</FluentButton>
+
+<FluentMenu Anchor="btnOpen1" @bind-Open="open" @onmenuchange=OnMenuChange>
+    <FluentMenuItem >
+        Menu item 1
+    </FluentMenuItem>
+    <FluentMenuItem 
+                   Checked="true">
+        Menu item 2 Checked
+    </FluentMenuItem>
+    <FluentMenuItem
+                   Disabled="true">
+        Menu item 3 Disabled
+    </FluentMenuItem>
+    <FluentMenuItem >
+        <span slot="start"><FluentIcon Icon="Icons.Regular.Size24.ClipboardPaste" Color="Color.Neutral" Slot="start" /></span>
+        Menu item 4 with Icon
+    </FluentMenuItem>
+</FluentMenu>
+
+<p>@status</p>
+
+@code {
+    bool open = false;
+    private string status = "";
+
+    private void OnMenuChange(MenuChangeEventArgs args)
+    {
+        if (args is not null && args.Value is not null)
+            status = $"Item \"{args.Value}\" clicked";
+    }
+}

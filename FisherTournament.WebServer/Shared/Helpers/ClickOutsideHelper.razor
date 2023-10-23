@@ -1,0 +1,59 @@
+@namespace FisherTournament.WebServer.Shared.Helpers
+
+@using Microsoft.JSInterop;
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime;
+@implements IAsyncDisposable
+
+<div id="@Id">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnClickOutside { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string Id { get; set; } = Identifier.NewId();
+
+    IJSObjectReference? jsModule;
+
+    private DotNetObjectReference<ClickOutsideHelper>? objRef;
+
+
+    [JSInvokable]
+    public async Task ClickedOutside()
+    {
+        await OnClickOutside.InvokeAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import",
+            "./Shared/Helpers/ClickOutsideHelper.razor.js");
+            await jsModule.InvokeVoidAsync("registerClickOutsideHelper", Id, objRef);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (jsModule is not null)
+            {
+                await jsModule.DisposeAsync();
+            }
+
+            objRef?.Dispose();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The JSRuntime side may routinely be gone already if the reason we're disposing is that
+            // the client disconnected. This is not an error.
+        }
+    }
+}

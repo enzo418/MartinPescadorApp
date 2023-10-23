@@ -1,0 +1,63 @@
+@namespace FisherTournament.WebServer.Shared
+@using FisherTournament.WebServer.Shared.Helpers
+
+@inherits FluentComponentBase
+
+<ClickOutsideHelper OnClickOutside="@ClickedOutside">
+    <FluentButton id="@idBtn" @ref="button" Appearance="@Appearance" aria-haspopup="true" aria-expanded="@open"
+    @onclick=ToggleMenu>
+        @if (StartIcon != null)
+        {
+            @StartIcon
+        }
+
+        @Title
+        <FluentIcon Slot="end" Icon="@(Icons.Regular.Size20.ChevronDown)" Color="@IconColor" />
+    </FluentButton>
+    <FluentMenu Anchor="@idBtn" @bind-Open="open" @onmenuchange=OnMenuChange>
+        @ChildMenuItems
+    </FluentMenu>
+</ClickOutsideHelper>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildMenuItems { get; set; }
+
+    [Parameter]
+    public RenderFragment? StartIcon { get; set; }
+
+    [Parameter]
+    public Appearance Appearance { get; set; } = Appearance.Neutral;
+
+    [Parameter]
+    public Color IconColor { get; set; } = Color.Fill;
+
+    [Parameter] public EventCallback<MenuChangeEventArgs> OnChange { get; set; } = EventCallback<MenuChangeEventArgs>.Empty;
+
+
+    [Parameter] public string? Title { get; set; } = "Menu";
+
+    private string idBtn = Identifier.NewId();
+
+    private FluentButton? button;
+    private bool open = false;
+
+    public void ToggleMenu()
+    {
+        open = !open;
+    }
+
+    void OnMenuChange(MenuChangeEventArgs args)
+    {
+        @* ToggleMenu(); *@ @* ⚠️ FluentMenuItem already calls to close Menu/FluentMenuItem.razor.cs#L81 *@
+        OnChange.InvokeAsync(args);
+    }
+
+    public void ClickedOutside()
+    {
+        if (open)
+        {
+            ToggleMenu();
+        }
+    }
+}

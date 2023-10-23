@@ -1,12 +1,12 @@
 using System.Reflection;
 using Mapster;
 using MapsterMapper;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace FisherTournament.API.Common.Mapping;
+namespace FisherTournament.Infrastracture.Common.Mapping;
 
 public static class DependencyInjection
 {
-
     public static IServiceCollection AddMappings(this IServiceCollection services)
     {
         var config = TypeAdapterConfig.GlobalSettings;

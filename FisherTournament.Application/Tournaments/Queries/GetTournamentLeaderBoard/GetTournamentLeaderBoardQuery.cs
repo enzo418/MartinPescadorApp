@@ -15,17 +15,17 @@ namespace FisherTournament.Application.Tournaments.Queries.GetTournamentLeaderBo
 public record GetTournamentLeaderBoardQuery(string TournamentId)
   : IRequest<ErrorOr<IEnumerable<TournamentLeaderBoardCategory>>>;
 
-public record struct CompetitionLeaderBoardItem(
+public record struct TournamentLeaderBoardItem(
     FisherId FisherId,
     string Name,
     int Position,
-    int TotalScore
+    List<int> CompetitionPositions
 );
 
 public record struct TournamentLeaderBoardCategory(
     CategoryId Id,
     string Name,
-    IEnumerable<CompetitionLeaderBoardItem> LeaderBoard
+    IEnumerable<TournamentLeaderBoardItem> LeaderBoard
 );
 
 public class GetTournamentLeaderBoardQueryHandler
@@ -81,7 +81,7 @@ public class GetTournamentLeaderBoardQueryHandler
         if (tournamentCategories is null)
         {
             _logger.LogError("Categories of tournament {TournamentId} could not be found", tournamentId.Value);
-            return Error.Failure();
+            return new List<TournamentLeaderBoardCategory>();
         }
 
         var categories = leaderBoard
@@ -93,11 +93,11 @@ public class GetTournamentLeaderBoardQueryHandler
                     {
                         var fisher = fishersNames.FirstOrDefault(f => f.Id == r.FisherId);
 
-                        return new CompetitionLeaderBoardItem(
+                        return new TournamentLeaderBoardItem(
                             r.FisherId,
                             fisher?.Name ?? string.Empty,
                             r.Position,
-                            r.TotalScore
+                            r.Positions
                         );
                     })
                 )

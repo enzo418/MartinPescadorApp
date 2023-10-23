@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using FisherTournament.API.Common.Errors;
-using FisherTournament.API.Common.Mapping;
+using FisherTournament.Infrastracture.Common.Mapping;
 using FisherTournament.Application.Common.Instrumentation;
 using FisherTournament.Application.Common.Metrics;
 using FisherTournament.Infrastracture.Persistence.Common.Diagnostics;

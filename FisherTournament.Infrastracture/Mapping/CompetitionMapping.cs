@@ -4,11 +4,9 @@ using FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
 using FisherTournament.Application.Tournaments.Commands.AddCompetitions;
 using FisherTournament.Contracts.Competitions;
 using FisherTournament.Domain.CompetitionAggregate;
-using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
-using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using Mapster;
 
-namespace FisherTournament.API.Common.Mapping;
+namespace FisherTournament.Infrastracture.Common.Mapping;
 
 public class CompetitionMapping : IRegister
 {

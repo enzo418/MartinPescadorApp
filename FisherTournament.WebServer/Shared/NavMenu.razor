@@ -1,0 +1,104 @@
+﻿@namespace FisherTournament.WebServer.Shared
+@inject NavigationManager _nav
+
+<FluentToolbar style="width:100%" class="shadow gap-x-3 flex justify-between">
+    <FluentButton @onclick=NavigateToHome tabindex="0" autofocus>
+        <FluentIcon Icon="@Icons.Regular.Size20.Home" Slot="start" Color="Color.Neutral" /> Inicio
+    </FluentButton>
+
+    @DividerTemplate
+
+    <MyFluentMenuButton tabindex="1" Title="Pescadores" Appearance="@Appearance.Neutral" IconColor="@Color.FillInverse"
+        OnChange="@OnPescadoresMenuChange">
+        <StartIcon>
+            <FluentIcon Icon="@Icons.Regular.Size20.People" Slot="start" Color="Color.Neutral" />
+        </StartIcon>
+        <ChildMenuItems>
+            <FluentMenuItem Id="fisher-add">
+                <FluentIcon Icon="@Icons.Regular.Size20.AddCircle" Slot="start" Color="Color.Neutral" />
+                Agregar pescador
+            </FluentMenuItem>
+            <FluentMenuItem Id="fisher-search">
+                <FluentIcon Icon="@Icons.Regular.Size20.Search" Slot="start" Color="Color.Neutral" />
+                Buscar pescador
+            </FluentMenuItem>
+        </ChildMenuItems>
+    </MyFluentMenuButton>
+
+    @DividerTemplate
+
+    <MyFluentMenuButton tabindex="2" Title="Torneos" Appearance="@Appearance.Neutral" IconColor="@Color.FillInverse"
+        OnChange="@OnTournamentsMenuChange">
+        <StartIcon>
+            <FluentIcon Icon="@Icons.Regular.Size20.Trophy" Slot="start" Color="Color.Neutral" />
+        </StartIcon>
+        <ChildMenuItems>
+            <FluentMenuItem Id="tournament-add">
+                <FluentAnchor Href="/tournaments/add" Appearance="Appearance.Stealth">
+                    Agregar torneo
+                    <FluentIcon Icon="@Icons.Regular.Size20.AddCircle" Slot="start" Color="Color.Neutral" />
+                </FluentAnchor>
+            </FluentMenuItem>
+            <FluentMenuItem Id="tournament-search">
+                <FluentAnchor Href="/tournaments/search" Appearance="Appearance.Stealth">
+                    Buscar torneo
+                    <FluentIcon Icon="@Icons.Regular.Size20.Search" Slot="start" Color="Color.Neutral" />
+                </FluentAnchor>
+            </FluentMenuItem>
+        </ChildMenuItems>
+    </MyFluentMenuButton>
+
+    @if (true)
+    {
+        @DividerTemplate
+
+        <FluentButton tabindex="3" @onclick=NavigateToEvents>
+            <FluentIcon Icon="@(Icons.Regular.Size20.Info)" Slot="start" Color="Color.Neutral" /> Eventos
+        </FluentButton>
+    }
+
+    <span slot="end">
+        <FluentSwitch Value="@IsInDarkMode" @onchange=OnToggleTheme title="Tema">
+            <span class="label">Tema</span>
+            <span slot="unchecked-message">
+                <FluentIcon class="align-middle" Icon="Icons.Regular.Size20.WeatherSunny" Color="Color.Neutral" />
+            </span>
+            <span slot="checked-message">
+                <FluentIcon class="align-middle" Icon="Icons.Regular.Size20.WeatherMoon" Color="Color.Neutral" />
+            </span>
+        </FluentSwitch>
+    </span>
+
+</FluentToolbar>
+
+@code {
+    private RenderFragment DividerTemplate = @<FluentDivider Style="height: 20px;" Role="DividerRole.Separator"
+        Orientation="Orientation.Vertical">
+    </FluentDivider>;
+
+    [Parameter]
+    public EventCallback OnToggleTheme { get; set; } = EventCallback.Empty;
+
+    [Parameter]
+    public bool IsInDarkMode { get; set; } = false;
+
+    private void NavigateToHome() => _nav.NavigateTo("/");
+    private void NavigateToEvents() => _nav.NavigateTo("/events");
+
+    private void OnPescadoresMenuChange(MenuChangeEventArgs arg)
+    {
+        @* Anchor doesn't work inside a FluentMenuItem 🤷 *@
+        if (arg.Id is null) return;
+
+        if (arg.Id == "fisher-add") _nav.NavigateTo("/fishers/add");
+        else if (arg.Id == "fisher-search") _nav.NavigateTo("/fishers/search");
+    }
+
+    private void OnTournamentsMenuChange(MenuChangeEventArgs arg)
+    {
+        if (arg.Id is null) return;
+
+        if (arg.Id == "tournament-add") _nav.NavigateTo("/tournaments/add");
+        else if (arg.Id == "tournament-search") _nav.NavigateTo("/tournaments/search");
+    }
+}
