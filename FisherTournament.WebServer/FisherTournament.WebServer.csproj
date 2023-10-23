@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Following to be removed on fluentui-blazor version 3  -->
+    <!-- <PublishFluentIconAssets>true</PublishFluentIconAssets>
+    <FluentIconSizes>10,12,16,20,24,28,32,48</FluentIconSizes>
+    <FluentIconVariants>Filled,Regular</FluentIconVariants>
+    <PublishFluentEmojiAssets>true</PublishFluentEmojiAssets>
+    <FluentEmojiGroups>Activities,Animals_Nature,Flags,Food_Drink,Objects,People_Body,Smileys_Emotion,Symbols,Travel_Places</FluentEmojiGroups>
+    <FluentEmojiStyles>Color,Flat,HighContrast</FluentEmojiStyles> -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="3.2.0" />
+    <PackageReference Include="Microsoft.Fast.Components.FluentUI.Icons" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FisherTournament.Application\FisherTournament.Application.csproj" />
+    <ProjectReference Include="..\FisherTournament.Infrastracture\FisherTournament.Infrastracture.csproj" />
+    <ProjectReference Include="..\FisherTournament.Contracts\FisherTournament.Contracts.csproj" />
+  </ItemGroup>
+
+  <!-- <Target Name="TailwindBuild" BeforeTargets="Build">
+    <Exec Command="npm run build-css" />
+  </Target> -->
+
+  <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+</Project>

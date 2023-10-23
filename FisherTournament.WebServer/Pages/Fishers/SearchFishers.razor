@@ -1,0 +1,31 @@
+@using System.Text.RegularExpressions
+@using FisherTournament.Contracts.Fishers
+@using Application.Fishers.Queries
+
+@inject NavigationManager _nav
+@inject ISender _sender
+@inject NavigationHistory _history
+@inject IMapper _mapper
+
+@page "/fishers/search"
+
+<h1 class="page-title">Buscar Pescador</h1>
+<div class="flex justify-center gap-20 pt-7 items-end">
+    <FluentTextField @bind-Value=Name>
+        <FluentIcon Slot="start" Value="@(new Icons.Regular.Size16.Search())" Color="@Color.Accent" />
+        Buscar por nombre
+    </FluentTextField>
+    <FluentButton OnClick="Search" Appearance="Appearance.Accent">Buscar</FluentButton>
+</div>
+
+@code {
+    string? Name = "";
+    int Page;
+    int PageSize = 10;
+
+    async Task Search()
+    {
+        @* var fishers = await _sender.Send(new GetFishersQuery(Name, Page, PageSize)); *@
+        
+    }
+}
