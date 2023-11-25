@@ -21,14 +21,14 @@
             </div>
 
             <p>
-                <FluentTextField Autofocus="true" @bind-Value="@Model.FirstName" Required="true">
+                <FluentTextField AutoComplete="off" Autofocus="true" @bind-Value="@Model.FirstName" Required="true">
                     Nombre <span class="red">*</span>
                 </FluentTextField>
                 <ValidationMessage For="() => Model!.FirstName" />
             </p>
 
             <p>
-                <FluentTextField @bind-Value="@Model.LastName" Required="true">Apellido <span class="red">*</span>
+                <FluentTextField AutoComplete="off" @bind-Value="@Model.LastName" Required="true">Apellido <span class="red">*</span>
                 </FluentTextField>
                 <ValidationMessage For="() => Model!.LastName" />
             </p>
@@ -41,7 +41,7 @@
             </div>
 
             <p>
-                <FluentTextField @bind-Value=date Required="false" Placeholder="01/12/1997"
+                <FluentTextField AutoComplete="off" @bind-Value=date Required="false" Placeholder="01/12/1997"
                     Pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$">
                     @* <FluentIcon Name="@FluentIcons.Calendar" Slot="start" Size="@IconSize.Size20"
                     Variant=IconVariant.Regular Color="Color.Neutral" /> *@

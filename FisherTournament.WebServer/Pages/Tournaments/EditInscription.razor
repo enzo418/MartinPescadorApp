@@ -1,10 +1,8 @@
 ﻿@layout TournamentLayout
-@page "/tournaments/new-inscription"
+@page "/tournaments/edit-inscription"
 
 @using FisherTournament.Application.Fishers.Queries;
 @using FisherTournament.Domain.FisherAggregate.ValueObjects;
-@using Microsoft.AspNetCore.WebUtilities;
-@using Microsoft.Extensions.Primitives;
 @using Microsoft.Fast.Components.FluentUI;
 
 @inject IToastService _toastService
@@ -20,7 +18,6 @@
 	<div class="flex flex-row gap-4 items-end">
 		<div>
 			<FluentTextField 
-				@bind-Value="_searchNameInput"
 				Placeholder="Nombre"
 				AutoComplete="off"
 				Label="Buscar por nombre"
@@ -153,8 +150,8 @@
 		new Cat(2, "Mayores", 18, 99),
 	};
 
-	string _searchNameInput = string.Empty; // from @bind-Value value
-	string _searchName = string.Empty; // built from input event
+
+	string _searchName = string.Empty;
 	bool _searched = false;
 
 	Persona? selected;
@@ -170,19 +167,6 @@
 	void Cancel()
 	{
 		selected = null;	
-	}
-
-	protected override async Task OnInitializedAsync()
-	{
-		var uri = new Uri(_nav.Uri);
-
-		if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("search", out var searchParam) 
-				&& searchParam != StringValues.Empty)
-		{
-			_searchNameInput = searchParam!;
-			_searchName = searchParam!;
-			await Search();
-		}
 	}
 
 
@@ -214,10 +198,5 @@
 		// TODO: Use real DNI
 
 		searchResult = result.Value.Items.Select(i => new Persona(i.Id, i.Name, "")).ToList();
-		
-		string uriWithoutQuery = _nav.Uri.Split('?')[0];
-		string newUriWithSearch = $"{uriWithoutQuery}?search={_searchName}";
-
-		_nav.NavigateTo(newUriWithSearch, false, true);
 	}
 }
