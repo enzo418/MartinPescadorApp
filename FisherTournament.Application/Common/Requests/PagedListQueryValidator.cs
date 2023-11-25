@@ -2,7 +2,8 @@ using FluentValidation;
 
 namespace FisherTournament.Application.Common.Requests
 {
-    public class PagedListQueryValidator : AbstractValidator<IPagedListQuery>
+    public class PagedListQueryValidator<T> : AbstractValidator<T>
+        where T : IPagedListQuery
     {
         public PagedListQueryValidator()
         {

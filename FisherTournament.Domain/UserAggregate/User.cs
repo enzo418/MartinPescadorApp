@@ -1,5 +1,4 @@
 using ErrorOr;
-using FisherTournament.Domain;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using FisherTournament.Domain.UserAggregate.ValueObjects;
 
@@ -19,7 +18,7 @@ public class User : AggregateRoot<UserId>
     public string FirstName { get; private set; }
     public string LastName { get; private set; }
 
-    public FisherId? FisherId { get; private set; }
+    public FisherId? FisherId { get; private set; } = null;
 
     public static User Create(string firstName, string lastName, FisherId? fisherId)
     {

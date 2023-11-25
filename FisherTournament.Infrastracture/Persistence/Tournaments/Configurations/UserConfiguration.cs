@@ -1,4 +1,3 @@
-using FisherTournament.Domain.FisherAggregate;
 using FisherTournament.Domain.UserAggregate;
 using FisherTournament.Infrastracture.Persistence.Common;
 using Microsoft.EntityFrameworkCore;
@@ -18,10 +17,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
 
         // Configure 0..1:1 relationship between Fisher and User
-        builder.HasOne<Fisher>()
-            .WithOne()
-            .HasForeignKey<User>(p => p.FisherId)
-            .OnDelete(DeleteBehavior.NoAction);
+        //builder.HasOne<Fisher>()
+        //    .WithOne()
+        //    .HasForeignKey<User>(p => p.FisherId)
+        //    .OnDelete(DeleteBehavior.NoAction);
 
         builder.Property(x => x.FisherId)
                     .HasNullableGuidIdConversion();

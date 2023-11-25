@@ -1,9 +1,9 @@
 namespace FisherTournament.Infrastracture.Persistence.Common;
 
-using System.Linq.Expressions;
 using FisherTournament.Domain;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System.Linq.Expressions;
 
 public class GuidIdConverter<T> : ValueConverter<T, Guid> where T : GuidId<T>
 {
