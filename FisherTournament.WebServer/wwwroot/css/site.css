@@ -15,17 +15,22 @@ body,
 .page {
     height: 100%;
     background-color: var(--neutral-layer-1);
+    color: var(--neutral-foreground-hint);
 }
 
 main,
-main>article {
+main > article {
     height: calc(100% - 65px);
+}
+
+/* FluentUI fixes */
+.fluent-nav-item a.fluent-nav-link {
+    width: 100%;
 }
 
 /* ------------------------------------------------------ */
 /*                     STANDARD COLORS                    */
 /* ------------------------------------------------------ */
-
 .error,
 .red {
     color: var(--error);
@@ -38,4 +43,21 @@ main>article {
 h1.page-title {
     @apply uppercase pt-7 font-normal;
     color: var(--neutral-foreground-hint) !important;
+}
+
+h1.page-title-no-pt {
+    @apply uppercase font-normal;
+    color: var(--neutral-foreground-hint) !important;
+}
+
+.color-fg {
+    color: var(--neutral-foreground-rest);
+}
+
+fluent-data-grid-row.header {
+    border-color: var(--accent-fill-rest);
+}
+
+.dashed-rect {
+    @apply mt-3 flex flex-row justify-center items-center gap-3 border-dashed border-2 rounded-md p-2;
 }

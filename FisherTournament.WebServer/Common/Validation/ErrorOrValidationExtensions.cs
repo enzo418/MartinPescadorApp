@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-namespace FisherTournament.WebServer.Validation
+namespace FisherTournament.WebServer.Common.Validation
 {
     public static partial class ErrorOrValidationExtensions
     {

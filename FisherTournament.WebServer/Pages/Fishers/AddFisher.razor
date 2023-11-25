@@ -20,7 +20,8 @@
             </div>
 
             <p>
-                <FluentTextField @bind-Value="@Model.FirstName" Required="true">Nombre <span class="red">*</span>
+                <FluentTextField Autofocus="true" @bind-Value="@Model.FirstName" Required="true">
+                    Nombre <span class="red">*</span>
                 </FluentTextField>
                 <ValidationMessage For="() => Model!.FirstName" />
             </p>

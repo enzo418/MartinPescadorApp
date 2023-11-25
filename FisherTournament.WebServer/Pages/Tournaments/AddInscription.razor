@@ -1,0 +1,199 @@
+﻿@layout TournamentLayout
+@page "/tournaments/new-inscription"
+
+@using Microsoft.Fast.Components.FluentUI;
+
+@inject IToastService _toastService
+
+<h1 class="page-title-no-pt">Agregar Inscripción</h1>
+
+<p class="m-0 color-fg">Selecciona el Pescador</p>
+<FluentDivider class="mt-1 mb-4" />
+
+<div class="flex flex-col items-center">
+	<div class="flex flex-row gap-4 items-end">
+		<div>
+			<FluentTextField 
+				Placeholder="Nombre" 
+				Label="Buscar por nombre"
+				@oninput="@OnInput">
+				<FluentIcon Value="@(new Icons.Regular.Size16.Person())" Slot="start" Color="Color.Neutral" />
+			</FluentTextField>
+		</div>
+		@* <FluentButton IconStart="@(new Icons.Regular.Size16.Search())" OnClick="Buscar">Buscar</FluentButton> *@
+	</div>
+
+	@if (selected is not null)
+	{
+		<FluentCard class="mt-4" style="height:100px;width:500px">
+			<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+				<div class="flex flex-col gap-2">
+					<div>
+						<span class="color-fg font-bold">Nombre</span>
+						<span class="color-fg">@(selected?.Name)</span>
+					</div>
+
+					<div>
+						<span class="color-fg font-bold">Número</span>
+						<span class="color-fg">@selected?.N</span>
+					</div>
+				</div>
+
+				<p style="color: var(--accent-fill-rest);">
+					@* <FluentIcon Value="@(new Icons.Regular.Size24.Checkmark())" /> *@
+					Seleccionado
+				</p>
+			</div>
+		</FluentCard>
+	} else {
+		@foreach (var persona in searchResult)
+		{
+			<FluentCard class="mt-4" style="height:100px;width:500px">
+				<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+					<div class="flex flex-col gap-2">
+						<div>
+							<span class="color-fg font-bold">Nombre</span>
+							<span class="color-fg">@persona.Name</span>
+						</div>
+
+						<div>
+							<span class="color-fg font-bold">Número</span>
+							<span class="color-fg">@persona.N</span>
+						</div>
+					</div>
+
+					<FluentButton 			
+						IconStart="@(new Icons.Regular.Size16.Checkmark())" 
+						@onclick="@(() => Select(persona))"
+						Appearance="Appearance.Accent">
+						Seleccionar
+					</FluentButton>
+				</div>
+			</FluentCard>
+		}
+
+	@if (searchResult.Count == 1)
+		{
+			<FluentCard class="mt-4 dashed-rect" style="height:100px;width:500px">
+				<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+					<span class="color-fg">Solo hubo un resultado</span>
+
+					<FluentButton 
+						IconStart="@(new Icons.Regular.Size16.Add())"
+						Appearance="Appearance.Outline">Agregar pescador</FluentButton>
+				</div>
+			</FluentCard>
+		}
+
+	@if (_searched && searchResult.Count == 0) {
+			<FluentCard class="mt-4 dashed-rect" style="height:100px;width:500px">
+				<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+					<span class="color-fg">No se encontraron pescadores</span>
+
+					<FluentButton 
+						IconStart="@(new Icons.Regular.Size16.Add())"
+						Appearance="Appearance.Outline">Agregar pescador</FluentButton>
+				</div>
+			</FluentCard>
+		}@*  else if (!_searched && searchResult.Count == 0)
+		{
+			<FluentCard class="mt-4 dashed-rect" style="height:100px;width:500px">
+				<div class="flex flex-row justify-evenly items-center w-full h-full">
+					<FluentIcon Icon="Icons.Regular.Size24.ArrowUp" Color=Color.Success />
+					<span class="color-fg">Busca un pescador</span>
+				</div>
+			</FluentCard>
+		} *@
+	}
+
+</div>
+
+@if (selected is not null)
+{
+	<p class="m-0 mt-16 color-fg">Selecciona la categoría e ingresa el número</p>
+	<FluentDivider class="mt-1 mb-4" />
+
+	<div class="flex flex-row justify-evenly w-full">
+		<div>
+			<FluentSelect Items=cats
+			OptionText="@(i => i.Name)"
+			OptionValue="@(i => i.Name)"
+			@bind-Value="@_slectedCatName">
+				<LabelTemplate>
+					Categoría <span class="red">*</span>
+
+				</LabelTemplate>
+			</FluentSelect>
+		</div>
+
+		<FluentNumberField @bind-Value=_selectedNumber Required="true">
+			Número <span class="red">*</span>
+		</FluentNumberField>
+	</div>
+
+
+	<div class="mt-6 flex flex-row w-full justify-center gap-24">
+		<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
+		<FluentButton 
+				IconStart="@(new Icons.Regular.Size16.Checkmark())" 
+				Appearance="Appearance.Accent">Guardar</FluentButton>
+	</div>
+}
+
+
+@code {
+	record struct Persona(string Name, int N);
+	List<Persona> _personas = new()
+	{
+		new Persona("Juan Perez", 1),
+		new Persona("Pedro Foo", 2),
+		new Persona("Pablo Bar", 3),
+		new Persona("Jose Mert", 4),
+		new Persona("Jorge Pel", 5),
+		new Persona("Javier Era", 6),
+		new Persona("Joaquin Xaz", 7),
+		new Persona("Jesús Ypa", 8),
+		new Persona("Julián Wer", 9),
+	};
+	record struct Cat(int Id, string Name, int minAge, int MaxAge);
+	List<Cat> cats = new()
+	{
+		new Cat(1, "Menores", 0, 17),
+		new Cat(2, "Mayores", 18, 99),
+	};
+
+
+	string _searchName = string.Empty;
+	bool _searched = false;
+
+	Persona? selected;
+	string _slectedCatName = string.Empty;
+	int? _selectedNumber;
+
+	List<Persona> searchResult = new();
+
+	void Select(Persona p) {
+		selected = p;
+	}
+
+	void Cancel()
+	{
+		selected = null;	
+	}
+
+
+	async Task OnInput(ChangeEventArgs e)
+	{
+		_searchName = e.Value?.ToString() ?? string.Empty;
+
+		await Search();
+	}
+
+	async Task Search() {
+		_searched = true;
+		searchResult = _personas
+						.Where(p => p.Name.Contains(_searchName ?? "", StringComparison.OrdinalIgnoreCase))
+						.Take(2)
+						.ToList();
+	}
+}

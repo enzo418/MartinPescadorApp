@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FisherTournament.WebServer.Navigation;
 using FisherTournament.Infrastracture.Common.Mapping;
+using FisherTournament.WebServer.Navigation;
 
 namespace FisherTournament.WebServer
 {

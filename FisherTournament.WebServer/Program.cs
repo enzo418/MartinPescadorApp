@@ -1,5 +1,7 @@
 using FisherTournament.Application;
 using FisherTournament.Infrastracture;
+using FisherTournament.Infrastracture.Persistence.ReadModels.EntityFramework;
+using FisherTournament.Infrastracture.Persistence.Tournaments;
 using FisherTournament.WebServer;
 using Microsoft.Fast.Components.FluentUI;
 
@@ -41,5 +43,31 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
+// Ensure DB CREATED
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var dbReadModels = services.GetRequiredService<ReadModelsDbContext>();
+    dbReadModels.Database.EnsureCreated();
+
+    var dbMain = services.GetRequiredService<TournamentFisherDbContext>();
+    dbMain.Database.EnsureCreated();
+}
+
+
+
+//public static void ApplyMigrations(this IApplicationBuilder app)
+//{
+//using var services = app.ApplicationServices.CreateScope();
+
+//var tournamentDbContext = services.ServiceProvider.GetService<TournamentFisherDbContext>();
+//tournamentDbContext?.Database.Migrate();
+
+//var readModelsDbContext = services.ServiceProvider.GetService<ReadModelsDbContext>();
+//readModelsDbContext?.Database.Migrate();
+//}
+
 
 app.Run();

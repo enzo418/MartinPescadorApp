@@ -1,0 +1,78 @@
+﻿@layout TournamentLayout
+@page "/tournaments/inscriptions"
+
+@using Microsoft.Fast.Components.FluentUI;
+
+@inject IToastService _toastService
+@inject IDialogService _dialogService
+@inject NavigationManager _nav
+
+<FluentGrid>
+    <FluentGridItem sm="12" md="6">
+        <h1 class="page-title-no-pt">Inscripciones</h1>
+    </FluentGridItem>
+
+    <FluentGridItem sm="12" md="6" Class="flex justify-end">
+        <FluentButton 
+            Appearance="Appearance.Accent" 
+            IconStart="@(new Icons.Regular.Size16.Add())"
+            OnClick="@(() => _nav.NavigateTo("/tournaments/new-inscription"))">Agregar Inscripción</FluentButton>
+    </FluentGridItem>
+</FluentGrid>
+
+
+<FluentDataGrid Items="@inscriptions">
+    <ChildContent>
+        <PropertyColumn Title="N°" Property="@(c => c.N)" />
+
+        <PropertyColumn Title="Nombre" Property="@(c => c.Name)" />
+
+        <PropertyColumn Title="Categoría" Property="@(c => c.Category)" />
+
+        <PropertyColumn Title="Fecha Nacimiento" Property="@(c => c.BirthDate.ToShortDateString())" />
+
+        <TemplateColumn Title="Acciones" Align="@Align.End">
+            <FluentButton IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => Edit(context))" />
+            <FluentButton IconEnd="@(new Icons.Regular.Size16.Delete().WithColor(Color.Error))" OnClick="@(() => Delete(context))" />
+        </TemplateColumn>
+    </ChildContent>
+
+    <EmptyContent>
+        <div Style="min-height: 300px;" class="empty-content">
+            <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
+            &nbsp; Todavía no hay inscripciones.
+        </div>
+    </EmptyContent>
+</FluentDataGrid>
+
+@code {
+    record struct Inc(int N, string Name, string Category, DateTime BirthDate);
+
+    void Edit(Inc inc)
+    {
+        _toastService.ShowInfo($"Editando inscripción {inc.N}");
+    }
+
+    async Task Delete(Inc inc)
+    {
+        var dialog = await _dialogService.ShowConfirmationAsync(
+            $"Eliminar la inscripción de {inc.Name} en la categoría {inc.Category}?",
+            "Si", "No",
+            "Confirmar"
+        );
+        var result = await dialog.Result;
+        if (!result.Cancelled){
+            _toastService.ShowInfo($"Eliminando inscripción {inc.N}");
+            inscriptions = inscriptions.Where(i => i.N != inc.N);
+        }
+	}
+
+	IQueryable<Inc> inscriptions = new[]
+	{
+		new Inc(1, "Juan Perez", "Menores", new DateTime(2000, 1, 1)),
+		new Inc(2, "Carlos Perez", "Senior", new DateTime(1976, 1, 1)),
+		new Inc(3, "Pedro Raco", "Senior", new DateTime(1976, 1, 1)),
+		new Inc(4, "Pedro Raco", "Juvenil", new DateTime(1996, 1, 1)),
+		new Inc(5, "X Y", "Juvenil", new DateTime(1997, 1, 1)),
+	}.AsQueryable();
+}

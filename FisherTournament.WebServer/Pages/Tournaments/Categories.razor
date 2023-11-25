@@ -1,0 +1,104 @@
+﻿@layout TournamentLayout
+@page "/tournaments/categories"
+
+@using Microsoft.Fast.Components.FluentUI;
+
+@inject IToastService _toastService
+
+<h1 class="page-title-no-pt">Categorias</h1>
+
+<FluentDataGrid Items="@cats">
+    <ChildContent>
+        <TemplateColumn Title="Categoría">
+		    <FluentTextField 
+                Value="@context.Name"
+                @onchange="@(v => OnNameChanged(context, v))"
+                tabindex="@(GetCatIndex(context)+1)" />
+	    </TemplateColumn>
+
+        <TemplateColumn Title="Edad límite">
+            <div class="flex flex-row">
+                <FluentNumberField 
+                    Value="context.minAge"
+                    @onchange="@(v => OnMinAgeChanged(context, v))"
+                    tabindex="@(GetCatIndex(context)+2)" />
+                <span      
+                    class="flex flex-col justify-center mx-3 color-fg">
+                    hasta
+                </span>
+                <FluentNumberField 
+                    Value="context.MaxAge"
+                    @onchange="@(v => OnMaxAgeChanged(context, v))"
+                    tabindex="@(GetCatIndex(context)+3)" />
+            </div>
+        </TemplateColumn>
+
+        <TemplateColumn Title="Acciones" Align="@Align.End">
+            <FluentButton IconEnd="@(new Icons.Regular.Size16.Delete().WithColor(Color.Error))" OnClick="@(() => Delete(context))" />
+        </TemplateColumn>
+    </ChildContent>
+
+    <EmptyContent>
+        <div Style="min-height: 300px;" class="empty-content">
+			<FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
+			&nbsp; No se encontraron categorías.
+		</div>
+    </EmptyContent>
+</FluentDataGrid>
+
+<div class="dashed-rect cursor-pointer"
+    @onclick="@(v => OnNewCategoryClicked())">
+    <FluentIcon Icon="Icons.Regular.Size24.Add" Color="@Color.Accent" />
+    <span class="color-fg">Nueva categoría</span>
+</div>
+
+@code {
+    record struct Cat(int Id, string Name, int minAge, int MaxAge);
+
+    int _tabIndex = 0;
+
+    Task OnMinAgeChanged(Cat context, ChangeEventArgs value)
+    {
+        _toastService.ClearSuccessToasts();
+        _toastService.ShowSuccess($"Cambio guardado", 1);
+        return Task.CompletedTask;
+    }
+
+    Task OnMaxAgeChanged(Cat context, ChangeEventArgs value)
+    {
+        _toastService.ClearSuccessToasts();
+        _toastService.ShowSuccess($"Cambio guardado", 1);
+        return Task.CompletedTask;
+    }
+
+    Task OnNameChanged(Cat context, ChangeEventArgs value)
+    {
+        _toastService.ClearSuccessToasts();
+        _toastService.ShowSuccess($"Cambio guardado", 1);
+        return Task.CompletedTask;
+    }
+
+    Task OnNewCategoryClicked()
+    {
+        cats = cats.Append(new Cat(cats.Count(), "Nueva categoría", 0, 0));
+        return Task.CompletedTask;
+    }
+
+    Task Delete(Cat context)
+	{
+		cats = cats.Where(c => c.Id != context.Id);
+        return Task.CompletedTask;
+	}
+
+    int GetCatIndex(Cat context)
+	{
+		return cats.ToList().FindIndex(c => c.Id == context.Id);
+	}
+
+    IQueryable<Cat> cats = new[]
+    {
+        new Cat(1, "Senior", 60, 200),
+        new Cat(2, "Damas", 60, 200),
+        new Cat(3, "Juvenil", 14, 17),
+    }.AsQueryable();
+}

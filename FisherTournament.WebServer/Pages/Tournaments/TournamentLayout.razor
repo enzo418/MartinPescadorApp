@@ -1,0 +1,33 @@
+﻿@inherits LayoutComponentBase
+@using Microsoft.Fast.Components.FluentUI;
+
+@layout MainLayout
+
+<FluentLayout Class="pt-6">
+    <FluentStack Orientation="Orientation.Horizontal" Width="100%" Class="h-full">
+        <div style="color: var(--neutral-foreground-rest);">
+            <FluentNavMenu Width="300">
+                <FluentNavLink Icon="@(new Icons.Regular.Size24.Home())" Href="/tournaments/add">Información General</FluentNavLink>
+                <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleList())" Href="/tournaments/categories">Categorías</FluentNavLink>
+                <FluentNavGroup Title="Inscripciones" Icon="@(new Icons.Regular.Size24.People())" Expanded=true>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleAdd())" Href="/tournaments/new-inscription">Agregar inscripción</FluentNavLink>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAgenda())" Href="/tournaments/inscriptions">Ver inscripciones</FluentNavLink>
+                </FluentNavGroup>
+                <FluentNavGroup Title="Competiciones" Icon="@(new Icons.Regular.Size24.CalendarDate())" Expanded=true>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAdd())">Agregar competición</FluentNavLink>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAgenda())">Ver competiciones</FluentNavLink>
+                </FluentNavGroup>
+                <FluentNavGroup Title="Posiciones" Icon="@(new Icons.Regular.Size24.TextNumberListLtr())" Expanded=true>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarMultiple())">Pos. del torneo</FluentNavLink>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.Calendar())">Pos. de competencias</FluentNavLink>
+                </FluentNavGroup>
+            </FluentNavMenu>
+        </div>
+
+        <FluentDivider Orientation="Orientation.Vertical" Role="DividerRole.Separator" />
+
+        <FluentBodyContent Class="pl-7" Style="overflow: visible !important;">
+            @Body
+        </FluentBodyContent>
+    </FluentStack>
+</FluentLayout>

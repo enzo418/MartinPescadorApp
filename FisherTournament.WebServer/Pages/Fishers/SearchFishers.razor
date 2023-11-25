@@ -1,31 +1,97 @@
 @using System.Text.RegularExpressions
 @using FisherTournament.Contracts.Fishers
 @using Application.Fishers.Queries
+@using FisherTournament.WebServer.Common.Errors;
 
 @inject NavigationManager _nav
 @inject ISender _sender
 @inject NavigationHistory _history
 @inject IMapper _mapper
+@inject IToastService _toastService
 
 @page "/fishers/search"
 
 <h1 class="page-title">Buscar Pescador</h1>
+
+<div>
+
 <div class="flex justify-center gap-20 pt-7 items-end">
-    <FluentTextField @bind-Value=Name>
-        <FluentIcon Slot="start" Value="@(new Icons.Regular.Size16.Search())" Color="@Color.Accent" />
+        <FluentTextField Autofocus="true" @bind-Value=Name Placeholder="Nombre">
         Buscar por nombre
-    </FluentTextField>
-    <FluentButton OnClick="Search" Appearance="Appearance.Accent">Buscar</FluentButton>
+        </FluentTextField>
+
+        <FluentButton OnClick="Search" IconStart="@(new Icons.Regular.Size16.Search())" Appearance="Appearance.Accent">
+            Buscar
+        </FluentButton>
+</div>
+
+    <FluentDataGrid 
+            @ref="fluentDataGrid" 
+            ItemsProvider="itemsProviderCall" 
+            TGridItem="FisherItem" 
+            Pagination="@pagination">
+        <ChildContent>
+            <PropertyColumn Property="@(p => p.Id)" Sortable="true" Title="Id" />
+            <PropertyColumn Property="@(p => p.Name)" Sortable="true" Title="Nombre" />
+            <TemplateColumn Title="Acciones" Align="@Align.End">
+                <FluentButton IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick=Edit />
+            </TemplateColumn>
+        </ChildContent>
+
+        <EmptyContent>
+            <div Style="min-height: 300px;" class="empty-content">
+                <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
+                &nbsp; No se encontraron pescadores.
+            </div>
+        </EmptyContent>
+    </FluentDataGrid>
+
+    <FluentPaginator State="@pagination" />
+
 </div>
 
 @code {
     string? Name = "";
-    int Page;
-    int PageSize = 10;
+    PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
+
+    GridItemsProvider<FisherItem> itemsProviderCall = default!;
+
+    FluentDataGrid<FisherItem> fluentDataGrid = default!;
+
+    protected override void OnInitialized()
+    {
+        itemsProviderCall = async req =>
+        {
+            var fishers = await _sender.Send(new GetFishersQuery(
+                Name, 
+                pagination.CurrentPageIndex+1, 
+                pagination.ItemsPerPage));
+
+            if (!fishers.IsError)
+            {
+                return GridItemsProviderResult.From(
+                    items: fishers.Value.Items,
+                    totalItemCount: fishers.Value.TotalCount
+                );
+            } else
+            {
+                _toastService.ShowErrors(fishers.Errors);
+
+                return GridItemsProviderResult.From(
+                    items: new List<FisherItem>(),
+                    totalItemCount: 0
+                );
+            }
+        };
+    }
 
     async Task Search()
     {
-        @* var fishers = await _sender.Send(new GetFishersQuery(Name, Page, PageSize)); *@
+        await fluentDataGrid.RefreshDataAsync();
+    }
+
+    void Edit()
+    {
         
     }
 }
