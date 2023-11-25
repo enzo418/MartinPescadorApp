@@ -1,9 +1,13 @@
 ﻿@layout TournamentLayout
 @page "/tournaments/new-inscription"
 
+@using FisherTournament.Application.Fishers.Queries;
+@using FisherTournament.Domain.FisherAggregate.ValueObjects;
 @using Microsoft.Fast.Components.FluentUI;
 
 @inject IToastService _toastService
+@inject NavigationManager _nav
+@inject ISender _sender
 
 <h1 class="page-title-no-pt">Agregar Inscripción</h1>
 
@@ -16,7 +20,8 @@
 			<FluentTextField 
 				Placeholder="Nombre" 
 				Label="Buscar por nombre"
-				@oninput="@OnInput">
+				@oninput="@OnInput"
+							 Disabled="@(selected is not null)">
 				<FluentIcon Value="@(new Icons.Regular.Size16.Person())" Slot="start" Color="Color.Neutral" />
 			</FluentTextField>
 		</div>
@@ -34,8 +39,8 @@
 					</div>
 
 					<div>
-						<span class="color-fg font-bold">Número</span>
-						<span class="color-fg">@selected?.N</span>
+						<span class="color-fg font-bold">DNI</span>
+						<span class="color-fg">@selected?.DNI</span>
 					</div>
 				</div>
 
@@ -57,8 +62,8 @@
 						</div>
 
 						<div>
-							<span class="color-fg font-bold">Número</span>
-							<span class="color-fg">@persona.N</span>
+							<span class="color-fg font-bold">DNI</span>
+							<span class="color-fg">@persona.DNI</span>
 						</div>
 					</div>
 
@@ -80,7 +85,8 @@
 
 					<FluentButton 
 						IconStart="@(new Icons.Regular.Size16.Add())"
-						Appearance="Appearance.Outline">Agregar pescador</FluentButton>
+						Appearance="Appearance.Outline"
+						OnClick="AgregarPescador">Agregar pescador</FluentButton>
 				</div>
 			</FluentCard>
 		}
@@ -92,18 +98,11 @@
 
 					<FluentButton 
 						IconStart="@(new Icons.Regular.Size16.Add())"
-						Appearance="Appearance.Outline">Agregar pescador</FluentButton>
+						Appearance="Appearance.Outline"
+						OnClick="AgregarPescador">Agregar pescador</FluentButton>
 				</div>
 			</FluentCard>
-		}@*  else if (!_searched && searchResult.Count == 0)
-		{
-			<FluentCard class="mt-4 dashed-rect" style="height:100px;width:500px">
-				<div class="flex flex-row justify-evenly items-center w-full h-full">
-					<FluentIcon Icon="Icons.Regular.Size24.ArrowUp" Color=Color.Success />
-					<span class="color-fg">Busca un pescador</span>
-				</div>
-			</FluentCard>
-		} *@
+		}
 	}
 
 </div>
@@ -142,19 +141,7 @@
 
 
 @code {
-	record struct Persona(string Name, int N);
-	List<Persona> _personas = new()
-	{
-		new Persona("Juan Perez", 1),
-		new Persona("Pedro Foo", 2),
-		new Persona("Pablo Bar", 3),
-		new Persona("Jose Mert", 4),
-		new Persona("Jorge Pel", 5),
-		new Persona("Javier Era", 6),
-		new Persona("Joaquin Xaz", 7),
-		new Persona("Jesús Ypa", 8),
-		new Persona("Julián Wer", 9),
-	};
+	record struct Persona(FisherId Id, string Name, string DNI);
 	record struct Cat(int Id, string Name, int minAge, int MaxAge);
 	List<Cat> cats = new()
 	{
@@ -189,11 +176,26 @@
 		await Search();
 	}
 
+	void AgregarPescador()
+	{
+		_nav.NavigateTo("/fishers/add");
+	}
+
 	async Task Search() {
 		_searched = true;
-		searchResult = _personas
-						.Where(p => p.Name.Contains(_searchName ?? "", StringComparison.OrdinalIgnoreCase))
-						.Take(2)
-						.ToList();
+
+		GetFishersQuery query = new(_searchName, 1, 2);
+
+		var result = await _sender.Send(query);
+
+		if (result.IsError)
+		{
+			_toastService.ShowErrors(result.Errors);
+			return;
+		}
+
+		// TODO: Use real DNI
+
+		searchResult = result.Value.Items.Select(i => new Persona(i.Id, i.Name, "")).ToList();
 	}
 }

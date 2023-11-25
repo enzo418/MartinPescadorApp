@@ -4,8 +4,9 @@
 
 @inject NavigationManager _nav
 @inject ISender _sender
-@inject NavigationHistory _history
+@inject IJSRuntime JSRuntime
 @inject IMapper _mapper
+@inject IToastService _toastService
 
 @page "/fishers/add"
 
@@ -91,9 +92,9 @@
         }
     }
 
-    private void OnCancel()
+    private async void OnCancel()
     {
-        _nav.NavigateTo(_history.LastOrHome());
+        await JSRuntime.GoBack();
     }
 
     private async Task Submit()
@@ -106,7 +107,9 @@
         }
         else
         {
-            _nav.NavigateTo(_history.LastOrHome());
+            //_nav.NavigateTo(_history.LastOrHome());
+            _toastService.ShowSuccess($"Agregado pescador {Model.FirstName} {Model.LastName}");
+            await JSRuntime.GoBack();
         }
 
         await Task.CompletedTask;

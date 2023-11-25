@@ -62,7 +62,7 @@
         );
         var result = await dialog.Result;
         if (!result.Cancelled){
-            _toastService.ShowInfo($"Eliminando inscripción {inc.N}");
+            _toastService.ShowSuccess($"Eliminada inscripción {inc.N}");
             inscriptions = inscriptions.Where(i => i.N != inc.N);
         }
 	}
