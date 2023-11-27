@@ -129,6 +129,8 @@
 			</FluentSelect>
 		</div>
 
+		@* TODO: Numero should only be set if the fisher doesn't have one *@
+
 		<FluentNumberField @bind-Value=_selectedNumber Required="true">
 			Número <span class="red">*</span>
 		</FluentNumberField>
@@ -139,7 +141,8 @@
 		<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
 		<FluentButton 
 				IconStart="@(new Icons.Regular.Size16.Checkmark())" 
-				Appearance="Appearance.Accent">Guardar</FluentButton>
+				Appearance="Appearance.Accent"
+				OnClick="Save">Guardar</FluentButton>
 	</div>
 }
 
@@ -172,6 +175,11 @@
 		selected = null;	
 	}
 
+	void Save()
+	{
+		// TODO
+	}
+
 	protected override async Task OnInitializedAsync()
 	{
 		var uri = new Uri(_nav.Uri);
@@ -184,7 +192,6 @@
 			await Search();
 		}
 	}
-
 
 	async Task OnInput(ChangeEventArgs e)
 	{
