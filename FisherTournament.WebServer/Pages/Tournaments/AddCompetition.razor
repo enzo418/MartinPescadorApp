@@ -1,0 +1,77 @@
+﻿@layout TournamentLayout
+@page "/tournaments/competition"
+
+@using FisherTournament.Application.Fishers.Queries;
+@using FisherTournament.Domain.FisherAggregate.ValueObjects;
+@using Microsoft.AspNetCore.WebUtilities;
+@using Microsoft.Extensions.Primitives;
+@using Microsoft.Fast.Components.FluentUI;
+
+@inject IToastService _toastService
+@inject NavigationManager _nav
+@inject ISender _sender
+@inject IJSRuntime _js
+
+<div class="relative h-full">
+
+	<h1 class="page-title-no-pt">Agregar Competición</h1>
+
+	<p class="m-0 color-fg"></p>
+	<FluentDivider class="mt-1 mb-4" />
+
+	<div class="flex flex-col items-center">
+		<div>
+			<FluentDatePicker @bind-Value="@SelectedDate">
+				@* TODO: No deberia ser simplemente fecha de la competencia? *@
+				<LabelTemplate>
+				Fecha de Inicio <span class="red">*</span>
+
+				</LabelTemplate>
+			</FluentDatePicker>
+		</div>
+	</div>
+
+
+	<FluentGrid Class="items-end">
+		<FluentGridItem sm="12" md="6">
+			<p class="m-0 mt-16 color-fg">Lugar de la competencia</p>
+		</FluentGridItem>
+
+		<FluentGridItem sm="12" md="6" Class="flex justify-end">
+		
+		</FluentGridItem>
+	</FluentGrid>
+	<FluentDivider class="mt-1 mb-4" />
+
+	<div class="flex flex-row justify-evenly w-full">
+		<div>
+			<FluentTextField>
+				Direccion/Nombre del lugar
+				&nbsp;&nbsp;&nbsp;
+				<FluentBadge Appearance="Appearance.Neutral" Fill="lowlight" BackgroundColor="#000" Color="#fff">Opcional</FluentBadge>
+			</FluentTextField>
+		</div>
+	</div>
+
+	<div class="absolute bottom-0 mt-6 flex flex-row w-full justify-center gap-24">
+		<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
+		<FluentButton 
+				IconStart="@(new Icons.Regular.Size16.Checkmark())" 
+				Appearance="Appearance.Accent"
+				OnClick="Save">Guardar</FluentButton>
+	</div>
+</div>
+
+@code {
+	DateTime? SelectedDate { get; set; } = DateTime.Now;
+
+	void Cancel()
+	{
+		_js.GoBack();
+	}
+
+	void Save()
+	{
+		// TODO
+	}
+}
