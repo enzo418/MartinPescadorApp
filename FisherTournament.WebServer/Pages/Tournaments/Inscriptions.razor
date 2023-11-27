@@ -13,15 +13,15 @@
     </FluentGridItem>
 
     <FluentGridItem sm="12" md="6" Class="flex justify-end">
-        <FluentButton 
+        <FluentButton
             Appearance="Appearance.Accent" 
             IconStart="@(new Icons.Regular.Size16.Add())"
-            OnClick="@(() => _nav.NavigateTo("/tournaments/new-inscription"))">Agregar Inscripción</FluentButton>
+            OnClick="@(() => _nav.NavigateTo("/tournaments/inscription"))">Agregar Inscripción</FluentButton>
     </FluentGridItem>
 </FluentGrid>
 
 
-<FluentDataGrid Items="@inscriptions">
+<FluentDataGrid Items="@inscriptions" GridTemplateColumns="0.1fr 0.6fr 0.4fr 0.3fr 0.4fr">
     <ChildContent>
         <PropertyColumn Title="N°" Property="@(c => c.N)" />
 
@@ -32,8 +32,12 @@
         <PropertyColumn Title="Fecha Nacimiento" Property="@(c => c.BirthDate.ToShortDateString())" />
 
         <TemplateColumn Title="Acciones" Align="@Align.End">
-            <FluentButton IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => Edit(context))" />
-            <FluentButton IconEnd="@(new Icons.Regular.Size16.Delete().WithColor(Color.Error))" OnClick="@(() => Delete(context))" />
+            <FluentButton 
+                          IconEnd="@(new Icons.Regular.Size24.Edit())"
+                          OnClick="@(() => Edit(context))" />
+            <FluentButton 
+                          IconEnd="@(new Icons.Regular.Size24.Delete().WithColor("red"))"
+                          OnClick="@(() => Delete(context))" />
         </TemplateColumn>
     </ChildContent>
 
@@ -51,7 +55,7 @@
     void Edit(Inc inc)
     {
         //_toastService.ShowInfo($"Editando inscripción {inc.N}");
-        _nav.NavigateTo($"/tournaments/edit-inscription/{inc.N}");
+        _nav.NavigateTo($"/tournaments/inscription/{inc.N}");
     }
 
     async Task Delete(Inc inc)

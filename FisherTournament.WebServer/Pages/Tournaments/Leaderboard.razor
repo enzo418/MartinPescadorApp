@@ -1,0 +1,157 @@
+﻿@layout TournamentLayout
+@page "/tournaments/leaderboard"
+
+@inject IToastService _toastService
+@inject NavigationManager _nav
+@inject ISender _sender
+
+<h1 class="page-title-no-pt">Tabla de posiciones del torneo</h1>
+
+<div class="mt-7 mb-7 flex flex-row w-full justify-between items-end">
+    <div class="flex flex-row gap-x-2">
+        <div>
+            <FluentSelect Items=cats
+                            OptionText="@(i => i.Name)"
+                            OptionValue="@(i => i.Name)"
+                            @bind-Value="@SelectedCategory"
+                            @oninput="OnSelectedCategoryAsync">
+                <LabelTemplate>
+                    Categoría
+                </LabelTemplate>
+            </FluentSelect>
+        </div>
+
+        <div class="ml-3">
+            <FluentSelect TOption="string" @bind-Value="@SelectedCompetition"
+                          @oninput="OnSelectedCompetitionAsync">
+                <LabelTemplate>
+                    Competición
+                </LabelTemplate>
+
+                <ChildContent>
+                    <FluentOption Value="Todas">Todas las competencias</FluentOption>
+                    
+                    @foreach (var competencia in competencias)
+					{
+						<FluentOption Value="@competencia.N.ToString()">N° @competencia.N</FluentOption>
+					}
+                </ChildContent>
+            </FluentSelect>
+        </div>
+
+    </div>
+    <FluentButton IconStart="@(new Icons.Regular.Size16.Share())" Appearance="Appearance.Outline">Exportar</FluentButton>
+</div>
+@* <FluentDivider class="mt-4 mb-4" />  *@
+
+ <FluentDataGrid Items="@positions" GridTemplateColumns="0.1fr 0.6fr 0.3fr 0.5fr">
+    <ChildContent>
+        <PropertyColumn Title="Posición" Property="@(c => c.Pos)" />
+
+        <PropertyColumn Title="Nombre" Property="@(c => c.Name)" />
+
+        <PropertyColumn Title="Suma de posiciones" Property="@(c => c.Total)" />
+
+        <TemplateColumn Title="Acciones" Align="@Align.End">
+            <FluentButton IconStart="@(new Icons.Regular.Size24.Info())"
+                          Appearance="Appearance.Stealth"
+                          OnClick="@(() => OpenDetails(context))"> 
+                          Detalles
+            </FluentButton>
+        </TemplateColumn>
+    </ChildContent>
+
+    <EmptyContent>
+        <div Style="min-height: 300px;" class="empty-content">
+            <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
+            &nbsp; No hay posiciones registradas para esta competición
+        </div>
+    </EmptyContent>
+</FluentDataGrid>
+
+@code {
+    record struct Competencia(int Id, int N);
+    List<Competencia> competencias = new()
+	{
+		new Competencia(0, 1),
+		new Competencia(1, 2),
+		new Competencia(2, 3),
+		new Competencia(3, 4),
+		new Competencia(4, 5),
+	};
+
+    record struct Cat(int Id, string Name, int minAge, int MaxAge);
+    List<Cat> cats = new()
+    {
+        new Cat(0, "General", 0, 0),
+        new Cat(1, "Menores", 0, 17),
+        new Cat(2, "Mayores", 18, 99),
+    };
+
+    record struct Position(int Pos, string Name, int Total);
+    IQueryable<Position> positions = new List<Position>().AsQueryable();
+
+    string SelectedCategory = "General";
+
+    string SelectedCompetition = "Todas";
+
+    protected async override Task OnInitializedAsync()
+    {
+        positions = new List<Position>()
+        {
+                new Position(1, "Carlos Perez", 15),
+                new Position(2, "Juan Perez", 10),
+                new Position(3, "Pedro Pepe", 7),
+                new Position(4, "Jose Perez", 5),
+                new Position(5, "Santos Tre", 3),
+                new Position(6, "Foo bar", 1)
+        }.AsQueryable();
+
+        await Task.CompletedTask;
+    }
+
+    async Task OnSelectedCategoryAsync(ChangeEventArgs e)
+    {
+        string? selected = e.Value?.ToString();
+
+        if (selected == "Mayores"){
+            positions = new List<Position>()
+            {
+                new Position(1, "Juan Perez", 10),
+                new Position(2, "Pedro Pepe", 7),
+                new Position(3, "Jose Perez", 5)
+            }.AsQueryable();
+        } else if (selected == "Menores")
+        {
+            positions = new List<Position>()
+            {
+                new Position(1, "Carlos Perez", 15),
+                new Position(2, "Santos Tre", 3),
+                new Position(3, "Foo bar", 1)
+            }.AsQueryable();
+        } else if (selected == "General") {
+            positions = new List<Position>()
+            {
+                new Position(1, "Carlos Perez", 15),
+                new Position(2, "Juan Perez", 10),
+                new Position(3, "Pedro Pepe", 7),
+                new Position(4, "Jose Perez", 5),
+                new Position(5, "Santos Tre", 3),
+                new Position(6, "Foo bar", 1)
+            }.AsQueryable();
+        }
+
+        await Task.CompletedTask;
+    }
+
+    async Task OnSelectedCompetitionAsync()
+    {
+        _toastService.ShowInfo($"Cambiando a competencia {SelectedCompetition}");
+        await Task.CompletedTask;
+    }
+
+    void OpenDetails(Position position)
+    {
+        _toastService.ShowInfo($"Abriendo detalles de {position.Name}");
+    }
+}

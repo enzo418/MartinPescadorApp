@@ -1,0 +1,137 @@
+﻿@layout TournamentLayout
+@page "/tournaments/competition/{CompetitionId}"
+
+@using FisherTournament.Application.Fishers.Queries;
+@using FisherTournament.Domain.FisherAggregate.ValueObjects;
+@using Microsoft.AspNetCore.WebUtilities;
+@using Microsoft.Extensions.Primitives;
+@using Microsoft.Fast.Components.FluentUI;
+
+@inject IToastService _toastService
+@inject NavigationManager _nav
+@inject ISender _sender
+@inject IJSRuntime _js
+
+<div class="relative h-full">
+	<h1 class="page-title-no-pt">Editar Competición</h1>
+
+	<p class="m-0 color-fg"></p>
+	<FluentDivider class="mt-1 mb-4" />
+
+	<div class="flex flex-col items-start gap-y-5">
+		<div>
+			<FluentDatePicker @bind-Value="@SelectedDate">
+				@* TODO: No deberia ser simplemente fecha de la competencia? *@
+				<LabelTemplate>
+					Fecha de Inicio <span class="red">*</span>
+				</LabelTemplate>
+			</FluentDatePicker>
+			<FluentTimePicker @bind-Value="@SelectedDate" Label="" />
+		</div>
+
+		@if (EndDate is not null)
+		{
+			<div class="flex flex-row gap-x-5 items-end">
+				<div>
+					<FluentDatePicker @bind-Value="@EndDate" Disabled="true">
+						<LabelTemplate>
+							Fecha de Fin
+						</LabelTemplate>
+					</FluentDatePicker>
+				</div>
+
+				<FluentButton 
+					IconStart="@(new Icons.Regular.Size16.ArrowUndo())"
+					OnClick="UndoEnded"
+					Class="mb-1.5">
+					Deshacer finalización
+				</FluentButton>
+			</div>
+		} else {
+			<div>
+				<FluentButton 
+					Appearance="Appearance.Accent" 
+					OnClick="EndCompetition"
+					IconStart="@(new Icons.Regular.Size16.CalendarCheckmark())">Marcar competición como finalizada</FluentButton>
+			</div>
+		}
+	</div>
+
+
+	<FluentGrid Class="items-end">
+		<FluentGridItem sm="12" md="6">
+			<p class="m-0 mt-16 color-fg">Lugar de la competencia</p>
+		</FluentGridItem>
+
+		<FluentGridItem sm="12" md="6" Class="flex justify-end">
+		
+		</FluentGridItem>
+	</FluentGrid>
+	<FluentDivider class="mt-1 mb-4" />
+
+	<div class="flex flex-row justify-evenly w-full">
+		<div>
+			<FluentTextField
+				@bind-Value=Place>
+				Direccion/Nombre del lugar
+				&nbsp;&nbsp;&nbsp;
+				<FluentBadge Appearance="Appearance.Neutral" Fill="lowlight" BackgroundColor="#000" Color="#fff">Opcional</FluentBadge>
+			</FluentTextField>
+		</div>
+	</div>
+
+	<div class="absolute bottom-0 mt-6 flex flex-row w-full justify-center gap-24">
+		<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
+		<FluentButton 
+				IconStart="@(new Icons.Regular.Size16.Checkmark())" 
+				Appearance="Appearance.Accent"
+				OnClick="Save">Guardar</FluentButton>
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public string CompetitionId { get; set; } = null!;
+
+	DateTime? SelectedDate { get; set; } = DateTime.Now.AddDays(-10);
+	DateTime? EndDate { get; set; } = null;
+
+	string Place = "TODO";
+
+	protected async override Task OnInitializedAsync()
+	{
+		// TODO: Get competition metadata
+
+		//if (result.IsFailure) {
+			_toastService.ShowError("La competición no existe.");
+			//_toastService.ShowErrors(result.Errors);
+			//await _js.GoBack();			
+		//}
+
+		//var competition = result.Value;
+
+		await Task.CompletedTask;
+	}
+
+	void Cancel()
+	{
+		_js.GoBack();
+	}
+
+	void EndCompetition()
+	{
+		// TODO
+		EndDate = DateTime.Now;
+	}
+
+	void UndoEnded()
+	{
+		// TODO
+		EndDate = null;
+	}
+
+	void Save()
+	{
+		// TODO
+	}
+}

@@ -25,10 +25,6 @@
     <ProjectReference Include="..\FisherTournament.Contracts\FisherTournament.Contracts.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Pages\NewFolder\" />
-  </ItemGroup>
-
   <!-- <Target Name="TailwindBuild" BeforeTargets="Build">
     <Exec Command="npm run build-css" />
   </Target> -->

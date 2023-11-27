@@ -10,17 +10,14 @@
                 <FluentNavLink Icon="@(new Icons.Regular.Size24.Home())" Href="/tournaments/add">Información General</FluentNavLink>
                 <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleList())" Href="/tournaments/categories">Categorías</FluentNavLink>
                 <FluentNavGroup Title="Inscripciones" Icon="@(new Icons.Regular.Size24.People())" Expanded=true>
-                    <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleAdd())" Href="/tournaments/new-inscription">Agregar inscripción</FluentNavLink>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleAdd())" Href="/tournaments/inscription">Agregar inscripción</FluentNavLink>
                     <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAgenda())" Href="/tournaments/inscriptions">Ver inscripciones</FluentNavLink>
                 </FluentNavGroup>
                 <FluentNavGroup Title="Competiciones" Icon="@(new Icons.Regular.Size24.CalendarDate())" Expanded=true>
-                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAdd())">Agregar competición</FluentNavLink>
-                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAgenda())">Ver competiciones</FluentNavLink>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAdd())" Href="/tournaments/competition">Agregar competición</FluentNavLink>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAgenda())" Href="/tournaments/competitions">Ver competiciones</FluentNavLink>
                 </FluentNavGroup>
-                <FluentNavGroup Title="Posiciones" Icon="@(new Icons.Regular.Size24.TextNumberListLtr())" Expanded=true>
-                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarMultiple())">Pos. del torneo</FluentNavLink>
-                    <FluentNavLink Icon="@(new Icons.Regular.Size24.Calendar())">Pos. de competencias</FluentNavLink>
-                </FluentNavGroup>
+                <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarMultiple())" Href="/tournaments/leaderboard">Tabla de posiciones</FluentNavLink>
             </FluentNavMenu>
         </div>
 
