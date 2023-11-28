@@ -208,7 +208,7 @@
 	async Task Search() {
 		_searched = true;
 
-		GetFishersQuery query = new(_searchName, 1, 2);
+		GetFishersQuery query = new(_searchName, "", 1, 2);
 
 		var result = await _sender.Send(query);
 
@@ -220,7 +220,7 @@
 
 		// TODO: Use real DNI
 
-		searchResult = result.Value.Items.Select(i => new Persona(i.Id, i.Name, "")).ToList();
+		searchResult = result.Value.Items.Select(i => new Persona(i.Id, $"{i.FirstName} {i.LastName}", "")).ToList();
 		
 		string uriWithoutQuery = _nav.Uri.Split('?')[0];
 		string newUriWithSearch = $"{uriWithoutQuery}?search={_searchName}";

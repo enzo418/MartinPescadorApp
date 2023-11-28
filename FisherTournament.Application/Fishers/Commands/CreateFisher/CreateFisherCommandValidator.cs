@@ -8,5 +8,6 @@ public class CreateFisherCommandValidator : AbstractValidator<CreateFisherComman
     {
         RuleFor(c => c.FirstName).NotEmpty();
         RuleFor(c => c.LastName).NotEmpty();
+        RuleFor(c => c.DNI).NotEmpty();
     }
 }

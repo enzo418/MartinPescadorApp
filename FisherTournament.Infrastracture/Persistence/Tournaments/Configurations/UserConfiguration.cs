@@ -16,6 +16,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.LastName)
             .IsRequired();
 
+        builder.Property(u => u.DNI)
+            .IsRequired();
+
         // Configure 0..1:1 relationship between Fisher and User
         //builder.HasOne<Fisher>()
         //    .WithOne()

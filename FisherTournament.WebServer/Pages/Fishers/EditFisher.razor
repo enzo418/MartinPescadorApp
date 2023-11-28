@@ -1,16 +1,16 @@
-@using System.Text.RegularExpressions
-@using FisherTournament.Contracts.Fishers
-@using Application.Fishers.Commands.CreateFisher
+﻿@page "/fisher/{FisherId}"
+@using FisherTournament.Application.Fishers.Commands.EditFisher;
+@using FisherTournament.Application.Fishers.Queries;
+@using FisherTournament.Contracts.Fishers;
+@using FisherTournament.Domain.FisherAggregate.ValueObjects;
 
 @inject NavigationManager _nav
 @inject ISender _sender
-@inject IJSRuntime JSRuntime
 @inject IMapper _mapper
 @inject IToastService _toastService
+@inject IJSRuntime JSRuntime
 
-@page "/fishers/add"
-
-<h1 class="page-title">Agregar Pescador</h1>
+<h1 class="page-title">Editar Pescador</h1>
 
 <EditForm EditContext="@editContext" OnSubmit="@Submit" class="relative h-full">
     <div class="flex justify-center gap-20 pt-7">
@@ -21,14 +21,15 @@
             </div>
 
             <p>
-                <FluentTextField AutoComplete="off" Autofocus="true" @bind-Value="@Model.FirstName" Required="true">
+                <FluentTextField AutoComplete="off" @bind-Value="@Model.FirstName" Required="true">
                     Nombre <span class="red">*</span>
                 </FluentTextField>
                 <ValidationMessage For="() => Model!.FirstName" />
             </p>
 
             <p>
-                <FluentTextField AutoComplete="off" @bind-Value="@Model.LastName" Required="true">Apellido <span class="red">*</span>
+                <FluentTextField AutoComplete="off" @bind-Value="@Model.LastName" Required="true">
+                    Apellido <span class="red">*</span>
                 </FluentTextField>
                 <ValidationMessage For="() => Model!.LastName" />
             </p>
@@ -49,39 +50,56 @@
 
             <p>
                 <FluentTextField AutoComplete="off" @bind-Value=date Required="false" Placeholder="01/12/1997"
-                    Pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$">
+                                 Pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$">
                     @* <FluentIcon Name="@FluentIcons.Calendar" Slot="start" Size="@IconSize.Size20"
                     Variant=IconVariant.Regular Color="Color.Neutral" /> *@
                     Fecha nacimiento
                 </FluentTextField>
-            <p class="error @dateValidationClasses">@dateValidationError</p>
+                <p class="error @dateValidationClasses">@dateValidationError</p>
             </p>
         </div>
     </div>
 
     <div class="absolute bottom-0 m-auto flex columns-2 gap-28 w-full place-content-center">
         <FluentButton Appearance="Appearance.Stealth" @onclick=OnCancel>Cancelar</FluentButton>
-        <FluentButton Type=ButtonType.Submit Appearance="Appearance.Accent">Guardar</FluentButton>
+        <FluentButton Type=ButtonType.Submit Appearance="Appearance.Accent" Disabled=!editContext!.IsModified()>Guardar</FluentButton>
     </div>
 </EditForm>
 
 
 @code {
+    [Parameter]
+    public string FisherId { get; set; } = null!;
+
+    private FisherId? _fisherId;
+
     string? date = "";
     private EditContext? editContext;
     private ValidationMessageStore? messageStore;
 
-    private CreateFisherRequest Model { get; set; } = null!;
+    private EditFisherRequest Model { get; set; } = null!;
 
     string dateValidationError = "";
 
     string dateValidationClasses = "hidden";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        Model ??= new("", "", "");
+        var query = await _sender.Send(new GetFisherQuery(FisherId));
+
+        if (query.IsError)
+        {
+            _toastService.ShowError($"No se encontró pescador con id {FisherId}");
+            await JSRuntime.GoBack();
+        }
+
+        _fisherId = query.Value.Id;
+
+        Model = new(query.Value.FirstName, query.Value.LastName, query.Value.DNI);
         editContext = new(Model);
         messageStore = new(editContext);
+
+        editContext.MarkAsUnmodified();
     }
 
     private void ValidateDateFormat(ChangeEventArgs e)
@@ -90,8 +108,7 @@
         {
             dateValidationError = "Formato de fecha inválido";
             dateValidationClasses = "";
-        }
-        else
+        } else
         {
             dateValidationError = "";
             dateValidationClasses = "hidden";
@@ -105,16 +122,15 @@
 
     private async Task Submit()
     {
-        var mapped = _mapper.Map<CreateFisherCommand>(Model);
+        var mapped = _mapper.Map<EditFisherCommand>((_fisherId, Model));
         var response = _sender.Send(mapped);
 
         if (response.Result.IsError)
         {
             editContext?.AddValidationErrors(response.Result.Errors, messageStore, Model);
-        }
-        else
+        } else
         {
-            _toastService.ShowSuccess($"Agregado pescador {Model.FirstName} {Model.LastName}");
+            _toastService.ShowSuccess($"Editado correctamente");
             await JSRuntime.GoBack();
         }
 

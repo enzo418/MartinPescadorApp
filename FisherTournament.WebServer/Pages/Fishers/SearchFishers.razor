@@ -8,32 +8,38 @@
 @inject IMapper _mapper
 @inject IToastService _toastService
 
-@page "/fishers/search"
+@page "/fishers"
 
 <h1 class="page-title">Buscar Pescador</h1>
 
 <div>
 
-<div class="flex justify-center gap-20 pt-7 items-end">
-        <FluentTextField Autofocus="true" @bind-Value=Name Placeholder="Nombre">
+<div class="flex justify-center gap-20 pt-7 mb-6 items-end">
+        <FluentTextField Autofocus="true" tabindex="6" @bind-Value=Name Placeholder="Nombre o Apellido" @oninput="SearchByNameAsync">
         Buscar por nombre
         </FluentTextField>
 
-        <FluentButton OnClick="Search" IconStart="@(new Icons.Regular.Size16.Search())" Appearance="Appearance.Accent">
+        <FluentTextField tabindex="7" Placeholder="DNI sin guiones" @oninput="SearchByDNIAsync">
+        Buscar por DNI
+        </FluentTextField>
+
+        @* <FluentButton OnClick="Search" IconStart="@(new Icons.Regular.Size16.Search())" Appearance="Appearance.Accent">
             Buscar
-        </FluentButton>
+        </FluentButton> *@
 </div>
 
     <FluentDataGrid 
             @ref="fluentDataGrid" 
             ItemsProvider="itemsProviderCall" 
             TGridItem="FisherItem" 
-            Pagination="@pagination">
+            Pagination="@pagination"
+            GridTemplateColumns="0.4fr 0.5fr 0.5fr 0.2fr">
         <ChildContent>
-            <PropertyColumn Property="@(p => p.Id)" Sortable="true" Title="Id" />
-            <PropertyColumn Property="@(p => p.Name)" Sortable="true" Title="Nombre" />
+            <PropertyColumn Property="@(p => p.DNI)" Sortable="false" Title="DNI" />
+            <PropertyColumn Property="@(p => p.FirstName)" Sortable="false" Title="Nombre" />
+            <PropertyColumn Property="@(p => p.LastName)" Sortable="false" Title="Apellido" />
             <TemplateColumn Title="Acciones" Align="@Align.End">
-                <FluentButton IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick=Edit />
+                <FluentButton IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => Edit(context))" />
             </TemplateColumn>
         </ChildContent>
 
@@ -50,6 +56,8 @@
 </div>
 
 @code {
+    string _searchedName = "";
+    string _searchedDNI = "";
     string? Name = "";
     PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
 
@@ -62,7 +70,8 @@
         itemsProviderCall = async req =>
         {
             var fishers = await _sender.Send(new GetFishersQuery(
-                Name, 
+                _searchedName,
+                _searchedDNI,
                 pagination.CurrentPageIndex+1, 
                 pagination.ItemsPerPage));
 
@@ -84,13 +93,26 @@
         };
     }
 
-    async Task Search()
+/*    async Task Search()
     {
         await fluentDataGrid.RefreshDataAsync();
     }
+*/
 
-    void Edit()
+    async Task SearchByNameAsync(ChangeEventArgs e)
     {
-        
+        _searchedName = e.Value?.ToString() ?? "";
+		await fluentDataGrid.RefreshDataAsync();        
+    }
+
+    async Task SearchByDNIAsync(ChangeEventArgs e)
+    {
+        _searchedDNI = e.Value?.ToString() ?? "";
+        await fluentDataGrid.RefreshDataAsync();
+    }
+
+    void Edit(FisherItem context)
+    {
+        _nav.NavigateTo($"/fisher/{context.Id}");
     }
 }

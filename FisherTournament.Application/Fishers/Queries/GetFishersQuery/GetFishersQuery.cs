@@ -1,17 +1,15 @@
 using ErrorOr;
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Application.Common.Requests;
-using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace FisherTournament.Application.Fishers.Queries
 {
-    public record struct GetFishersQuery(string? Name, int Page, int PageSize)
+    public record struct GetFishersQuery(string? Name, string? DNI, int Page, int PageSize)
         : IRequest<ErrorOr<PagedList<FisherItem>>>, IPagedListQuery;
 
     public class GetFishersQueryValidator : PagedListQueryValidator<GetFishersQuery> { }
-
-    public record struct FisherItem(FisherId Id, string Name);
 
     public class GetFishersQueryHandler
         : IRequestHandler<GetFishersQuery, ErrorOr<PagedList<FisherItem>>>
@@ -27,15 +25,34 @@ namespace FisherTournament.Application.Fishers.Queries
         {
             IQueryable<FisherItem> query;
 
-            if (!string.IsNullOrWhiteSpace(request.Name))
+            if (string.IsNullOrWhiteSpace(request.Name) && string.IsNullOrWhiteSpace(request.DNI))
             {
+
                 query = _context.Fishers
-                            .Where(f => f.Name.Contains(request.Name))
-                            .Select(f => new FisherItem(f.Id, f.Name));
+                            .Join(_context.Users, f => f.Id, u => u.FisherId, (f, u) => new { f, u })
+                            .Select(r => new FisherItem(r.f.Id, r.u.FirstName, r.u.LastName, r.u.DNI));
             } else
             {
-                query = _context.Fishers
-                            .Select(f => new FisherItem(f.Id, f.Name));
+                var tmpQuery = _context.Fishers
+                            .Join(_context.Users, f => f.Id, u => u.FisherId, (f, u) => new { f, u });
+
+                if (!string.IsNullOrWhiteSpace(request.Name))
+                {
+                    tmpQuery = tmpQuery.Where(r => EF.Functions.Like(r.f.Name, $"%{request.Name}%"));
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.DNI))
+                {
+                    tmpQuery = tmpQuery.Where(r => EF.Functions.Like(r.u.DNI, $"%{request.DNI}%"));
+                }
+
+                query = tmpQuery.Select(r => new FisherItem(r.f.Id, r.u.FirstName, r.u.LastName, r.u.DNI));
+
+                /*query = _context.Fishers
+                            .Join(_context.Users, f => f.Id, u => u.FisherId, (f, u) => new { f, u })
+                            .Where(r => EF.Functions.Like(r.f.Name, $"%{request.Name}%"))
+                            .Where(r => EF.Functions.Like(r.u.DNI, $"%{request.DNI}%"))
+                            .Select(r => new FisherItem(r.f.Id, r.u.FirstName, r.u.LastName, r.u.DNI));*/
             }
 
             var fishers = await PagedList<FisherItem>.CreateAsync(query, request.Page, request.PageSize);

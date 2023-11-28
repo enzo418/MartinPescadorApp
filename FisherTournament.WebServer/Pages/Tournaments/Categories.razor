@@ -15,7 +15,8 @@
                 @onchange="@(v => OnNameChanged(context, v))"
                 tabindex="@(GetCatIndex(context)+1)" />
 	    </TemplateColumn>
-
+        
+        @*
         <TemplateColumn Title="Edad límite">
             <div class="flex flex-row">
                 <FluentNumberField 
@@ -32,6 +33,7 @@
                     tabindex="@(GetCatIndex(context)+3)" />
             </div>
         </TemplateColumn>
+        *@
 
         <TemplateColumn Title="Acciones" Align="@Align.End">
             <FluentButton IconEnd="@(new Icons.Regular.Size16.Delete().WithColor(Color.Error))" OnClick="@(() => Delete(context))" />

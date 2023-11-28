@@ -81,6 +81,14 @@
   margin-bottom: 1rem;
 }
 
+.mb-7{
+  margin-bottom: 1.75rem;
+}
+
+.ml-3{
+  margin-left: 0.75rem;
+}
+
 .mt-1{
   margin-top: 0.25rem;
 }
@@ -97,20 +105,12 @@
   margin-top: 1.5rem;
 }
 
-.mt-3{
-  margin-top: 0.75rem;
-}
-
 .mt-7{
   margin-top: 1.75rem;
 }
 
-.mb-7{
-  margin-bottom: 1.75rem;
-}
-
-.ml-3{
-  margin-left: 0.75rem;
+.mb-6{
+  margin-bottom: 1.5rem;
 }
 
 .flex{
@@ -210,6 +210,11 @@
   gap: 1rem;
 }
 
+.gap-x-2{
+  -moz-column-gap: 0.5rem;
+       column-gap: 0.5rem;
+}
+
 .gap-x-3{
   -moz-column-gap: 0.75rem;
        column-gap: 0.75rem;
@@ -222,11 +227,6 @@
 
 .gap-y-5{
   row-gap: 1.25rem;
-}
-
-.gap-x-2{
-  -moz-column-gap: 0.5rem;
-       column-gap: 0.5rem;
 }
 
 .px-4{

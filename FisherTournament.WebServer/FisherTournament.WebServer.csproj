@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ExpressionDebugger" Version="2.2.1" />
     <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="3.2.0" />
     <PackageReference Include="Microsoft.Fast.Components.FluentUI.Icons" Version="3.2.1" />
   </ItemGroup>

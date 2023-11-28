@@ -19,8 +19,6 @@ builder.Services.AddSettings(builder.Configuration)
 builder.Services.AddFluentUIComponents(options =>
 {
     options.HostingModel = BlazorHostingModel.Server;
-    // options.IconConfiguration = ConfigurationGenerator.GetIconConfiguration();
-    // options.EmojiConfiguration = ConfigurationGenerator.GetEmojiConfiguration();
 });
 
 builder.Services.AddLocalization();
@@ -57,17 +55,17 @@ using (var scope = app.Services.CreateScope())
 }
 
 
+/*
+public static void ApplyMigrations(this IApplicationBuilder app)
+{
+using var services = app.ApplicationServices.CreateScope();
 
-//public static void ApplyMigrations(this IApplicationBuilder app)
-//{
-//using var services = app.ApplicationServices.CreateScope();
+var tournamentDbContext = services.ServiceProvider.GetService<TournamentFisherDbContext>();
+tournamentDbContext?.Database.Migrate();
 
-//var tournamentDbContext = services.ServiceProvider.GetService<TournamentFisherDbContext>();
-//tournamentDbContext?.Database.Migrate();
-
-//var readModelsDbContext = services.ServiceProvider.GetService<ReadModelsDbContext>();
-//readModelsDbContext?.Database.Migrate();
-//}
+var readModelsDbContext = services.ServiceProvider.GetService<ReadModelsDbContext>();
+readModelsDbContext?.Database.Migrate();
+}*/
 
 
 app.Run();
