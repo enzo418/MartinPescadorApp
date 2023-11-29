@@ -11,71 +11,86 @@ namespace FisherTournament.Domain.CompetitionAggregate;
 
 public sealed class Competition : AggregateRoot<CompetitionId>
 {
-    private List<CompetitionParticipation> _participations = new();
+	private List<CompetitionParticipation> _participations = new();
 
-    private Competition(CompetitionId id, DateTime startDateTime, DateTime? endDateTime, TournamentId tournamentId, Location location)
-        : base(id)
-    {
-        StartDateTime = startDateTime;
-        EndDateTime = endDateTime;
-        TournamentId = tournamentId;
-        Location = location;
-    }
+	private Competition(CompetitionId id,
+					 DateTime startDateTime,
+					 DateTime? endDateTime,
+					 TournamentId tournamentId,
+					 Location location,
+					 int n)
+		: base(id)
+	{
+		StartDateTime = startDateTime;
+		EndDateTime = endDateTime;
+		TournamentId = tournamentId;
+		Location = location;
+		N = n;
+	}
 
-    public DateTime StartDateTime { get; private set; }
-    public DateTime? EndDateTime { get; private set; }
-    public TournamentId TournamentId { get; private set; }
-    public Location Location { get; private set; }
-    public IReadOnlyCollection<CompetitionParticipation> Participations => _participations.AsReadOnly();
+	public DateTime StartDateTime { get; private set; }
+	public DateTime? EndDateTime { get; private set; }
+	public TournamentId TournamentId { get; private set; }
+	public Location Location { get; private set; }
+	public IReadOnlyCollection<CompetitionParticipation> Participations => _participations.AsReadOnly();
 
-    public static Competition Create(DateTime startDateTime, TournamentId tournamentId, Location location)
-    {
-        return new Competition(Guid.NewGuid(), startDateTime, null, tournamentId, location);
-    }
+	/// <summary>
+	/// Competition number.
+	/// For example, the first competition of the tournament is number 1.
+	/// </summary>
+	public int N { get; private set; }
 
-    public ErrorOr<Success> AddScore(FisherId fisherId, int score, IDateTimeProvider dateTimeProvider)
-    {
-        if (EndDateTime.HasValue)
-            return Errors.Competitions.HasEnded;
+	public static Competition Create(DateTime startDateTime, TournamentId tournamentId, Location location, int competitionNumber)
+	{
+		if (competitionNumber < 1)
+			throw new ArgumentOutOfRangeException(nameof(competitionNumber));
 
-        if (StartDateTime > dateTimeProvider.Now)
-            return Errors.Competitions.HasNotStarted;
+		return new Competition(Guid.NewGuid(), startDateTime, null, tournamentId, location, competitionNumber);
+	}
 
-        var participation = _participations.Where(x => x.FisherId == fisherId)
-                                .SingleOrDefault();
-        if (participation == null)
-        {
-            participation = CompetitionParticipation.Create(Id, fisherId);
-            _participations.Add(participation);
-        }
+	public ErrorOr<Success> AddScore(FisherId fisherId, int score, IDateTimeProvider dateTimeProvider)
+	{
+		if (EndDateTime.HasValue)
+			return Errors.Competitions.HasEnded;
 
-        participation.AddFishCaught(FishCaught.Create(this.Id, fisherId, score, dateTimeProvider));
+		if (StartDateTime > dateTimeProvider.Now)
+			return Errors.Competitions.HasNotStarted;
 
-        this.AddDomainEvent(new ScoreAddedDomainEvent(this.Id, fisherId, score));
+		var participation = _participations.Where(x => x.FisherId == fisherId)
+								.SingleOrDefault();
+		if (participation == null)
+		{
+			participation = CompetitionParticipation.Create(Id, fisherId);
+			_participations.Add(participation);
+		}
 
-        return Result.Success;
-    }
+		participation.AddFishCaught(FishCaught.Create(this.Id, fisherId, score, dateTimeProvider));
 
-    public void EndCompetition(IDateTimeProvider dateTimeProvider)
-    {
-        EndDateTime = dateTimeProvider.Now;
-    }
+		this.AddDomainEvent(new ScoreAddedDomainEvent(this.Id, fisherId, score));
 
-    public void AddParticipation(FisherId fisherId)
-    {
-        if (_participations.Any(x => x.FisherId == fisherId))
-            return;
+		return Result.Success;
+	}
 
-        var participation = CompetitionParticipation.Create(Id, fisherId);
+	public void EndCompetition(IDateTimeProvider dateTimeProvider)
+	{
+		EndDateTime = dateTimeProvider.Now;
+	}
 
-        _participations.Add(participation);
+	public void AddParticipation(FisherId fisherId)
+	{
+		if (_participations.Any(x => x.FisherId == fisherId))
+			return;
 
-        AddDomainEvent(new ParticipationAddedDomainEvent(fisherId, this.Id));
-    }
+		var participation = CompetitionParticipation.Create(Id, fisherId);
+
+		_participations.Add(participation);
+
+		AddDomainEvent(new ParticipationAddedDomainEvent(fisherId, this.Id));
+	}
 
 #pragma warning disable CS8618
-    private Competition()
-    {
-    }
-# pragma warning restore CS8618
+	private Competition()
+	{
+	}
+#pragma warning restore CS8618
 }

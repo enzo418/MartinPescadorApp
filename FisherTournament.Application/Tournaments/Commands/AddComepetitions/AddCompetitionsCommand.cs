@@ -10,69 +10,75 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FisherTournament.Application.Tournaments.Commands.AddCompetitions;
 
+// TODO: You should not return the entities, you should return DTOs. Else it seems you can modify it from outside.
+
 public record struct AddCompetitionsCommand(
-    string TournamentId,
-    List<AddCompetitionCommand> Competitions) : IRequest<ErrorOr<List<Competition>>>;
+	string TournamentId,
+	List<AddCompetitionCommand> Competitions) : IRequest<ErrorOr<List<Competition>>>;
 
 public record struct AddCompetitionCommand(
-    DateTime StartDateTime,
-    string City,
-    string State,
-    string Country,
-    string Place
+	DateTime StartDateTime,
+	string City,
+	string State,
+	string Country,
+	string Place
 );
 
 public class AddCompetitionsCommandHandler
-    : IRequestHandler<AddCompetitionsCommand, ErrorOr<List<Competition>>>
+	: IRequestHandler<AddCompetitionsCommand, ErrorOr<List<Competition>>>
 {
-    private readonly ITournamentFisherDbContext _context;
+	private readonly ITournamentFisherDbContext _context;
 
-    public AddCompetitionsCommandHandler(ITournamentFisherDbContext context)
-    {
-        _context = context;
-    }
+	public AddCompetitionsCommandHandler(ITournamentFisherDbContext context)
+	{
+		_context = context;
+	}
 
-    public async Task<ErrorOr<List<Competition>>> Handle(AddCompetitionsCommand request, CancellationToken cancellationToken)
-    {
-        ErrorOr<TournamentId> tournamentId = TournamentId.Create(request.TournamentId);
+	public async Task<ErrorOr<List<Competition>>> Handle(AddCompetitionsCommand request, CancellationToken cancellationToken)
+	{
+		ErrorOr<TournamentId> tournamentId = TournamentId.Create(request.TournamentId);
 
-        if (tournamentId.IsError)
-        {
-            return Errors.Id.NotValidWithProperty(nameof(request.TournamentId));
-        }
+		if (tournamentId.IsError)
+		{
+			return Errors.Id.NotValidWithProperty(nameof(request.TournamentId));
+		}
 
-        Tournament? tournament = await _context.Tournaments
-            .FirstOrDefaultAsync(t => t.Id == tournamentId.Value, cancellationToken);
+		Tournament? tournament = await _context.Tournaments
+			.FirstOrDefaultAsync(t => t.Id == tournamentId.Value, cancellationToken);
 
-        if (tournament is null)
-        {
-            return Errors.Tournaments.NotFound;
-        }
+		if (tournament is null)
+		{
+			return Errors.Tournaments.NotFound;
+		}
 
-        if (request.Competitions.Any(c => c.StartDateTime < tournament.StartDate))
-        {
-            return Errors.Competitions.StartDateBeforeTournament;
-        }
+		if (request.Competitions.Any(c => c.StartDateTime < tournament.StartDate))
+		{
+			return Errors.Competitions.StartDateBeforeTournament;
+		}
 
-        Competition[] competitions = request.Competitions.Select(
-            competition => Competition.Create(
-                competition.StartDateTime,
-                tournamentId.Value,
-                Location.Create(
-                    competition.City,
-                    competition.State,
-                    competition.Country,
-                    competition.Place))).ToArray();
+		int totalCompetitions = tournament.CompetitionsIds.Count;
 
-        _context.Competitions.AddRange(competitions);
+		Competition[] competitions = request.Competitions.Select(
+			competition => Competition.Create(
+				competition.StartDateTime,
+				tournamentId.Value,
+				Location.Create(
+					competition.City,
+					competition.State,
+					competition.Country,
+					competition.Place),
+				++totalCompetitions
+				)).ToArray();
 
-        foreach (Competition competition in competitions)
-        {
-            tournament.AddCompetition(competition.Id);
-        }
+		_context.Competitions.AddRange(competitions);
 
-        await _context.SaveChangesAsync(cancellationToken);
+		foreach (Competition competition in competitions)
+		{
+			tournament.AddCompetition(competition.Id);
+		}
 
-        return new List<Competition>(competitions.ToList());
-    }
+		await _context.SaveChangesAsync(cancellationToken);
+
+		return new List<Competition>(competitions.ToList());
+	}
 }

@@ -1,8 +1,6 @@
 using FisherTournament.Domain.CompetitionAggregate;
-using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate;
 using FisherTournament.Domain.TournamentAggregate;
-using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using FisherTournament.Infrastracture.Persistence.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -11,94 +9,96 @@ namespace FisherTournament.Infrastracture.Persistence.Tournaments.Configurations
 
 public class CompetitionConfiguration : IEntityTypeConfiguration<Competition>
 {
-    public void Configure(EntityTypeBuilder<Competition> builder)
-    {
-        ConfigureCompetition(builder);
+	public void Configure(EntityTypeBuilder<Competition> builder)
+	{
+		ConfigureCompetition(builder);
 
-        ConfigureCompetition_Participations(builder);
+		ConfigureCompetition_Participations(builder);
 
-        ConfigureCompetition_Location(builder);
-    }
+		ConfigureCompetition_Location(builder);
+	}
 
-    private static void ConfigureCompetition_Location(EntityTypeBuilder<Competition> builder)
-    {
-        builder.OwnsOne(c => c.Location);
-    }
+	private static void ConfigureCompetition_Location(EntityTypeBuilder<Competition> builder)
+	{
+		builder.OwnsOne(c => c.Location);
+	}
 
-    private static void ConfigureCompetition(EntityTypeBuilder<Competition> builder)
-    {
-        builder.ToTable("Competitions");
-        builder.HasGuidIdKey(c => c.Id);
+	private static void ConfigureCompetition(EntityTypeBuilder<Competition> builder)
+	{
+		builder.ToTable("Competitions");
+		builder.HasGuidIdKey(c => c.Id);
 
-        builder.Property(c => c.StartDateTime).IsRequired();
-        builder.Property(c => c.EndDateTime); // (nullable)
+		builder.Property(c => c.StartDateTime).IsRequired();
+		builder.Property(c => c.EndDateTime); // (nullable)
 
-        builder.HasOne<Tournament>()
-            .WithMany()
-            .HasForeignKey(c => c.TournamentId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Cascade);
+		builder.Property(c => c.N).IsRequired();
 
-        builder.Property(c => c.TournamentId)
-            .HasGuidIdConversion();
-    }
+		builder.HasOne<Tournament>()
+			.WithMany()
+			.HasForeignKey(c => c.TournamentId)
+			.IsRequired()
+			.OnDelete(DeleteBehavior.Cascade);
 
-    private static void ConfigureCompetition_Participations(EntityTypeBuilder<Competition> builder)
-    {
-        builder.OwnsMany(c => c.Participations, p =>
-        {
-            p.ToTable("CompetitionParticipations");
-            p.WithOwner().HasForeignKey(p => p.CompetitionId);
+		builder.Property(c => c.TournamentId)
+			.HasGuidIdConversion();
+	}
 
-            // (SQLite does not support generated values on composite keys)
-            p.HasKey(/*p => new { p.Id, p.CompetitionId }*/ p => p.Id);
+	private static void ConfigureCompetition_Participations(EntityTypeBuilder<Competition> builder)
+	{
+		builder.OwnsMany(c => c.Participations, p =>
+		{
+			p.ToTable("CompetitionParticipations");
+			p.WithOwner().HasForeignKey(p => p.CompetitionId);
 
-            p.Property<int>(p => p.Id)
-                .ValueGeneratedOnAdd();
+			// (SQLite does not support generated values on composite keys)
+			p.HasKey(/*p => new { p.Id, p.CompetitionId }*/ p => p.Id);
 
-            p.Property(x => x.FisherId)
-                    .HasGuidIdConversion();
+			p.Property<int>(p => p.Id)
+				.ValueGeneratedOnAdd();
 
-            p.HasOne<Fisher>()
-                .WithMany()
-                .HasForeignKey(p => p.FisherId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
+			p.Property(x => x.FisherId)
+					.HasGuidIdConversion();
 
-            // p.Ignore(x => x.FishCaught);
-            p.OwnsMany(p => p.FishCaught, f =>
-            {
-                // (1) (SQLite does not support generated values on composite keys)
+			p.HasOne<Fisher>()
+				.WithMany()
+				.HasForeignKey(p => p.FisherId)
+				.IsRequired()
+				.OnDelete(DeleteBehavior.Cascade);
 
-                f.ToTable("CompetitionParticipationFishCaught");
-                f.WithOwner()
-                    .HasForeignKey("CompetitionParticipationId"/* (1), "CompetitionId"*/);
+			// p.Ignore(x => x.FishCaught);
+			p.OwnsMany(p => p.FishCaught, f =>
+			{
+				// (1) (SQLite does not support generated values on composite keys)
 
-                f.HasKey("Id"/* (1), "CompetitionParticipationId", "CompetitionId"*/);
+				f.ToTable("CompetitionParticipationFishCaught");
+				f.WithOwner()
+					.HasForeignKey("CompetitionParticipationId"/* (1), "CompetitionId"*/);
 
-                // (1)
-                f.Property(x => x.CompetitionId)
-                    .HasGuidIdConversion();
-                // --
+				f.HasKey("Id"/* (1), "CompetitionParticipationId", "CompetitionId"*/);
 
-                f.Property<int>(x => x.Id)
-                    .ValueGeneratedOnAdd();
+				// (1)
+				f.Property(x => x.CompetitionId)
+					.HasGuidIdConversion();
+				// --
 
-                f.Property<int>(x => x.Score)
-                    .IsRequired();
+				f.Property<int>(x => x.Id)
+					.ValueGeneratedOnAdd();
 
-                f.Property(x => x.FisherId)
-                    .HasGuidIdConversion();
+				f.Property<int>(x => x.Score)
+					.IsRequired();
 
-                f.Property(x => x.DateTime)
-                    .IsRequired();
+				f.Property(x => x.FisherId)
+					.HasGuidIdConversion();
 
-                f.HasOne<Fisher>()
-                    .WithMany()
-                    .HasForeignKey(x => x.FisherId)
-                    .IsRequired()
-                    .OnDelete(DeleteBehavior.NoAction); // multiple cascade paths.
-            }).UsePropertyAccessMode(PropertyAccessMode.Field);
-        }).UsePropertyAccessMode(PropertyAccessMode.Field);
-    }
+				f.Property(x => x.DateTime)
+					.IsRequired();
+
+				f.HasOne<Fisher>()
+					.WithMany()
+					.HasForeignKey(x => x.FisherId)
+					.IsRequired()
+					.OnDelete(DeleteBehavior.NoAction); // multiple cascade paths.
+			}).UsePropertyAccessMode(PropertyAccessMode.Field);
+		}).UsePropertyAccessMode(PropertyAccessMode.Field);
+	}
 }
