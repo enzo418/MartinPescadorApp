@@ -10,7 +10,11 @@
 
 @page "/fishers/add"
 
-<h1 class="page-title">Agregar Pescador</h1>
+<div class="flex flex-row w-full items-center justify-between">
+    <h1 class="page-title">Agregar Pescador</h1>
+
+    <FluentCheckbox @bind-Value="@_exitOnSave" Label="Volver al guardar" />
+</div>
 
 <EditForm EditContext="@editContext" OnSubmit="@Submit" class="relative h-full">
     <div class="flex justify-center gap-20 pt-7">
@@ -21,7 +25,7 @@
             </div>
 
             <p>
-                <FluentTextField AutoComplete="off" Autofocus="true" @bind-Value="@Model.FirstName" Required="true">
+                <FluentTextField AutoComplete="off" Autofocus="true" @bind-Value="@Model.FirstName" @ref=_txtNameRef Required="true">
                     Nombre <span class="red">*</span>
                 </FluentTextField>
                 <ValidationMessage For="() => Model!.FirstName" />
@@ -60,7 +64,7 @@
     </div>
 
     <div class="absolute bottom-0 m-auto flex columns-2 gap-28 w-full place-content-center">
-        <FluentButton Appearance="Appearance.Stealth" @onclick=OnCancel>Cancelar</FluentButton>
+        <FluentButton Appearance="Appearance.Stealth" @onclick=OnCancel>@(editContext.IsModified() ? "Cancelar" : "Volver")</FluentButton>
         <FluentButton Type=ButtonType.Submit Appearance="Appearance.Accent">Guardar</FluentButton>
     </div>
 </EditForm>
@@ -68,10 +72,13 @@
 
 @code {
     string? date = "";
-    private EditContext? editContext;
+    private EditContext editContext = default!;
     private ValidationMessageStore? messageStore;
-
     private CreateFisherRequest Model { get; set; } = null!;
+
+    private FluentTextField? _txtNameRef;
+
+    private bool _exitOnSave = true;
 
     string dateValidationError = "";
 
@@ -105,19 +112,28 @@
 
     private async Task Submit()
     {
-        var mapped = _mapper.Map<CreateFisherCommand>(Model);
-        var response = _sender.Send(mapped);
+        if (!editContext.Validate() || !editContext.IsModified()) return;
 
-        if (response.Result.IsError)
+        var mapped = _mapper.Map<CreateFisherCommand>(Model);
+        var response = await _sender.Send(mapped);
+
+        if (response.IsError)
         {
-            editContext?.AddValidationErrors(response.Result.Errors, messageStore, Model);
+            editContext.AddValidationErrors(response.Errors, messageStore, Model);
         }
         else
         {
             _toastService.ShowSuccess($"Agregado pescador {Model.FirstName} {Model.LastName}");
-            await JSRuntime.GoBack();
-        }
 
-        await Task.CompletedTask;
+            if (_exitOnSave) { 
+                await JSRuntime.GoBack();
+            } else {
+                Model = new("", "", "");
+                editContext.MarkAsUnmodified();
+                messageStore?.Clear();
+
+                _txtNameRef?.FocusAsync();
+            }
+        }
     }
 }
