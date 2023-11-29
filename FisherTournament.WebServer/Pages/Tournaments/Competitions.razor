@@ -23,9 +23,9 @@
 	<ChildContent>
 		<PropertyColumn Title="N°" Property="@(c => c.N)" />
 
-		<PropertyColumn Title="Fecha Inicio" Property="@(c => c.StartDate)" />
+		<PropertyColumn Title="Fecha Inicio" Property="@(c => c.StartDate)" Format="dd/MM/yyyy" />
 
-		<PropertyColumn Title="Fecha Fin" Property="@(c => c.EndDate)" />
+		<PropertyColumn Title="Fecha Fin" Property="@(c => c.EndDate)" Format="dd/MM/yyyy" />
 
 		<TemplateColumn Title="Acciones" Align="@Align.End">
 			<FluentButton Class="underline"
