@@ -1,6 +1,16 @@
 ﻿@page "/tournaments"
 
-<h1 class="page-title-no-pt mt-6 mb-4">Torneos/Fechas</h1>
+@inject NavigationManager _nav
+
+<div class="flex flex-row w-full items-center justify-between mb-4">
+	<h1 class="page-title">Torneos/Fechas</h1>
+
+	<FluentButton OnClick="@(() => _nav.NavigateTo("/tournament/_demo"))"
+					IconStart="@(new Icons.Regular.Size16.AddCircle())" 
+					Appearance="Appearance.Accent">
+		Agregar Torneo
+	</FluentButton>
+</div>
 
 
 <FluentLabel Typo="Typography.H3">En curso</FluentLabel>
@@ -86,7 +96,7 @@
 				ItemsProvider="itemsProviderCall"
 				TGridItem="CompetitionTournamentSummary"
 				Pagination="@pagination"
-				GridTemplateColumns="0.4fr 0.5fr 0.5fr 0.2fr">
+				GridTemplateColumns="0.15fr 0.4fr 0.3fr 0.3fr">
 	<ChildContent>
 		<PropertyColumn Property="@(p => p.N)" Sortable="false" Title="N°" />
 		<PropertyColumn Property="@(p => p.TournamentName)" Sortable="false" Title="Nombre del torneo" />

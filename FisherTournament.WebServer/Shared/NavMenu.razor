@@ -27,24 +27,11 @@
 
     @DividerTemplate
 
-    <MyFluentMenuButton tabindex="2" Title="Torneos" Appearance="@Appearance.Neutral" IconColor="@Color.FillInverse"
-        OnChange="@OnTournamentsMenuChange">
-        <StartIcon>
-            <FluentIcon Icon="@Icons.Regular.Size20.Trophy" Slot="start" Color="Color.Neutral" />
-        </StartIcon>
-        <ChildMenuItems>
-            <FluentMenuItem Id="tournament-add">
-                    <FluentIcon Icon="@Icons.Regular.Size20.AddCircle" Slot="start" Color="Color.Neutral" />
-                    Agregar torneo
-            </FluentMenuItem>
-            <FluentMenuItem Id="tournament-search">
-                    <FluentIcon Icon="@Icons.Regular.Size20.Search" Slot="start" Color="Color.Neutral" />
-                    Buscar torneo
-            </FluentMenuItem>
-        </ChildMenuItems>
-    </MyFluentMenuButton>
+    <FluentButton @onclick=NavigateToTournaments tabindex="0" autofocus>
+        <FluentIcon Icon="@Icons.Regular.Size20.Trophy" Slot="start" Color="Color.Neutral" /> Fechas y Torneos
+    </FluentButton>
 
-    @if (true)
+    @if (false)
     {
         @DividerTemplate
 
@@ -80,6 +67,7 @@
 
     private void NavigateToHome() => _nav.NavigateTo("/");
     private void NavigateToEvents() => _nav.NavigateTo("/events");
+    private void NavigateToTournaments() => _nav.NavigateTo("/tournaments");
 
     private void OnPescadoresMenuChange(MenuChangeEventArgs arg)
     {
@@ -88,13 +76,5 @@
 
         if (arg.Id == "fisher-add") _nav.NavigateTo("/fishers/add");
         else if (arg.Id == "fisher-search") _nav.NavigateTo("/fishers");
-    }
-
-    private void OnTournamentsMenuChange(MenuChangeEventArgs arg)
-    {
-        if (arg.Id is null) return;
-
-        if (arg.Id == "tournament-add") _nav.NavigateTo("/tournaments/add");
-        else if (arg.Id == "tournament-search") _nav.NavigateTo("/tournaments");
     }
 }

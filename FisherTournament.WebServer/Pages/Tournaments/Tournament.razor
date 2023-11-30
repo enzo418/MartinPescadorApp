@@ -1,0 +1,53 @@
+﻿@layout TournamentLayout
+@page "/tournament/{TouramentId}"
+@page "/tournament/_demo"
+
+@using Microsoft.Fast.Components.FluentUI;
+
+<div class="flex flex-col justify-between h-full">
+    <div>
+        <h1 class="page-title-no-pt">Información general</h1>
+
+        <FluentStack Orientation="Orientation.Vertical" Class="pt-4" VerticalGap="25">
+            <FluentGrid Spacing="3">
+                <FluentGridItem sm="12" md="5">
+                    <FluentTextField class="w-full">
+                        Nombre del torneo
+                    </FluentTextField>
+                </FluentGridItem>
+                <FluentGridItem sm="12" md="5">
+                    <FluentDatePicker class="w-full" AriaLabel="Fecha inicio" Label="Fecha inicio" />
+                </FluentGridItem>
+
+                <FluentGridItem sm="12" md="5">
+                    <p class="color-fg">Fecha finalizado</p>
+                    <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
+			            @if (Finished)
+                        {
+                            <p class="m-0">17/08/2021</p>
+                        }
+                        else
+                        {
+                            <p class="m-0">Sin finalizar</p>
+                            <FluentButton OnClick="(() => Finished = true)">Finalizar</FluentButton>
+                        }
+                    </FluentStack>
+
+                </FluentGridItem>
+            </FluentGrid>
+
+        </FluentStack>
+    </div>
+
+    <div class="flex justify-end">
+        <FluentButton IconStart="@(new Icons.Regular.Size16.Delete())">Eliminar</FluentButton>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public string TouramentId { get; set; } = null!;
+
+    private bool Finished = false;
+}

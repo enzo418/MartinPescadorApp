@@ -1,49 +1,103 @@
-﻿@layout TournamentLayout
+﻿@layout MainLayout
 @page "/tournaments/add"
 
+@inject IJSRuntime _js
+@inject NavigationManager _nav
+@inject ISender _sender
+@inject IMapper _mapper
+
+@using FisherTournament.Application.Tournaments.Commands.CreateTournament;
+@using FisherTournament.Contracts.Tournaments;
 @using Microsoft.Fast.Components.FluentUI;
 
-<div class="flex flex-col justify-between h-full">
-    <div>
-        <h1 class="page-title-no-pt">Información general</h1>
+<h1 class="page-title">Crear torneo</h1>
 
-        <FluentStack Orientation="Orientation.Vertical" Class="pt-4" VerticalGap="25">
-            <FluentGrid Spacing="3">
-                <FluentGridItem sm="12" md="5">
-                    <FluentTextField class="w-full">
-                        Nombre del torneo
-                    </FluentTextField>
-                </FluentGridItem>
-                <FluentGridItem sm="12" md="5">
-                    <FluentDatePicker class="w-full" AriaLabel="Fecha inicio" Label="Fecha inicio" />
-                </FluentGridItem>
+<EditForm EditContext="@editContext" OnSubmit="@Submit" class="flex flex-col items-center justify-between h-full w-full mt-4">
+    <FluentGrid Spacing="3" Justify="JustifyContent.Center">
+        <FluentGridItem sm="12" md="5">
+            <p>
+                <FluentTextField Required="true" AutoComplete="off" Autofocus="true" @bind-Value="@Model.Name" class="w-full">
+                    Nombre del torneo <span class="red">*</span>
+                </FluentTextField>
+                <ValidationMessage For="() => Model!.Name" />
+            </p>
+        </FluentGridItem>
+        <FluentGridItem sm="12" md="5">
+            <p>
+                <FluentTextField Pattern="^(0[1-9]|[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
+                                 Required="true" 
+                    AutoComplete="off" 
+                    @bind-Value="@_selectedStartDate" 
+                    class="w-full" 
+                    AriaLabel="Fecha inicio"
+                    Label="Fecha inicio en formato dia/mes/año (ejemplo 05/12/2023)"
+                    Placeholder="dd/MM/yyyy">
+                    <FluentIcon Slot="start" Value="@(new Icons.Regular.Size16.Calendar())" />
+                </FluentTextField>
+                <ValidationMessage For="() => Model!.StartDate" />
+            </p>
+        </FluentGridItem>
+    </FluentGrid>
 
-                <FluentGridItem sm="12" md="5">
-                    <p class="color-fg">Fecha finalizado</p>
-                    <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
-			            @if (Finished)
-                        {
-                            <p class="m-0">17/08/2021</p>
-                        }
-                        else
-                        {
-                            <p class="m-0">Sin finalizar</p>
-                            <FluentButton OnClick="(() => Finished = true)">Finalizar</FluentButton>
-                        }
-                    </FluentStack>
-
-                </FluentGridItem>
-            </FluentGrid>
-
-        </FluentStack>
+    <div class="m-auto flex mt-7 columns-2 gap-28 w-full place-content-center">
+        <FluentButton Appearance="Appearance.Stealth" @onclick=CancelAsync>@(editContext.IsModified() ? "Cancelar" : "Volver")</FluentButton>
+        <FluentButton Type=ButtonType.Submit Appearance="Appearance.Accent" Disabled=!editContext.IsModified()>Continuar</FluentButton>
     </div>
-
-    <div class="flex justify-end">
-        <FluentButton IconStart="@(new Icons.Regular.Size16.Delete())">Eliminar</FluentButton>
-    </div>
-</div>
+</EditForm>
 
 
 @code {
     private bool Finished = false;
+
+    private CreateTournamentRequest Model { get; set; } = default!;
+    private EditContext editContext = default!;
+    private ValidationMessageStore? messageStore;
+
+    private string _selectedStartDate = DateTime.Now.ToString("dd/MM/yyyy");
+
+    protected override void OnInitialized()
+    {
+        Model = new("", DateTime.Now, null);
+        editContext = new(Model);
+        messageStore = new(editContext);
+    }
+
+    private async Task CancelAsync()
+    {
+        await _js.GoBack();
+    }
+
+    private async Task Submit()
+    {
+        DateTime res;
+        if (!string.IsNullOrEmpty(_selectedStartDate) 
+            && 
+            (
+                DateTime.TryParseExact(_selectedStartDate, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out res)
+                || DateTime.TryParseExact(_selectedStartDate, "d/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out res)
+            )){
+            Model.StartDate = res.ToUniversalTime();
+        } else
+        {
+            var fieldIdentifier = new FieldIdentifier(Model, nameof(Model.StartDate));
+            messageStore?.Add(fieldIdentifier, "Fecha invalida");
+
+            editContext?.NotifyValidationStateChanged();
+
+            return;
+        }
+
+        if (!editContext.Validate() || !editContext.IsModified()) return;
+
+        var mapped = _mapper.Map<CreateTournamentCommand>(Model);
+        var response = await _sender.Send(mapped);
+
+        if (response.IsError)
+        {
+            editContext.AddValidationErrors(response.Errors, messageStore, Model);
+        } else
+        {
+            _nav.NavigateTo("/tournament/"+response.Value.Id);
+        }
+    }
 }
