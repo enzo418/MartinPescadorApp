@@ -13,6 +13,7 @@ namespace FisherTournament.Application.Competitions.Queries.GetTournamentCompeti
 	public record struct GetTournamentCompetitionsLocationQueryResult(string City, string State, string Country, string Place);
 
 	public record struct GetTournamentCompetitionsQueryResult(
+		string Id,
 		int N,
 		DateTime StartDate,
 		DateTime? EndDate,
@@ -39,18 +40,17 @@ namespace FisherTournament.Application.Competitions.Queries.GetTournamentCompeti
 				return Errors.Id.NotValidWithProperty(nameof(request.TournamentId));
 			}
 
-			var tournament = await _context.Tournaments
-				.Where(t => t.Id == tournamentId.Value)
-				.AsNoTracking()
-				.FirstOrDefaultAsync(cancellationToken);
+			var tournamentExists = await _context.Tournaments
+					.AnyAsync(t => t.Id == tournamentId.Value, cancellationToken: cancellationToken);
 
-			if (tournament == null)
+			if (!tournamentExists)
 			{
 				return Errors.Tournaments.NotFound;
 			}
 
 			var competitions = await _context.Competitions.Where(c => c.TournamentId == tournamentId.Value)
 				.Select(c => new GetTournamentCompetitionsQueryResult(
+					c.Id.ToString(),
 					c.N,
 					c.StartDateTime,
 					c.EndDateTime,

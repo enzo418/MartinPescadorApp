@@ -1,11 +1,16 @@
 ﻿@page "/tournaments"
+@using FisherTournament.Application.Competitions.Queries.GetTournamentCompetitions;
+@using FisherTournament.Application.Competitions.Queries.SearchCompetitions;
+@using FisherTournament.Application.Tournaments.Queries.GetTournamentsSummary;
 
 @inject NavigationManager _nav
+@inject IToastService _toast
+@inject ISender _sender
 
 <div class="flex flex-row w-full items-center justify-between mb-4">
 	<h1 class="page-title">Torneos/Fechas</h1>
 
-	<FluentButton OnClick="@(() => _nav.NavigateTo("/tournament/_demo"))"
+	<FluentButton OnClick="@(() => _nav.NavigateTo("/tournaments/add"))"
 					IconStart="@(new Icons.Regular.Size16.AddCircle())" 
 					Appearance="Appearance.Accent">
 		Agregar Torneo
@@ -14,64 +19,88 @@
 
 
 <FluentLabel Typo="Typography.H3">En curso</FluentLabel>
-<FluentDivider class="mt-1" />
+@* <FluentDivider class="mt-1" /> *@
 
-@foreach (var torneo in OngoingTournaments)
+@foreach (var tournament in OngoingTournaments)
 {
-	<FluentCard class="flex flex-col w-full mt-4 h-fit pt-2.5 px-4">
+	<FluentCard class="flex flex-col w-fit mt-4 h-fit pt-2.5 pb-2.5 px-4">
 		<div class="flex flex-row">
 			@* <FluentLabel Class="pt-2.5" Typo="Typography.H6" Color="Color.Disabled">Torneo: </FluentLabel> *@
 
 			<div class="flex flex-row w-full items-center">
-				<FluentLabel Typo="Typography.H4">@torneo.Name</FluentLabel>
-				<FluentNavLink Href="@("/tournament/"+torneo.TournamentId)" Class="flex gap-x-2">
+				<FluentLabel Typo="Typography.H4">@tournament.tournament.Name</FluentLabel>
+				<FluentNavLink Href="@("/tournament/"+tournament.tournament.Id)" Class="flex gap-x-2">
 					Ir al torneo
+					<FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())" Class="align-middle" />
+				</FluentNavLink>
+
+				<FluentNavLink Href="@("/tournament/"+tournament.tournament.Id+"/inscription")" Class="flex gap-x-2">
+					Agregar Inscripción
 					<FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())" Class="align-middle" />
 				</FluentNavLink>
 			</div>
 		</div>
 
 		<div class="flex flex-row pt-2.5">
-			<FluentLabel Class="whitespace-nowrap pr-3" Typo="Typography.H6" Color="Color.Accent">Fecha Inicio del torneo: </FluentLabel>
+			<FluentLabel Class="whitespace-nowrap pr-3" Typo="Typography.H6" Color="Color.Accent">Fecha Inicio del torneo </FluentLabel>
 
 			<div class="flex flex-row w-full items-center">
-				<FluentLabel Typo="Typography.Body">@torneo.StartDate.ToString("dd/MM/yyyy")</FluentLabel>
+				<FluentLabel Typo="Typography.Body">@tournament.tournament.StartDate.ToString("dd/MM/yyyy")</FluentLabel>
 			</div>
 		</div>
 
-		<FluentLabel Class="pt-2.5" Typo="Typography.H6" Color="Color.Accent">Fechas del torneo en curso</FluentLabel>
+		@if (tournament.Competitions.Count() == 0)
+		{
+			<div class="flex flex-row pt-2.5">
+				<FluentLabel Class="whitespace-nowrap pr-3" Typo="Typography.H6" Color="Color.Accent">Fechas del torneo en curso </FluentLabel>
 
-		<div class="flex flex-row w-full gap-4">
-			<table class="w-full mt-1">
-				<tr class="mb-2 h-8">
-					<th class="w-1/3">N°</th>
-					<th class="w-1/3">Fecha Inicio</th>
-					<th class="w-1/3"></th>
-				</tr>
-				@foreach (var competencia in torneo.Competitions.Where(c => c.EndDate is null))
-				{
-					<tr>
-						<td>@competencia.N</td>
-						<td>@competencia.StartDate.ToString("dd/MM/yyyy")</td>
-						<td>
-							<FluentNavLink  
-								Class="flex gap-x-2 underline w-full justify-center" 
-								Href="@("/tournament/"+torneo.TournamentId+"/leaderboard/"+competencia.CompetitionId)"
-								Style="color: var(--accent-fill-rest);">
-								Posiciones
-								<FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())" Class="align-middle" />
-							</FluentNavLink>
-						</td>
+				<div class="flex flex-row w-full items-center">
+					<FluentLabel Typo="Typography.Body">El torneo todavía no tiene fechas</FluentLabel>
+				</div>
+			</div>
+		} else {
+			<FluentLabel Class="pt-2.5" Typo="Typography.H6" Color="Color.Accent">Fechas del torneo en curso</FluentLabel>
+
+			<div class="flex flex-row w-full gap-4">
+				<table class="w-full mt-1">
+					<tr class="mb-2 h-8">
+						<th class="w-1/3">N°</th>
+						<th class="w-1/3">Fecha Inicio</th>
+						<th class="w-1/3"></th>
 					</tr>
-				}
-			</table>
-		</div>
+					@foreach (var competition in tournament.Competitions.Where(c => c.EndDate is null))
+					{
+						<tr>
+							<td>@competition.N</td>
+							<td>@competition.StartDate.ToString("dd/MM/yyyy")</td>
+							<td>
+								<FluentNavLink  
+									Class="flex gap-x-2 underline w-full justify-center" 
+									Href="@("/tournament/"+tournament.tournament.Id+"/leaderboard/"+competition.Id)"
+									Style="color: var(--accent-fill-rest);">
+									Posiciones
+									<FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())" Class="align-middle" />
+								</FluentNavLink>
+							</td>
+						</tr>
+					}
+				</table>
+			</div>
+		}
 	</FluentCard>
+}
+
+@if (OngoingTournaments.Count == 0)
+{
+	<div Style="min-height: 100px;" class="flex flex-row w-full items-center justify-center">
+		<FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Disabled" />
+		&nbsp; No hay torneos en curso.
+	</div>
 }
 
 
 <FluentLabel Typo="Typography.H3" Class="pt-7">Buscar fecha</FluentLabel>
-<FluentDivider class="mb-4" />
+@* <FluentDivider class="mb-4" /> *@
 
 <div class="flex flex-row w-full justify-center gap-10 mb-4">
 	<div>
@@ -87,15 +116,15 @@
 		</FluentSelect>
 	</div>
 
-	<FluentNumberField @oninput=SearchByNumberAsync TValue="int">
+	<FluentNumberField @oninput=SearchByNumberAsync @bind-Value="SelectedNumber" TValue="int">
 		<div slot="start">N°</div> Número de la fecha
 	</FluentNumberField>
 </div>
 
-<FluentDataGrid @ref="fluentDataGrid"
-				ItemsProvider="itemsProviderCall"
-				TGridItem="CompetitionTournamentSummary"
-				Pagination="@pagination"
+<FluentDataGrid @ref="competitionSearchFluentDataGrid"
+				ItemsProvider="competitionSearchItemsProviderCall"
+				TGridItem="SearchCompetitionsQueryResult"
+				Pagination="@competitionSearchPagination"
 				GridTemplateColumns="0.15fr 0.4fr 0.3fr 0.3fr">
 	<ChildContent>
 		<PropertyColumn Property="@(p => p.N)" Sortable="false" Title="N°" />
@@ -108,96 +137,195 @@
 	</ChildContent>
 
 	<EmptyContent>
-		<div Style="min-height: 300px;" class="empty-content">
-			<FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
-			&nbsp; No se encontraron pescadores.
+		<div Style="min-height: 100px;" class="empty-content">
+			<FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Disabled" />
+			&nbsp; No se encontraron competiciones.
 		</div>
 	</EmptyContent>
 </FluentDataGrid>
 
-<FluentPaginator State="@pagination" />
+@if (competitionSearchPagination.TotalItemCount > 0)
+{
+	<FluentPaginator State="@competitionSearchPagination" />
+}
+
+<FluentLabel Typo="Typography.H3" Class="pt-7">Buscar torneo</FluentLabel>
+@* <FluentDivider class="mb-4" /> *@
+
+<div class="flex flex-row w-full justify-center gap-10 mb-4">
+	<div>
+		<FluentSelect Items="@(Enumerable.Range(DateTime.Now.Year-5, 6))"
+		@bind-Value="SelectedYear"
+					  OptionText="@(i => i.ToString())"
+					  OptionValue="@(i => i.ToString())"
+		@oninput=SearchByYearAsync>
+			<LabelTemplate>
+				Año del torneo
+			</LabelTemplate>
+		</FluentSelect>
+	</div>
+</div>
+
+<FluentDataGrid @ref="tournamentSummaryFluentDataGrid"
+				ItemsProvider="tournamentSummaryItemsProviderCall"
+				TGridItem="GetTournamentsSummaryQueryResult"
+				Pagination="@tournamentSummaryPagination"
+				GridTemplateColumns="0.3fr 0.2fr 0.2fr 1fr">
+	<ChildContent>
+		<PropertyColumn Property="@(p => p.Name)" Sortable="false" Title="Nombre" />
+		<PropertyColumn Property="@(p => p.StartDate)" Format="dd/MM/yyyy" Sortable="false" Title="Fecha inicio" />
+		<PropertyColumn Property="@(p => p.EndDate)" Format="dd/MM/yyyy" Sortable="false" Title="Fecha fin" />
+
+		<TemplateColumn Title="Acciones" Align="@Align.End">
+			<FluentButton IconEnd="@(new Icons.Regular.Size16.Share())" OnClick="@(() => GoToInscriptions(context))">
+			@context.InscriptionsCount Inscripciones	
+			</FluentButton>
+
+			<FluentButton IconEnd="@(new Icons.Regular.Size16.Share())" OnClick="@(() => GoToCompetitions(context))">
+				@context.CompetitionsCount Competencias
+			</FluentButton>
+
+			<FluentButton IconEnd="@(new Icons.Regular.Size16.Share())" OnClick="@(() => GoToCategories(context))">
+				@context.CategoriesCount Categorias
+			</FluentButton>
+
+			<FluentButton IconEnd="@(new Icons.Regular.Size16.ArrowRight())" OnClick="@(() => GoToTournament(context))">
+			Ir al torneo	
+			</FluentButton>
+		</TemplateColumn>
+	</ChildContent>
+
+	<EmptyContent>
+		<div Style="min-height: 100px;" class="empty-content">
+			<FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Disabled" />
+			&nbsp; No se encontraron torneos.
+		</div>
+	</EmptyContent>
+</FluentDataGrid>
+
+@if (tournamentSummaryPagination.TotalItemCount > 0)
+{
+	<FluentPaginator State="@tournamentSummaryPagination" />
+}
+
+<div class="mb-10"></div>
 
 @code {
-	record struct CompetitionSummary(string CompetitionId, int N, DateTime StartDate, DateTime? EndDate);
-	record struct TournamentSummary(string TournamentId, string Name, DateTime StartDate, DateTime? EndDate, IEnumerable<CompetitionSummary> Competitions);
+	record struct TournamentSummary(GetTournamentsSummaryQueryResult tournament, IEnumerable<GetTournamentCompetitionsQueryResult> Competitions);
 
-	List<TournamentSummary> OngoingTournaments = new()
-	{
-		new TournamentSummary("1", "Marsupial", new DateTime(2023, 8, 1), null, new List<CompetitionSummary>()
-		{
-			new CompetitionSummary("1", 1, new DateTime(2023, 8, 1), new DateTime(2023, 8, 1)),
-			new CompetitionSummary("2", 2, new DateTime(2023, 8, 6), new DateTime(2023, 8, 6)),
-			new CompetitionSummary("3", 3, new DateTime(2023, 8, 15), new DateTime(2023, 8, 15)),
-			new CompetitionSummary("4", 4, new DateTime(2023, 8, 20), new DateTime(2023, 8, 20)),
-			new CompetitionSummary("5", 5, DateTime.Now, null),
-		}),
-		new TournamentSummary("2", "Cangrejo", new DateTime(2023, 9, 1), null, new List<CompetitionSummary>()
-		{
-			new CompetitionSummary("1", 1, new DateTime(2023, 9, 1), new DateTime(2023, 9, 1)),
-			new CompetitionSummary("2", 2, new DateTime(2023, 9, 6), new DateTime(2023, 9, 6)),
-			new CompetitionSummary("3", 3, new DateTime(2023, 9, 15), new DateTime(2023, 9, 15)),
-			new CompetitionSummary("4", 4, new DateTime(2023, 9, 20), new DateTime(2023, 9, 20)),
-			new CompetitionSummary("5", 5, DateTime.Now, null),
-		}),
-	};
+	List<TournamentSummary> OngoingTournaments = new();
 
 	string SelectedYear = DateTime.Now.Year.ToString();
 	private string _selectedYear = DateTime.Now.Year.ToString();
-	private int? _selectedNumber;
 
-	record struct CompetitionTournamentSummary(string CompetitionId, string TournamentName, int N, DateTime StartDate, DateTime? EndDate);
+	private int SelectedNumber = 1;
+	private int _selectedNumber = 1;
 
-	GridItemsProvider<CompetitionTournamentSummary> itemsProviderCall = default!;
-	PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
-	FluentDataGrid<CompetitionTournamentSummary> fluentDataGrid = default!;
 
-	protected override void OnInitialized()
+	GridItemsProvider<SearchCompetitionsQueryResult> competitionSearchItemsProviderCall = default!;
+	PaginationState competitionSearchPagination = new PaginationState { ItemsPerPage = 5 };
+	FluentDataGrid<SearchCompetitionsQueryResult> competitionSearchFluentDataGrid = default!;
+
+	GridItemsProvider<GetTournamentsSummaryQueryResult> tournamentSummaryItemsProviderCall = default!;
+	PaginationState tournamentSummaryPagination = new PaginationState { ItemsPerPage = 5 };
+	FluentDataGrid<GetTournamentsSummaryQueryResult> tournamentSummaryFluentDataGrid = default!;
+
+	protected override async Task OnInitializedAsync()
 	{
-		itemsProviderCall = async req =>
+		await GetOngoingTournaments();
+
+		tournamentSummaryItemsProviderCall = async req =>
 		{
-			int _selectedYear_int = int.Parse(_selectedYear);
+			var query = new GetTournamentsSummaryQuery(
+				Ended: null, 
+				TournamentYear: Int32.Parse(_selectedYear), 
+				tournamentSummaryPagination.CurrentPageIndex + 1, 
+				tournamentSummaryPagination.ItemsPerPage);
 
-			if (_selectedNumber is null)
+			var result = await _sender.Send(query);
+
+			if (result.IsError)
 			{
-				// Mock data for now
-				var competitions = new List<CompetitionTournamentSummary>()
-				{
-					new CompetitionTournamentSummary("1", "Marsupial", 1, new DateTime(_selectedYear_int, 8, 1), new DateTime(_selectedYear_int, 8, 1)),
-					new CompetitionTournamentSummary("2", "Marsupial", 2, new DateTime(_selectedYear_int, 8, 6), new DateTime(_selectedYear_int, 8, 6)),
-					new CompetitionTournamentSummary("3", "Marsupial", 3, new DateTime(_selectedYear_int, 8, 15), new DateTime(_selectedYear_int, 8, 15)),
-					new CompetitionTournamentSummary("4", "Marsupial", 4, new DateTime(_selectedYear_int, 8, 20), new DateTime(_selectedYear_int, 8, 20)),
-					new CompetitionTournamentSummary("5", "Marsupial", 5, DateTime.Now, null),
-					new CompetitionTournamentSummary("6", "Cangrejo", 1, new DateTime(_selectedYear_int, 9, 1), new DateTime(_selectedYear_int, 9, 1)),
-					new CompetitionTournamentSummary("7", "Cangrejo", 2, new DateTime(_selectedYear_int, 9, 6), new DateTime(_selectedYear_int, 9, 6)),
-					new CompetitionTournamentSummary("8", "Cangrejo", 3, new DateTime(_selectedYear_int, 9, 15), new DateTime(_selectedYear_int, 9, 15)),
-					new CompetitionTournamentSummary("9", "Cangrejo", 4, new DateTime(_selectedYear_int, 9, 20), new DateTime(_selectedYear_int, 9, 20)),
-					new CompetitionTournamentSummary("10", "Cangrejo", 5, DateTime.Now, null),					
-				};
-
+				_toast.ShowErrors(result.Errors);
 				return GridItemsProviderResult.From(
-					items: competitions,
-					totalItemCount: competitions.Count
-				);
-			} else {
-				// Mock data for now
-				var competitions = new List<CompetitionTournamentSummary>()
-				{
-					new CompetitionTournamentSummary("1", "Marsupial", _selectedNumber.Value, new DateTime(_selectedYear_int, 8, 1), new DateTime(_selectedYear_int, 8, 1)),
-					new CompetitionTournamentSummary("6", "Cangrejo", _selectedNumber.Value, new DateTime(_selectedYear_int, 9, 1), new DateTime(_selectedYear_int, 9, 1)),
-				};
-
-				return GridItemsProviderResult.From(
-					items: competitions,
-					totalItemCount: competitions.Count
+					items: new List<GetTournamentsSummaryQueryResult>(),
+					totalItemCount: 0
 				);
 			}
+
+			return GridItemsProviderResult.From(
+				items: result.Value.Items,
+				totalItemCount: result.Value.TotalCount
+			);
 		};
+
+		competitionSearchItemsProviderCall = async req =>
+		{
+			var query = new SearchCompetitionsQuery(
+				Int32.Parse(_selectedYear), 
+				_selectedNumber, 
+				competitionSearchPagination.CurrentPageIndex + 1, 
+				competitionSearchPagination.ItemsPerPage);
+
+			var result = await _sender.Send(query);
+
+			if (result.IsError)
+			{
+				_toast.ShowErrors(result.Errors);
+				return GridItemsProviderResult.From(
+					items: new List<SearchCompetitionsQueryResult>(),
+					totalItemCount: 0
+				);
+			}
+
+			return GridItemsProviderResult.From(
+				items: result.Value.Items,
+				totalItemCount: result.Value.TotalCount
+			);
+		};
+	}
+
+	async Task GetOngoingTournaments()
+	{
+		var query = new GetTournamentsSummaryQuery(
+				Ended: false,
+				TournamentYear: DateTime.Now.Year,
+				1,
+				2);
+
+		var result = await _sender.Send(query);
+
+		if (result.IsError)
+		{
+			_toast.ShowErrors(result.Errors);
+			OngoingTournaments = new();
+		}
+
+		var tournamentSummariesTasks = result.Value.Items.Select(async t =>
+		{
+			var query = new GetTournamentCompetitionsQuery(t.Id);
+
+			var result = await _sender.Send(query);
+
+			if (result.IsError)
+			{
+				_toast.ShowErrors(result.Errors);
+				return new TournamentSummary(t, new List<GetTournamentCompetitionsQueryResult>());
+			}
+
+			return new TournamentSummary(t, result.Value);
+		});
+
+		OngoingTournaments = (await Task.WhenAll(tournamentSummariesTasks)).ToList();
 	}
 
 	Task SearchByYearAsync(ChangeEventArgs e)
 	{
 		_selectedYear = e.Value?.ToString() ?? string.Empty;
-		return fluentDataGrid.RefreshDataAsync();
+		return Task.WhenAll(
+			competitionSearchFluentDataGrid.RefreshDataAsync(),
+			tournamentSummaryFluentDataGrid.RefreshDataAsync()
+		);
 	}
 
 	Task SearchByNumberAsync(ChangeEventArgs e)
@@ -205,16 +333,35 @@
 		if (Int32.TryParse((string?)e.Value, out var res))
 		{
 			_selectedNumber = res;
-			return fluentDataGrid.RefreshDataAsync();
 		} else {
-			_selectedNumber = null;
-			return fluentDataGrid.RefreshDataAsync();
+			_selectedNumber = 1;
 		}
+	
+		return competitionSearchFluentDataGrid.RefreshDataAsync();
 	}
 
-	void GoToTournament(CompetitionTournamentSummary s)
+	void GoToTournament(SearchCompetitionsQueryResult s)
 	{
-		
+		_nav.NavigateTo("/tournament/"+s.TournamentId);		
 	}
 
+	void GoToTournament(GetTournamentsSummaryQueryResult s)
+	{
+		_nav.NavigateTo("/tournament/"+s.Id);
+	}
+
+	void GoToInscriptions(GetTournamentsSummaryQueryResult s)
+	{
+		_nav.NavigateTo("/tournament/"+s.Id+"/inscriptions");
+	}
+
+	void GoToCompetitions(GetTournamentsSummaryQueryResult s)
+	{
+		_nav.NavigateTo("/tournament/"+s.Id+"/competitions");
+	}
+
+	void GoToCategories(GetTournamentsSummaryQueryResult s)
+	{
+		_nav.NavigateTo("/tournament/"+s.Id+"/categories");
+	}
 }

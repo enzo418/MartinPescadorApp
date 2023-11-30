@@ -44,12 +44,10 @@ namespace FisherTournament.Application.Tournaments.Queries.GetTournamentInscript
 				return Errors.Id.NotValidWithProperty(nameof(request.TournamentId));
 			}
 
-			var tournament = await _context.Tournaments
-				.Where(t => t.Id == tournamentId.Value)
-				.AsNoTracking()
-				.FirstOrDefaultAsync(cancellationToken);
+			var tournamentExists = await _context.Tournaments
+					.AnyAsync(t => t.Id == tournamentId.Value, cancellationToken: cancellationToken);
 
-			if (tournament == null)
+			if (!tournamentExists)
 			{
 				return Errors.Tournaments.NotFound;
 			}
