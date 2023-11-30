@@ -23,6 +23,11 @@ public sealed class TournamentInscription : Entity<int>
 
 	public CategoryId CategoryId { get; private set; }
 
+	/// <summary>
+	/// This is the number that the fisher will have in the tournament.
+	/// Usually, this number is assigned by the tournament organization
+	/// based on the fisher's position in the previous tournament.
+	/// </summary>
 	public int Number { get; private set; }
 
 	public static TournamentInscription Create(

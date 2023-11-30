@@ -63,13 +63,13 @@ namespace FisherTournament.IntegrationTests.Tournaments.Queries
 		{
 			using var context = _fixture.TournamentContext;
 
-			var fisher1 = context.PrepareFisher("First1", "Last1");
-			var fisher2 = context.PrepareFisher("First2", "Last2");
-			var fisher3 = context.PrepareFisher("First3", "Last3");
-			var fisher4 = context.PrepareFisher("First4", "Last4");
+			var fisher1 = context.PrepareFisher("First1", "Last1", out var _);
+			var fisher2 = context.PrepareFisher("First2", "Last2", out var _);
+			var fisher3 = context.PrepareFisher("First3", "Last3", out var _);
+			var fisher4 = context.PrepareFisher("First4", "Last4", out var _);
 
-			var fisher5 = context.PrepareFisher("First5", "Last5");
-			var fisher6 = context.PrepareFisher("First6", "Last6");
+			var fisher5 = context.PrepareFisher("First5", "Last5", out var _);
+			var fisher6 = context.PrepareFisher("First6", "Last6", out var _);
 
 			var tournament = await TournamentBuilder.Create(context, _fixture.DateTimeProvider)
 				.WithName("Test Tournament")
@@ -208,10 +208,10 @@ namespace FisherTournament.IntegrationTests.Tournaments.Queries
 		{
 			using var context = _fixture.TournamentContext;
 
-			var fisher1 = context.PrepareFisher("First1", "Last1");
-			var fisher2 = context.PrepareFisher("First2", "Last2");
-			var fisher3 = context.PrepareFisher("First3", "Last3");
-			var fisher4 = context.PrepareFisher("First4", "Last4");
+			var fisher1 = context.PrepareFisher("First1", "Last1", out var _);
+			var fisher2 = context.PrepareFisher("First2", "Last2", out var _);
+			var fisher3 = context.PrepareFisher("First3", "Last3", out var _);
+			var fisher4 = context.PrepareFisher("First4", "Last4", out var _);
 
 			var tournament = await TournamentBuilder.Create(context, _fixture.DateTimeProvider)
 				.WithName("Test Tournament")
