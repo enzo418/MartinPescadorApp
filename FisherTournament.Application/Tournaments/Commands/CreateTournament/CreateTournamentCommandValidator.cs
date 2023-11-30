@@ -14,11 +14,11 @@ public class CreateTournamentCommandValidator : AbstractValidator<CreateTourname
         RuleFor(c => c.StartDate)
             .NotEmpty()
             .IsUtcDateTime()
-            .LessThan(c => c.EndDate)
+            .LessThan(c => c.EndDate ?? DateTime.MaxValue)
             .GreaterThanOrEqualTo(dateTime.Now);
 
-        RuleFor(c => c.EndDate)
+        /*RuleFor(c => c.EndDate)
             .NotEmpty()
-            .IsUtcDateTime();
+            .IsUtcDateTime();*/
     }
 }

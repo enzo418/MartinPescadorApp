@@ -1,12 +1,11 @@
-using System.Collections.Generic;
 using ErrorOr;
-using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
-using FisherTournament.Domain.FisherAggregate.ValueObjects;
-using FisherTournament.Domain.TournamentAggregate.Entities;
-using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using FisherTournament.Domain.Common.Errors;
 using FisherTournament.Domain.Common.Provider;
+using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
+using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using FisherTournament.Domain.TournamentAggregate.DomainEvents;
+using FisherTournament.Domain.TournamentAggregate.Entities;
+using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 
 namespace FisherTournament.Domain.TournamentAggregate;
 
@@ -19,7 +18,7 @@ public class Tournament : AggregateRoot<TournamentId>
     private Tournament(TournamentId id,
                        string name,
                        DateTime startDate,
-                       DateTime endDate,
+                       DateTime? endDate,
                        List<Category> categories)
         : base(id)
     {
@@ -31,7 +30,7 @@ public class Tournament : AggregateRoot<TournamentId>
 
     public string Name { get; private set; }
     public DateTime StartDate { get; private set; }
-    public DateTime EndDate { get; private set; }
+    public DateTime? EndDate { get; private set; }
 
     public IReadOnlyCollection<CompetitionId> CompetitionsIds => _competitionsIds.AsReadOnly();
     public IReadOnlyCollection<TournamentInscription> Inscriptions => _inscriptions.AsReadOnly();
@@ -102,7 +101,7 @@ public class Tournament : AggregateRoot<TournamentId>
 
     public static Tournament Create(string name,
                                     DateTime startDate,
-                                    DateTime endDate,
+                                    DateTime? endDate,
                                     List<Category>? categories = null)
     {
         return new Tournament(Guid.NewGuid(),

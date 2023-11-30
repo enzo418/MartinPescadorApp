@@ -6,4 +6,4 @@ public record struct CreateTournamentCommandResponse(
     TournamentId Id,
     string Name,
     DateTime StartDate,
-    DateTime EndDate);
+    DateTime? EndDate);

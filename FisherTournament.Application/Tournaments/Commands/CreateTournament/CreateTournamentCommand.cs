@@ -8,7 +8,7 @@ namespace FisherTournament.Application.Tournaments.Commands.CreateTournament;
 public record struct CreateTournamentCommand(
     string Name,
     DateTime StartDate,
-    DateTime EndDate) : IRequest<ErrorOr<CreateTournamentCommandResponse>>;
+    DateTime? EndDate) : IRequest<ErrorOr<CreateTournamentCommandResponse>>;
 
 public sealed class CreateTournamentCommandHandler
     : IRequestHandler<CreateTournamentCommand, ErrorOr<CreateTournamentCommandResponse>>
