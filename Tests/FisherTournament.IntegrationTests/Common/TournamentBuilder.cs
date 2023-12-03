@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.Common.Provider;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
+using Microsoft.EntityFrameworkCore;
 
 namespace FisherTournament.IntegrationTests.Common
 {
@@ -16,7 +13,7 @@ namespace FisherTournament.IntegrationTests.Common
         private Tournament _tournament = null!;
         private string _name = null!;
         private DateTime _startDate;
-        private DateTime _endDate;
+        private DateTime? _endDate = null;
         private List<string> _categories = new();
 
         private TournamentBuilder(ITournamentFisherDbContext context, IDateTimeProvider dateTimeProvider)
@@ -86,6 +83,8 @@ namespace FisherTournament.IntegrationTests.Common
             }
 
             await _context.SaveChangesAsync(cancellationToken);
+
+            ((DbContext)_context).Entry(_tournament).State = EntityState.Detached;
 
             return _tournament;
         }

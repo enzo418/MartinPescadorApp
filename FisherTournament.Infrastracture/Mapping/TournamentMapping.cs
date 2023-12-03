@@ -1,6 +1,7 @@
 using FisherTournament.Application.Tournaments.Commands.AddCategory;
 using FisherTournament.Application.Tournaments.Commands.AddInscription;
 using FisherTournament.Application.Tournaments.Commands.CreateTournament;
+using FisherTournament.Application.Tournaments.Commands.EditTournament;
 using FisherTournament.Contracts.Categories;
 using FisherTournament.Contracts.Tournaments;
 using Mapster;
@@ -30,5 +31,7 @@ public class TournamentMapping : IRegister
             .Map(dest => dest.LeaderBoard, src => src.LeaderBoard)
             .Map(dest => dest.CategoryId, src => src.Id)
             .Map(dest => dest.CategoryName, src => src.Name);
+
+        config.NewConfig<EditTournamentContract, EditTournamentCommand>();
     }
 }

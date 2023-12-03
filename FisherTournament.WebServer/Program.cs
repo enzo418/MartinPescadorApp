@@ -3,6 +3,8 @@ using FisherTournament.Infrastracture;
 using FisherTournament.Infrastracture.Persistence.ReadModels.EntityFramework;
 using FisherTournament.Infrastracture.Persistence.Tournaments;
 using FisherTournament.WebServer;
+using FisherTournament.WebServer.Common.Validation;
+using FluentValidation;
 using Microsoft.Fast.Components.FluentUI;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +30,8 @@ var app = builder.Build();
 app.UseRequestLocalization(new RequestLocalizationOptions()
     .AddSupportedCultures(new[] { "es", "en-US" })
     .AddSupportedUICultures(new[] { "es", "en-US" }));
+
+ValidatorOptions.Global.LanguageManager = new LanguageManagerWithoutPropertyNames();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

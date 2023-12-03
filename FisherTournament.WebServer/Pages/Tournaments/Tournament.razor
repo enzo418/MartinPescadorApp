@@ -1,35 +1,50 @@
 ﻿@layout TournamentLayout
-@page "/tournament/{TouramentId}"
-@page "/tournament/_demo"
+@page "/tournament/{TournamentId}"
 
+@using ErrorOr;
+@using FisherTournament.Application.Tournaments.Commands.EditTournament;
+@using FisherTournament.Application.Tournaments.Queries.GetTournament;
+@using FisherTournament.Contracts.Tournaments;
 @using Microsoft.Fast.Components.FluentUI;
+@using System.Globalization;
 
-<div class="flex flex-col justify-between h-full">
+@inject ISender _sender;
+@inject IToastService _toastService;
+@inject IMapper _mapper;
+
+<EditForm EditContext="@editContext" class="flex flex-col justify-between h-full" >
     <div>
         <h1 class="page-title-no-pt">Información general</h1>
 
         <FluentStack Orientation="Orientation.Vertical" Class="pt-4" VerticalGap="25">
             <FluentGrid Spacing="3">
                 <FluentGridItem sm="12" md="5">
-                    <FluentTextField class="w-full">
+                    <FluentTextField AutoComplete="off" Required="true" class="w-full" @bind-Value=@TournamentName>
                         Nombre del torneo
                     </FluentTextField>
+                    <ValidationMessage For="() => Model!.Name" />
                 </FluentGridItem>
                 <FluentGridItem sm="12" md="5">
-                    <FluentDatePicker class="w-full" AriaLabel="Fecha inicio" Label="Fecha inicio" />
+                    @* <FluentDatePicker class="w-full" Required="true" @bind-Value=StartDate AriaLabel="Fecha inicio" Label="Fecha inicio" /> *@
+                    <FluentTextField class="w-full" AutoComplete="off" @bind-Value=StartDate Required="false" Placeholder="01/12/1997">
+                        <FluentIcon Value="@(new Icons.Regular.Size16.Calendar())" Slot="start" />
+                        Fecha inicio
+                    </FluentTextField>
+                    <ValidationMessage For="() => Model!.StartDate" />
                 </FluentGridItem>
 
                 <FluentGridItem sm="12" md="5">
                     <p class="color-fg">Fecha finalizado</p>
                     <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
-			            @if (Finished)
+			            @if (_endDate is not null)
                         {
-                            <p class="m-0">17/08/2021</p>
+                            <p class="m-0">@_endDate.Value.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern)</p>
+                            <FluentButton OnClick="async () => await SetTournamentEnded(false)">Deshacer finalización</FluentButton>
                         }
                         else
                         {
                             <p class="m-0">Sin finalizar</p>
-                            <FluentButton OnClick="(() => Finished = true)">Finalizar</FluentButton>
+                            <FluentButton OnClick="async () => await SetTournamentEnded(true)">Finalizar</FluentButton>
                         }
                     </FluentStack>
 
@@ -39,15 +54,109 @@
         </FluentStack>
     </div>
 
-    <div class="flex justify-end">
+    <div class="flex justify-between">
         <FluentButton IconStart="@(new Icons.Regular.Size16.Delete())">Eliminar</FluentButton>
     </div>
-</div>
+</EditForm>
 
 
 @code {
     [Parameter]
-    public string TouramentId { get; set; } = null!;
+    public string TournamentId { get; set; } = null!;
 
-    private bool Finished = false;
+    private string StartDate
+    {
+        get
+        {
+            return Model.StartDate?.ToShortDateString() ?? string.Empty;
+        }
+
+        set
+        {
+            if (value is null) return;
+
+            if (DateTime.TryParseExact(value, CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern, null, System.Globalization.DateTimeStyles.None, out var date))
+            {
+                Model.StartDate = date;
+
+                ProcessCommand(
+                    new EditTournamentCommand(TournamentId, null, Model.StartDate.Value.ToUniversalTime(), null)
+                );
+            }
+        }
+    }
+
+    private string TournamentName
+    {
+        get {
+            return Model.Name;
+        }
+
+        set {
+            Model.Name = value;
+
+            ProcessCommand(
+                new EditTournamentCommand(TournamentId, Model.Name, null, null)
+            );
+        }
+    }
+
+    private DateTime? _endDate = null; // Model doesn't have end date
+
+    private ValidationMessageStore? messageStore;
+    private EditContext editContext = default!;
+
+    private EditTournamentContract Model = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var res = await _sender.Send(new GetTournamentQuery(TournamentId));
+
+        if (res.IsError)
+        {
+            _toastService.ShowErrors(res.Errors);
+            return;
+        }
+
+        var tournament = res.Value;
+
+        _endDate = tournament.EndDate;
+
+        Model = new EditTournamentContract(TournamentId, tournament.Name, tournament.StartDate, false);
+
+        editContext = new(Model);
+        messageStore = new(editContext);
+    }
+
+
+    private async Task SetTournamentEnded(bool End)
+    {
+        var res = await ProcessCommand(new EditTournamentCommand(TournamentId, null, null, End));
+
+        if (!res.IsError)
+        {
+            _endDate = res.Value.EndDate?.ToLocalTime();
+        }
+    }
+
+    public async Task<ErrorOr<EditTournamentCommandResult>> ProcessCommand(EditTournamentCommand command)
+    {
+        messageStore?.Clear();
+
+        editContext.Validate();
+
+        var res = await _sender.Send(command);
+
+        if (res.IsError)
+        {
+            editContext?.AddValidationErrors(res.Errors, messageStore, Model, _toastService);            
+        } else
+        {
+            _toastService.ShowSuccess($"Editado correctamente");
+        }
+
+        StateHasChanged();
+
+        return res;
+    }
 }

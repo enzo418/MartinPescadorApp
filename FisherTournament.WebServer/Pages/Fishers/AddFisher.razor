@@ -1,6 +1,7 @@
 @using System.Text.RegularExpressions
 @using FisherTournament.Contracts.Fishers
 @using Application.Fishers.Commands.CreateFisher
+@using System.Globalization
 
 @inject NavigationManager _nav
 @inject ISender _sender
@@ -54,8 +55,6 @@
             <p>
                 <FluentTextField AutoComplete="off" @bind-Value=date Required="false" Placeholder="01/12/1997"
                     Pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$">
-                    @* <FluentIcon Name="@FluentIcons.Calendar" Slot="start" Size="@IconSize.Size20"
-                    Variant=IconVariant.Regular Color="Color.Neutral" /> *@
                     Fecha nacimiento
                 </FluentTextField>
             <p class="error @dateValidationClasses">@dateValidationError</p>
@@ -70,7 +69,7 @@
 </EditForm>
 
 
-@code {
+    @code {
     string? date = "";
     private EditContext editContext = default!;
     private ValidationMessageStore? messageStore;
@@ -84,6 +83,8 @@
 
     string dateValidationClasses = "hidden";
 
+    private DateTime _selectedDate = default;
+
     protected override void OnInitialized()
     {
         Model ??= new("", "", "");
@@ -93,7 +94,7 @@
 
     private void ValidateDateFormat(ChangeEventArgs e)
     {
-        if (!DateTime.TryParseExact(e.Value?.ToString(), "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out _))
+        if (!DateTime.TryParseExact(e.Value?.ToString(), CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern, null, System.Globalization.DateTimeStyles.None, out _))
         {
             dateValidationError = "Formato de fecha inválido";
             dateValidationClasses = "";

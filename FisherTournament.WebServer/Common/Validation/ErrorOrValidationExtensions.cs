@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.Fast.Components.FluentUI;
 
 namespace FisherTournament.WebServer.Common.Validation
 {
@@ -26,6 +27,25 @@ namespace FisherTournament.WebServer.Common.Validation
             }
 
             context?.NotifyValidationStateChanged();
+
+            return context!;
+        }
+
+        public static EditContext AddValidationErrors<T>(this EditContext context,
+                                                         List<ErrorOr.Error> errors,
+                                                         ValidationMessageStore? messageStore,
+                                                         T model,
+                                                         IToastService toastService)
+        {
+            AddValidationErrors(context, errors, messageStore, model);
+
+            foreach (var error in errors)
+            {
+                if (error.Type != ErrorOr.ErrorType.Validation)
+                {
+                    toastService.ShowError(error.Description, 3);
+                }
+            }
 
             return context!;
         }

@@ -3,6 +3,7 @@
 @using FisherTournament.Application.Fishers.Queries;
 @using FisherTournament.Contracts.Fishers;
 @using FisherTournament.Domain.FisherAggregate.ValueObjects;
+@using System.Globalization;
 
 @inject NavigationManager _nav
 @inject ISender _sender
@@ -104,7 +105,7 @@
 
     private void ValidateDateFormat(ChangeEventArgs e)
     {
-        if (!DateTime.TryParseExact(e.Value?.ToString(), "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out _))
+        if (!DateTime.TryParseExact(e.Value?.ToString(), CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern, null, System.Globalization.DateTimeStyles.None, out _))
         {
             dateValidationError = "Formato de fecha inválido";
             dateValidationClasses = "";

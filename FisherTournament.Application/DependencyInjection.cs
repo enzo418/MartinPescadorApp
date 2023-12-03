@@ -1,10 +1,10 @@
-using System.Reflection;
 using ErrorOr;
 using FisherTournament.Application.Common.Behavior;
 using FisherTournament.Application.Common.Instrumentation;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace FisherTournament.Application;
 
@@ -36,7 +36,7 @@ public static partial class DependencyInjection
 
     private static void StopIfUsingInvalidTypes()
     {
-        // This is cheaper that check it in the pipeline
+        // This is cheaper than checking it in the pipeline
         var assembly = Assembly.GetAssembly(typeof(DependencyInjection))!;
         var types = assembly.GetTypes();
         foreach (var type in types)

@@ -6,6 +6,13 @@ public static partial class Errors
 {
     public static class Tournaments
     {
+        public static readonly Error CompetitionHasEarlierStartDate = Error.Conflict(
+            code: "Tournament.CompetitionHasEarlierStartDate",
+            description: "Competition has earlier start date.");
+
+        public static readonly Error AlreadyEnded = Error.Conflict(
+            code: "Tournament.AlreadyEnded",
+            description: "Tournament already ended.");
 
         public static Error NotFound => Error.NotFound(
             code: "Tournament.NotFound",

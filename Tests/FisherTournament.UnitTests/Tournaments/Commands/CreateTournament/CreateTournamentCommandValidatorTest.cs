@@ -2,7 +2,6 @@ using FisherTournament.Application.Tournaments.Commands.AddInscription;
 using FisherTournament.Application.Tournaments.Commands.CreateTournament;
 using FisherTournament.Domain.Common.Provider;
 using FluentValidation.TestHelper;
-using Moq;
 
 namespace FisherTournament.UnitTests.Tournaments.Commands.CreateTournament;
 
@@ -34,23 +33,6 @@ public class CreateTournamentCommandValidatorTest
 
         // Assert
         result.ShouldHaveValidationErrorFor(c => c.Name);
-    }
-
-    [Fact]
-    public async Task Validator_Error_WhenPassedStartDateBeforeNow()
-    {
-        // Arrange
-        var command = new CreateTournamentCommand(
-            "Name",
-            _dateTimeProvider.Object.Now.AddDays(-1),
-            _dateTimeProvider.Object.Now.AddDays(1));
-
-        // Act
-        var result = await _validator.TestValidateAsync(command);
-
-        // Assert
-        // any because validator might validate it in start or end date
-        result.ShouldHaveAnyValidationError();
     }
 
     [Fact]

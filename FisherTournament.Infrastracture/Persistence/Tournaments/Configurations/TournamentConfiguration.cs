@@ -42,7 +42,12 @@ public class TournamentConfigurations : IEntityTypeConfiguration<Tournament>
         builder.ToTable("Tournaments");
         builder.HasGuidIdKey(t => t.Id);
         builder.Property(t => t.Name).IsRequired();
-        builder.Property(t => t.StartDate).IsRequired();
+        builder.Property(t => t.StartDate)
+            .HasUTCValueConversion()
+            .IsRequired();
+        builder.Property(t => t.EndDate)
+            .HasUTCValueConversion()
+            .IsRequired(false);
     }
 
     private static void ConfigureTournament_Inscriptions(EntityTypeBuilder<Tournament> builder)

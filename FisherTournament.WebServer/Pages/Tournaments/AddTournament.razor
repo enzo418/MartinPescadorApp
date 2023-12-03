@@ -24,16 +24,7 @@
         </FluentGridItem>
         <FluentGridItem sm="12" md="5">
             <p>
-                <FluentTextField Pattern="^(0[1-9]|[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
-                                 Required="true" 
-                    AutoComplete="off" 
-                    @bind-Value="@_selectedStartDate" 
-                    class="w-full" 
-                    AriaLabel="Fecha inicio"
-                    Label="Fecha inicio en formato dia/mes/año (ejemplo 05/12/2023)"
-                    Placeholder="dd/MM/yyyy">
-                    <FluentIcon Slot="start" Value="@(new Icons.Regular.Size16.Calendar())" />
-                </FluentTextField>
+                <FluentDatePicker class="w-full" Required="true" @bind-Value=StartDate AriaLabel="Fecha inicio" Label="Fecha inicio" />
                 <ValidationMessage For="() => Model!.StartDate" />
             </p>
         </FluentGridItem>
@@ -46,18 +37,18 @@
 </EditForm>
 
 
-@code {
+    @code {
     private bool Finished = false;
 
     private CreateTournamentRequest Model { get; set; } = default!;
     private EditContext editContext = default!;
     private ValidationMessageStore? messageStore;
 
-    private string _selectedStartDate = DateTime.Now.ToString("dd/MM/yyyy");
+    private DateTime? StartDate = DateTimeOffset.Now.LocalDateTime;
 
     protected override void OnInitialized()
     {
-        Model = new("", DateTime.Now, null);
+        Model = new("", DateTimeOffset.Now.LocalDateTime, null);
         editContext = new(Model);
         messageStore = new(editContext);
     }
@@ -69,14 +60,9 @@
 
     private async Task Submit()
     {
-        DateTime res;
-        if (!string.IsNullOrEmpty(_selectedStartDate) 
-            && 
-            (
-                DateTime.TryParseExact(_selectedStartDate, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out res)
-                || DateTime.TryParseExact(_selectedStartDate, "d/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out res)
-            )){
-            Model.StartDate = res.ToUniversalTime();
+        if (StartDate is not null)
+        {
+            Model.StartDate = StartDate.Value.ToUniversalTime();
         } else
         {
             var fieldIdentifier = new FieldIdentifier(Model, nameof(Model.StartDate));

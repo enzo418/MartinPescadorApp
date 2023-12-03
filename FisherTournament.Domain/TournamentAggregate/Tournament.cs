@@ -111,6 +111,44 @@ public class Tournament : AggregateRoot<TournamentId>
                               categories ?? new List<Category>());
     }
 
+    public ErrorOr<Success> SetName(string name)
+    {
+        Name = name;
+
+        return Result.Success;
+    }
+
+    public ErrorOr<Success> SetStartDate(DateTime startDate)
+    {
+        if (startDate.Kind != DateTimeKind.Utc)
+        {
+            return Error.Validation(nameof(startDate), "Start date must be UTC");
+        }
+
+        StartDate = startDate;
+
+        return Result.Success;
+    }
+
+    public ErrorOr<Success> EndTournament(IDateTimeProvider dateTimeProvider)
+    {
+        if (EndDate != null)
+        {
+            return Errors.Tournaments.AlreadyEnded;
+        }
+
+        EndDate = dateTimeProvider.Now;
+
+        return Result.Success;
+    }
+
+    public ErrorOr<Success> UndoEndTournament()
+    {
+        EndDate = null;
+
+        return Result.Success;
+    }
+
 #pragma warning disable CS8618
     private Tournament()
     {

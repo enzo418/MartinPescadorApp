@@ -10,4 +10,11 @@ public static class DateTimeValidators
         return ruleBuilder.Must(x => x.Kind == DateTimeKind.Utc)
             .WithMessage(v => "'{PropertyValue}' must be a UTC DateTime.");
     }
+
+    public static IRuleBuilderOptions<T, DateTime?> IsUtcDateTime<T>(
+        this IRuleBuilder<T, DateTime?> ruleBuilder)
+    {
+        return ruleBuilder.Must(x => x?.Kind == DateTimeKind.Utc)
+            .WithMessage(v => "'{PropertyValue}' must be a UTC DateTime.");
+    }
 }

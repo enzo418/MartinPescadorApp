@@ -2,6 +2,7 @@
 @using FisherTournament.Application.Competitions.Queries.GetTournamentCompetitions;
 @using FisherTournament.Application.Competitions.Queries.SearchCompetitions;
 @using FisherTournament.Application.Tournaments.Queries.GetTournamentsSummary;
+@using System.Globalization;
 
 @inject NavigationManager _nav
 @inject IToastService _toast
@@ -45,7 +46,7 @@
 			<FluentLabel Class="whitespace-nowrap pr-3" Typo="Typography.H6" Color="Color.Accent">Fecha Inicio del torneo </FluentLabel>
 
 			<div class="flex flex-row w-full items-center">
-				<FluentLabel Typo="Typography.Body">@tournament.tournament.StartDate.ToString("dd/MM/yyyy")</FluentLabel>
+				<FluentLabel Typo="Typography.Body">@tournament.tournament.StartDate.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern)</FluentLabel>
 			</div>
 		</div>
 
@@ -72,7 +73,7 @@
 					{
 						<tr>
 							<td>@competition.N</td>
-							<td>@competition.StartDate.ToString("dd/MM/yyyy")</td>
+							<td>@competition.StartDate.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern)</td>
 							<td>
 								<FluentNavLink  
 									Class="flex gap-x-2 underline w-full justify-center" 
@@ -129,8 +130,8 @@
 	<ChildContent>
 		<PropertyColumn Property="@(p => p.N)" Sortable="false" Title="N°" />
 		<PropertyColumn Property="@(p => p.TournamentName)" Sortable="false" Title="Nombre del torneo" />
-		<PropertyColumn Property="@(p => p.StartDate)" Format="dd/MM/yyyy" Sortable="false" Title="Inicio de la fecha" />
-		<PropertyColumn Property="@(p => p.EndDate)" Format="dd/MM/yyyy" Sortable="false" Title="Fin de la fecha" />
+		<PropertyColumn Property="@(p => p.StartDate)" Format="@CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern" Sortable="false" Title="Inicio de la fecha" />
+		<PropertyColumn Property="@(p => p.EndDate)" Format="@CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern" Sortable="false" Title="Fin de la fecha" />
 		<TemplateColumn Title="Acciones" Align="@Align.End">
 			<FluentButton IconEnd="@(new Icons.Regular.Size16.ArrowRight())" OnClick="@(() => GoToTournament(context))" />
 		</TemplateColumn>
@@ -173,8 +174,8 @@
 				GridTemplateColumns="0.3fr 0.2fr 0.2fr 1fr">
 	<ChildContent>
 		<PropertyColumn Property="@(p => p.Name)" Sortable="false" Title="Nombre" />
-		<PropertyColumn Property="@(p => p.StartDate)" Format="dd/MM/yyyy" Sortable="false" Title="Fecha inicio" />
-		<PropertyColumn Property="@(p => p.EndDate)" Format="dd/MM/yyyy" Sortable="false" Title="Fecha fin" />
+		<PropertyColumn Property="@(p => p.StartDate)" Format="@CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern" Sortable="false" Title="Fecha inicio" />
+		<PropertyColumn Property="@(p => p.EndDate)" Format="@CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern" Sortable="false" Title="Fecha fin" />
 
 		<TemplateColumn Title="Acciones" Align="@Align.End">
 			<FluentButton IconEnd="@(new Icons.Regular.Size16.Share())" OnClick="@(() => GoToInscriptions(context))">
