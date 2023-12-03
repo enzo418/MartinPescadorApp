@@ -1,5 +1,5 @@
 ﻿@layout TournamentLayout
-@page "/tournaments/leaderboard/{CompetitionId}"
+@page "/tournament/{TournamentId}/leaderboard/{CompetitionId}"
 
 @inject IToastService _toastService
 @inject NavigationManager _nav
@@ -49,6 +49,9 @@
 </FluentDataGrid>
 
 @code {
+    [Parameter]
+    public string TournamentId { get; set; } = null!;
+
     [Parameter]
     public string CompetitionId { get; set; } = null!;
 

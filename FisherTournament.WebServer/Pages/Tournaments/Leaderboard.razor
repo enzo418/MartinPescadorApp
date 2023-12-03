@@ -1,5 +1,5 @@
 ﻿@layout TournamentLayout
-@page "/tournaments/leaderboard"
+@page "/tournament/{TournamentId}/leaderboard"
 
 @inject IToastService _toastService
 @inject NavigationManager _nav
@@ -70,6 +70,9 @@
 </FluentDataGrid>
 
 @code {
+	[Parameter]
+    public string TournamentId { get; set; } = null!;
+
     record struct Competencia(int Id, int N);
     List<Competencia> competencias = new()
 	{

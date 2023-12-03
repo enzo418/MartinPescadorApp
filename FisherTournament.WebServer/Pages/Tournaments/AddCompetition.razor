@@ -1,5 +1,5 @@
 ﻿@layout TournamentLayout
-@page "/tournaments/competition"
+@page "/tournament/{TournamentId}/competition"
 
 @using FisherTournament.Application.Fishers.Queries;
 @using FisherTournament.Domain.FisherAggregate.ValueObjects;
@@ -63,6 +63,9 @@
 </div>
 
 @code {
+	[Parameter]
+    public string TournamentId { get; set; } = null!;
+
 	DateTime? SelectedDate { get; set; } = DateTime.Now;
 
 	void Cancel()

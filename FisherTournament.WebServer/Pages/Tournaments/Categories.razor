@@ -1,5 +1,5 @@
 ﻿@layout TournamentLayout
-@page "/tournaments/categories"
+@page "/tournament/{TournamentId}/categories"
 
 @using Microsoft.Fast.Components.FluentUI;
 
@@ -55,6 +55,9 @@
 </div>
 
 @code {
+    [Parameter]
+    public string TournamentId { get; set; } = null!;
+
     record struct Cat(int Id, string Name, int minAge, int MaxAge);
 
     int _tabIndex = 0;

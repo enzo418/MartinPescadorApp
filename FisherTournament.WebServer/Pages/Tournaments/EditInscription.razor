@@ -1,5 +1,5 @@
 ﻿@layout TournamentLayout
-@page "/tournaments/inscription/{InscriptionId}"
+@page "/tournament/{TournamentId}/inscription/{InscriptionId}"
 
 @using FisherTournament.Application.Fishers.Queries;
 @using Microsoft.AspNetCore.WebUtilities;
@@ -70,7 +70,10 @@
 
 @code {
 	[Parameter]
-	public string InscriptionId { get; set; }
+	public string TournamentId { get; set; } = null!;
+
+	[Parameter]
+	public string InscriptionId { get; set; } = null!;
 
 	record struct Persona(string Id, string Name, string DNI);
 	record struct Cat(int Id, string Name, int minAge, int MaxAge);

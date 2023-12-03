@@ -1,5 +1,5 @@
 ﻿@layout TournamentLayout
-@page "/tournaments/competition/{CompetitionId}"
+@page "/tournament/{TournamentId}/competition/{CompetitionId}"
 
 @using FisherTournament.Application.Fishers.Queries;
 @using FisherTournament.Domain.FisherAggregate.ValueObjects;
@@ -90,6 +90,9 @@
 </div>
 
 @code {
+	[Parameter]
+    public string TournamentId { get; set; } = null!;
+
 	[Parameter]
 	public string CompetitionId { get; set; } = null!;
 

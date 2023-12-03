@@ -8,26 +8,14 @@
 
     @DividerTemplate
 
-    <MyFluentMenuButton tabindex="1" Title="Pescadores" Appearance="@Appearance.Neutral" IconColor="@Color.FillInverse"
-        OnChange="@OnPescadoresMenuChange">
-        <StartIcon>
-            <FluentIcon Icon="@Icons.Regular.Size20.People" Slot="start" Color="Color.Neutral" />
-        </StartIcon>
-        <ChildMenuItems>
-            <FluentMenuItem Id="fisher-add">
-                <FluentIcon Icon="@Icons.Regular.Size20.AddCircle" Slot="start" Color="Color.Neutral" />
-                Agregar pescador
-            </FluentMenuItem>
-            <FluentMenuItem Id="fisher-search">
-                <FluentIcon Icon="@Icons.Regular.Size20.Search" Slot="start" Color="Color.Neutral" />
-                Buscar pescador
-            </FluentMenuItem>
-        </ChildMenuItems>
-    </MyFluentMenuButton>
+    <FluentButton @onclick=NavigateToFishers tabindex="1">
+        <FluentIcon Icon="@Icons.Regular.Size20.People" Slot="start" Color="Color.Neutral" />
+        Pescadores
+    </FluentButton>
 
     @DividerTemplate
 
-    <FluentButton @onclick=NavigateToTournaments tabindex="0" autofocus>
+    <FluentButton @onclick=NavigateToTournaments tabindex="2">
         <FluentIcon Icon="@Icons.Regular.Size20.Trophy" Slot="start" Color="Color.Neutral" /> Fechas y Torneos
     </FluentButton>
 
@@ -68,6 +56,7 @@
     private void NavigateToHome() => _nav.NavigateTo("/");
     private void NavigateToEvents() => _nav.NavigateTo("/events");
     private void NavigateToTournaments() => _nav.NavigateTo("/tournaments");
+    private void NavigateToFishers() => _nav.NavigateTo("/fishers");
 
     private void OnPescadoresMenuChange(MenuChangeEventArgs arg)
     {

@@ -1,6 +1,6 @@
 ﻿@layout TournamentLayout
 
-@page "/tournaments/competitions"
+@page "/tournament/{TournamentId}/competitions"
 @using System.Globalization;
 
 @inject IToastService _toastService
@@ -55,6 +55,9 @@
 </FluentDataGrid>
 
 @code {
+	[Parameter]
+    public string TournamentId { get; set; } = null!;
+
 	public record struct CompetitionLocation(string City, string State, string Country, string Place);
 
 	record struct Competition(string Id, int N, DateTime StartDate, DateTime EndDate, CompetitionLocation Location);

@@ -1,23 +1,25 @@
 ﻿@inherits LayoutComponentBase
 @using Microsoft.Fast.Components.FluentUI;
 
+@inject NavigationManager Navigation
+
 @layout MainLayout
 
 <FluentLayout Class="pt-6">
     <FluentStack Orientation="Orientation.Horizontal" Width="100%" Class="h-full">
         <div style="color: var(--neutral-foreground-rest);">
             <FluentNavMenu Width="300">
-                <FluentNavLink Icon="@(new Icons.Regular.Size24.Home())" Href="/tournaments/add">Información General</FluentNavLink>
-                <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleList())" Href="/tournaments/categories">Categorías</FluentNavLink>
+                <FluentNavLink Icon="@(new Icons.Regular.Size24.Home())" Href=@($"/tournament/{TournamentId}")>Información General</FluentNavLink>
+                <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleList())" Href=@($"/tournament/{TournamentId}/categories")>Categorías</FluentNavLink>
                 <FluentNavGroup Title="Inscripciones" Icon="@(new Icons.Regular.Size24.People())" Expanded=true>
-                    <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleAdd())" Href="/tournaments/inscription">Agregar inscripción</FluentNavLink>
-                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAgenda())" Href="/tournaments/inscriptions">Ver inscripciones</FluentNavLink>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleAdd())" Href=@($"/tournament/{TournamentId}/inscription")>Agregar inscripción</FluentNavLink>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAgenda())" Href=@($"/tournament/{TournamentId}/inscriptions")>Ver inscripciones</FluentNavLink>
                 </FluentNavGroup>
                 <FluentNavGroup Title="Competiciones" Icon="@(new Icons.Regular.Size24.CalendarDate())" Expanded=true>
-                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAdd())" Href="/tournaments/competition">Agregar competición</FluentNavLink>
-                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAgenda())" Href="/tournaments/competitions">Ver competiciones</FluentNavLink>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAdd())" Href=@($"/tournament/{TournamentId}/competition")>Agregar competición</FluentNavLink>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAgenda())" Href=@($"/tournament/{TournamentId}/competitions")>Ver competiciones</FluentNavLink>
                 </FluentNavGroup>
-                <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarMultiple())" Href="/tournaments/leaderboard">Tabla de posiciones</FluentNavLink>
+                <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarMultiple())" Href=@($"/tournament/{TournamentId}/leaderboard")>Tabla de posiciones</FluentNavLink>
             </FluentNavMenu>
         </div>
 
@@ -28,3 +30,22 @@
         </FluentBodyContent>
     </FluentStack>
 </FluentLayout>
+
+@code {
+    private string TournamentId = null!;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        var uri = new Uri(Navigation.Uri);
+        var segments = uri.Segments;
+        
+        if (segments.Length >= 3)
+        {
+            TournamentId = segments[2].TrimEnd('/');
+        }else{
+            TournamentId = string.Empty;
+        }
+    }
+}

@@ -1,5 +1,5 @@
 ﻿@layout TournamentLayout
-@page "/tournaments/inscription"
+@page "/tournament/{TournamentId}/inscription"
 
 @using FisherTournament.Application.Fishers.Queries;
 @using FisherTournament.Domain.FisherAggregate.ValueObjects;
@@ -148,6 +148,9 @@
 
 
 @code {
+	[Parameter]
+    public string TournamentId { get; set; } = null!;
+
 	record struct Persona(FisherId Id, string Name, string DNI);
 	record struct Cat(int Id, string Name, int minAge, int MaxAge);
 	List<Cat> cats = new()
