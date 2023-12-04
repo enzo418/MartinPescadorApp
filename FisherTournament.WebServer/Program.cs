@@ -14,13 +14,14 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 builder.Services.AddSettings(builder.Configuration)
-                .AddApplication()
-                .AddInfrastructure()
-                .AddWebServer();
+				.AddApplication()
+				.AddInfrastructure()
+				.AddWebServer();
 
 builder.Services.AddFluentUIComponents(options =>
 {
-    options.HostingModel = BlazorHostingModel.Server;
+	//options.HostingModel = BlazorHostingModel.Server;
+	//options.
 });
 
 builder.Services.AddLocalization();
@@ -28,15 +29,15 @@ builder.Services.AddLocalization();
 var app = builder.Build();
 
 app.UseRequestLocalization(new RequestLocalizationOptions()
-    .AddSupportedCultures(new[] { "es", "en-US" })
-    .AddSupportedUICultures(new[] { "es", "en-US" }));
+	.AddSupportedCultures(new[] { "es", "en-US" })
+	.AddSupportedUICultures(new[] { "es", "en-US" }));
 
 ValidatorOptions.Global.LanguageManager = new LanguageManagerWithoutPropertyNames();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+	app.UseExceptionHandler("/Error");
 }
 
 app.UseStaticFiles();
@@ -49,13 +50,13 @@ app.MapFallbackToPage("/_Host");
 // Ensure DB CREATED
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
+	var services = scope.ServiceProvider;
 
-    var dbReadModels = services.GetRequiredService<ReadModelsDbContext>();
-    dbReadModels.Database.EnsureCreated();
+	var dbReadModels = services.GetRequiredService<ReadModelsDbContext>();
+	dbReadModels.Database.EnsureCreated();
 
-    var dbMain = services.GetRequiredService<TournamentFisherDbContext>();
-    dbMain.Database.EnsureCreated();
+	var dbMain = services.GetRequiredService<TournamentFisherDbContext>();
+	dbMain.Database.EnsureCreated();
 }
 
 

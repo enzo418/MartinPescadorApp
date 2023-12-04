@@ -69,14 +69,6 @@
   margin-right: 0.75rem;
 }
 
-.mb-1{
-  margin-bottom: 0.25rem;
-}
-
-.mb-1\.5{
-  margin-bottom: 0.375rem;
-}
-
 .mb-10{
   margin-bottom: 2.5rem;
 }
@@ -411,4 +403,8 @@ fluent-data-grid-row.header {
   border-width: 2px;
   border-style: dashed;
   padding: 0.5rem;
+}
+
+span.fluent-nav-icon {
+  display: none;
 }

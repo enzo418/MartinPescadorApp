@@ -61,3 +61,7 @@ fluent-data-grid-row.header {
 .dashed-rect {
     @apply mt-3 flex flex-row justify-center items-center gap-3 border-dashed border-2 rounded-md p-2;
 }
+
+span.fluent-nav-icon {
+    display: none;
+}
