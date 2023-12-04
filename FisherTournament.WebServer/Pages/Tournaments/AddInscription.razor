@@ -2,6 +2,9 @@
 @page "/tournament/{TournamentId}/inscription"
 
 @using FisherTournament.Application.Fishers.Queries;
+@using FisherTournament.Application.Tournaments.Commands.AddInscription;
+@using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
+@using FisherTournament.Contracts.Tournaments;
 @using FisherTournament.Domain.FisherAggregate.ValueObjects;
 @using Microsoft.AspNetCore.WebUtilities;
 @using Microsoft.Extensions.Primitives;
@@ -10,6 +13,8 @@
 @inject IToastService _toastService
 @inject NavigationManager _nav
 @inject ISender _sender
+@inject IMapper _mapper
+@inject IJSRuntime _js
 
 <h1 class="page-title-no-pt">Agregar Inscripción</h1>
 
@@ -118,13 +123,12 @@
 
 	<div class="flex flex-row justify-evenly w-full">
 		<div>
-			<FluentSelect Items=cats
+			<FluentSelect Items=_categories
 			OptionText="@(i => i.Name)"
-			OptionValue="@(i => i.Name)"
-			@bind-Value="@_slectedCatName">
+			OptionValue="@(i => i.Id)"
+			@bind-Value="@_selectedCategoryId">
 				<LabelTemplate>
 					Categoría <span class="red">*</span>
-
 				</LabelTemplate>
 			</FluentSelect>
 		</div>
@@ -136,10 +140,10 @@
 		</FluentNumberField>
 	</div>
 
-
 	<div class="mt-6 flex flex-row w-full justify-center gap-24">
 		<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
 		<FluentButton 
+				Disabled=!CanSave()
 				IconStart="@(new Icons.Regular.Size16.Checkmark())" 
 				Appearance="Appearance.Accent"
 				OnClick="Save">Guardar</FluentButton>
@@ -149,39 +153,22 @@
 
 @code {
 	[Parameter]
-    public string TournamentId { get; set; } = null!;
+	public string TournamentId { get; set; } = null!;
 
-	record struct Persona(FisherId Id, string Name, string DNI);
-	record struct Cat(int Id, string Name, int minAge, int MaxAge);
-	List<Cat> cats = new()
-	{
-		new Cat(1, "Menores", 0, 17),
-		new Cat(2, "Mayores", 18, 99),
-	};
+	record struct Persona(string Id, string Name, string DNI);
+	List<GetTournamentCategoriesQueryResult> _categories = new();
 
 	string _searchNameInput = string.Empty; // from @bind-Value value
 	string _searchName = string.Empty; // built from input event
 	bool _searched = false;
 
 	Persona? selected;
-	string _slectedCatName = string.Empty;
+	string _selectedCategoryId = string.Empty;
 	int? _selectedNumber;
 
 	List<Persona> searchResult = new();
 
-	void Select(Persona p) {
-		selected = p;
-	}
-
-	void Cancel()
-	{
-		selected = null;	
-	}
-
-	void Save()
-	{
-		// TODO
-	}
+	AddInscriptionRequest Request = new();
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -192,7 +179,57 @@
 		{
 			_searchNameInput = searchParam!;
 			_searchName = searchParam!;
-			await Search();
+			await SearchFisher();
+		}
+
+		// Search categories
+
+		var query = new GetTournamentCategoriesQuery(TournamentId);
+		var categoriesRes = await _sender.Send(query);
+
+		if (categoriesRes.IsError)
+		{
+			_toastService.ShowErrors(categoriesRes.Errors);
+		} else
+		{
+			_categories = categoriesRes.Value.ToList();
+			if (_categories.Count > 0) _selectedCategoryId = _categories[0].Id;
+		}
+	}
+
+	void Select(Persona p)
+	{
+		selected = p;
+	}
+
+	void Cancel()
+	{
+		selected = null;
+	}
+
+	bool CanSave()
+	{
+		return selected is not null && _selectedCategoryId != string.Empty && _selectedNumber is not null;
+	}
+
+	async Task Save()
+	{
+		if (!CanSave()) return;
+
+		Request.FisherId = selected!.Value.Id;
+		Request.CategoryId = _selectedCategoryId;
+		Request.Number = _selectedNumber!.Value;
+
+		var command = _mapper.Map<AddInscriptionCommand>((Request, TournamentId));
+		var res = await _sender.Send(command);
+
+		if (res.IsError)
+		{
+			_toastService.ShowErrors(res.Errors);
+		} else
+		{
+			_toastService.ShowSuccess("Inscripción agregada");
+			await _js.GoBack();
 		}
 	}
 
@@ -200,7 +237,7 @@
 	{
 		_searchName = e.Value?.ToString() ?? string.Empty;
 
-		await Search();
+		await SearchFisher();
 	}
 
 	void AgregarPescador()
@@ -208,7 +245,7 @@
 		_nav.NavigateTo("/fishers/add");
 	}
 
-	async Task Search() {
+	async Task SearchFisher() {
 		_searched = true;
 
 		GetFishersQuery query = new(_searchName, "", 1, 2);
@@ -221,9 +258,7 @@
 			return;
 		}
 
-		// TODO: Use real DNI
-
-		searchResult = result.Value.Items.Select(i => new Persona(i.Id, $"{i.FirstName} {i.LastName}", "")).ToList();
+		searchResult = result.Value.Items.Select(i => new Persona(i.Id, $"{i.FirstName} {i.LastName}", i.DNI)).ToList();
 		
 		string uriWithoutQuery = _nav.Uri.Split('?')[0];
 		string newUriWithSearch = $"{uriWithoutQuery}?search={_searchName}";

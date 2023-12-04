@@ -1,11 +1,14 @@
 ﻿@layout TournamentLayout
 @page "/tournament/{TournamentId}/inscriptions"
 
+@using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
+@using FisherTournament.Application.Tournaments.Queries.GetTournamentInscriptions;
 @using Microsoft.Fast.Components.FluentUI;
 
 @inject IToastService _toastService
 @inject IDialogService _dialogService
 @inject NavigationManager _nav
+@inject ISender _sender
 
 <FluentGrid>
     <FluentGridItem sm="12" md="6">
@@ -16,20 +19,36 @@
         <FluentButton
             Appearance="Appearance.Accent" 
             IconStart="@(new Icons.Regular.Size16.Add())"
-            OnClick="@(() => _nav.NavigateTo("/tournaments/inscription"))">Agregar Inscripción</FluentButton>
+            OnClick="@(() => _nav.NavigateTo($"/tournament/{TournamentId}/inscription"))">Agregar Inscripción</FluentButton>
     </FluentGridItem>
 </FluentGrid>
 
+<div class="flex flex-row w-full justify-center gap-10 mb-4">
+    <div>
+        <FluentSelect Items="@_categories"
+        @bind-Value="@SelectedCategoryId"
+                      OptionText="@(i => i.Name)"
+                      OptionValue="@(i => i.Id)">
+            <LabelTemplate>
+                Filtrar por categoría
+            </LabelTemplate>
+        </FluentSelect>
+    </div>
+</div>
 
-<FluentDataGrid Items="@inscriptions" GridTemplateColumns="0.1fr 0.6fr 0.4fr 0.3fr 0.4fr">
+<FluentDataGrid @ref="_searchFluentDataGrid"
+                TGridItem="GetTournamentInscriptionsQueryResult" 
+                Pagination="@_searchPagination" 
+                ItemsProvider="_searchItemsProviderCall" 
+                GridTemplateColumns="0.1fr 0.3fr 0.4fr 0.3fr 0.4fr">
     <ChildContent>
-        <PropertyColumn Title="N°" Property="@(c => c.N)" />
+        <PropertyColumn Title="N°" Property="@(c => c.Number)" />
 
-        <PropertyColumn Title="Nombre" Property="@(c => c.Name)" />
+        <PropertyColumn Title="DNI" Property="@(c => c.FisherDNI)" />
 
-        <PropertyColumn Title="Categoría" Property="@(c => c.Category)" />
+        <PropertyColumn Title="Nombre" Property="@(c => c.FisherName)" />
 
-        <PropertyColumn Title="Fecha Nacimiento" Property="@(c => c.BirthDate.ToShortDateString())" />
+        <PropertyColumn Title="Categoría" Property="@(c => c.CategoryName)" />
 
         <TemplateColumn Title="Acciones" Align="@Align.End">
             <FluentButton 
@@ -42,46 +61,101 @@
     </ChildContent>
 
     <EmptyContent>
-        <div Style="min-height: 300px;" class="empty-content">
+        <div Style="min-height: 300px;" class="flex items-center empty-content">
             <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
             &nbsp; Todavía no hay inscripciones.
         </div>
     </EmptyContent>
 </FluentDataGrid>
 
+<FluentPaginator State="@_searchPagination" />
+
 @code {
-	[Parameter]
+    [Parameter]
     public string TournamentId { get; set; } = null!;
 
+    GridItemsProvider<GetTournamentInscriptionsQueryResult> _searchItemsProviderCall = default!;
+    PaginationState _searchPagination = new PaginationState { ItemsPerPage = 10 };
+    FluentDataGrid<GetTournamentInscriptionsQueryResult> _searchFluentDataGrid = default!;
 
-    record struct Inc(int N, string Name, string Category, DateTime BirthDate);
-
-    void Edit(Inc inc)
+    List<GetTournamentCategoriesQueryResult> _categories = new();
+    string _selectedCategoryId = "all";
+    string SelectedCategoryId
     {
-        //_toastService.ShowInfo($"Editando inscripción {inc.N}");
-        _nav.NavigateTo($"/tournaments/inscription/{inc.N}");
+        get
+        {
+            return _selectedCategoryId;
+        }
+
+        set
+        {
+            _selectedCategoryId = value;
+
+            Search();
+        }
     }
 
-    async Task Delete(Inc inc)
+    protected override async Task OnInitializedAsync()
+    {
+        var query = new GetTournamentCategoriesQuery(TournamentId);
+        var categoriesRes = await _sender.Send(query);
+
+        if (categoriesRes.IsError)
+        {
+            _toastService.ShowErrors(categoriesRes.Errors);
+        }
+        else
+        {
+            _categories = categoriesRes.Value.ToList();
+        }
+
+        _categories.Add(new GetTournamentCategoriesQueryResult { Id = "all", Name = "Todas" });
+
+        _searchItemsProviderCall = async req =>
+        {
+            var cat = _selectedCategoryId == "all" ? null : _selectedCategoryId;
+            var query = new GetTournamentInscriptionsQuery(TournamentId, cat, _searchPagination.CurrentPageIndex + 1, _searchPagination.ItemsPerPage);
+            var result = await _sender.Send(query);
+
+            if (result.IsError)
+            {
+                _toastService.ShowErrors(result.Errors);
+                return GridItemsProviderResult.From(
+                    items: new List<GetTournamentInscriptionsQueryResult>(),
+                    totalItemCount: 0
+                );
+            }
+
+            return GridItemsProviderResult.From(
+                items: result.Value.Items,
+                totalItemCount: result.Value.TotalCount
+            );
+        };
+    }
+
+    void Edit(GetTournamentInscriptionsQueryResult inc)
+    {
+        _nav.NavigateTo($"/tournament/{TournamentId}/inscription/{inc.FisherId}");
+    }
+
+    async Task Delete(GetTournamentInscriptionsQueryResult inc)
     {
         var dialog = await _dialogService.ShowConfirmationAsync(
-            $"Eliminar la inscripción de {inc.Name} en la categoría {inc.Category}?",
+            $"Eliminar la inscripción de {inc.FisherName} en la categoría {inc.CategoryName}?",
             "Si", "No",
             "Confirmar"
         );
         var result = await dialog.Result;
         if (!result.Cancelled){
-            _toastService.ShowSuccess($"Eliminada inscripción {inc.N}");
-            inscriptions = inscriptions.Where(i => i.N != inc.N);
+            // TODO
+            _toastService.ShowSuccess($"Eliminada inscripción {inc.Number}");            
         }
-	}
+    }
 
-	IQueryable<Inc> inscriptions = new[]
-	{
-		new Inc(1, "Juan Perez", "Menores", new DateTime(2000, 1, 1)),
-		new Inc(2, "Carlos Perez", "Senior", new DateTime(1976, 1, 1)),
-		new Inc(3, "Pedro Raco", "Senior", new DateTime(1976, 1, 1)),
-		new Inc(4, "Pedro Raco", "Juvenil", new DateTime(1996, 1, 1)),
-		new Inc(5, "X Y", "Juvenil", new DateTime(1997, 1, 1)),
-	}.AsQueryable();
+    async Task Search()
+    {
+        await _searchPagination.SetCurrentPageIndexAsync(0);
+        await _searchFluentDataGrid.RefreshDataAsync();
+    }
+
 }

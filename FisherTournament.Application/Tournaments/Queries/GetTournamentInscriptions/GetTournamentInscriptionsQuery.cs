@@ -13,6 +13,7 @@ namespace FisherTournament.Application.Tournaments.Queries.GetTournamentInscript
 
 	public record struct GetTournamentInscriptionsQueryResult(
 		int Number,
+		string FisherId,
 		string FisherName,
 		string FisherDNI,
 		string CategoryName,
@@ -76,6 +77,7 @@ namespace FisherTournament.Application.Tournaments.Queries.GetTournamentInscript
 					orderby i.Number
 					select new GetTournamentInscriptionsQueryResult(
 							i.Number,
+							f.Id.ToString(),
 							f.Name,
 							maybeUser.DNI,
 							c.Name,
@@ -102,6 +104,7 @@ namespace FisherTournament.Application.Tournaments.Queries.GetTournamentInscript
 						&& c.Id == i.CategoryId
 					select new GetTournamentInscriptionsQueryResult(
 						i.Number,
+						f.Id.ToString(),
 						f.Name,
 						u.DNI,
 						c.Name,

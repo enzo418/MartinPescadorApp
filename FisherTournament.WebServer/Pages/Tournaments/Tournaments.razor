@@ -145,10 +145,10 @@
 	</EmptyContent>
 </FluentDataGrid>
 
-@if (competitionSearchPagination.TotalItemCount > 0)
-{
+@* @if (competitionSearchPagination.TotalItemCount > 0) *@
+
 	<FluentPaginator State="@competitionSearchPagination" />
-}
+
 
 <FluentLabel Typo="Typography.H3" Class="pt-7">Buscar torneo</FluentLabel>
 @* <FluentDivider class="mb-4" /> *@
@@ -204,10 +204,7 @@
 	</EmptyContent>
 </FluentDataGrid>
 
-@if (tournamentSummaryPagination.TotalItemCount > 0)
-{
-	<FluentPaginator State="@tournamentSummaryPagination" />
-}
+<FluentPaginator State="@tournamentSummaryPagination" />
 
 <div class="mb-10"></div>
 

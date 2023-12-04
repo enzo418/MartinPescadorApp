@@ -1,7 +1,11 @@
 ﻿@layout TournamentLayout
-@page "/tournament/{TournamentId}/inscription/{InscriptionId}"
+@page "/tournament/{TournamentId}/inscription/{FisherId}"
 
 @using FisherTournament.Application.Fishers.Queries;
+@using FisherTournament.Application.Tournaments.Commands.EditInscription;
+@using FisherTournament.Application.Tournaments.Queries.GetInscription;
+@using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
+@using FisherTournament.Contracts.Tournaments;
 @using Microsoft.AspNetCore.WebUtilities;
 @using Microsoft.Extensions.Primitives;
 @using Microsoft.Fast.Components.FluentUI;
@@ -9,6 +13,8 @@
 @inject IToastService _toastService
 @inject NavigationManager _nav
 @inject ISender _sender
+@inject IJSRuntime _js
+@inject IMapper _mapper
 
 <h1 class="page-title-no-pt">Editar Inscripción</h1>
 
@@ -43,18 +49,17 @@
 
 <div class="flex flex-row justify-evenly w-full">
 	<div>
-		<FluentSelect Items=cats
-		OptionText="@(i => i.Name)"
-		OptionValue="@(i => i.Name)"
-		@bind-Value="@_selectedCategoryId">
+		<FluentSelect	Items=_categories
+						OptionText="@(i => i.Name)"
+						OptionValue="@(i => i.Id)"
+						@bind-Value="@SelectedCategoryId">
 			<LabelTemplate>
 				Categoría <span class="red">*</span>
-
 			</LabelTemplate>
 		</FluentSelect>
 	</div>
 
-	<FluentNumberField @bind-Value=_selectedNumber Required="true">
+	<FluentNumberField @bind-Value=SelectedNumber Required="true">
 		Número <span class="red">*</span>
 	</FluentNumberField>
 </div>
@@ -62,7 +67,8 @@
 
 <div class="mt-6 flex flex-row w-full justify-center gap-24">
 	<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
-	<FluentButton 
+	<FluentButton Disabled=CanSend()
+			OnClick="@Save"
 			IconStart="@(new Icons.Regular.Size16.Checkmark())" 
 			Appearance="Appearance.Accent">Guardar</FluentButton>
 </div>
@@ -73,35 +79,118 @@
 	public string TournamentId { get; set; } = null!;
 
 	[Parameter]
-	public string InscriptionId { get; set; } = null!;
+	public string FisherId { get; set; } = null!;
+
+	List<GetTournamentCategoriesQueryResult> _categories = new();
 
 	record struct Persona(string Id, string Name, string DNI);
-	record struct Cat(int Id, string Name, int minAge, int MaxAge);
-	record struct TournamentInscription(int Id, string FisherId, int CategoryId);
-
-	TournamentInscription inscription;
 	Persona persona;
-	string _selectedCategoryId = string.Empty;
-	int _selectedNumber;
 
-	List<Cat> cats = new()
-	{
-		new Cat(1, "Menores", 0, 17),
-		new Cat(2, "Mayores", 18, 99),
-	};
+	EditInscriptionRequest Request = null!;
+	GetInscriptionResult inscription;
 
-	void Cancel()
+	string SelectedCategoryId
 	{
+		get
+		{
+			return Request.CategoryId ?? inscription.CategoryId;
+		}
+
+		set
+		{
+			Request.CategoryId = value;
+		}
 	}
+
+	int SelectedNumber 
+	{
+		get
+		{
+			return Request.Number ?? inscription.Number;
+		}
+
+		set
+		{
+			Request.Number = value;
+		}
+	}
+
+
+	private bool shouldExit = false;
 
 	protected override async Task OnInitializedAsync()
 	{
-		// TODO: Get inscription data
-		inscription = new(1, "1", 1);
-		persona = new("1", "Juan Perez", "12345678");
-		_selectedCategoryId = cats.FirstOrDefault(c => c.Id == inscription.CategoryId, cats.First()).Id.ToString();
+		Request = new(FisherId);
 
+		var inscriptionQuery = new GetInscriptionQuery(TournamentId, FisherId);
+		var inscriptionRes = await _sender.Send(inscriptionQuery);
+
+		if (inscriptionRes.IsError)
+		{
+			_toastService.ShowErrors(inscriptionRes.Errors);
+			shouldExit = true;
+		} else
+		{
+			inscription = inscriptionRes.Value;
+
+			// search fisher data
+			var fisherQuery = new GetFisherQuery(FisherId);
+
+			var fisherRes = await _sender.Send(fisherQuery);
+
+			if (fisherRes.IsError)
+			{
+				_toastService.ShowErrors(fisherRes.Errors);
+			} else
+			{
+				persona = new(fisherRes.Value.Id, $"{fisherRes.Value.LastName} {fisherRes.Value.FirstName}", fisherRes.Value.DNI);
+			}
+		}
+
+		// Search Categories
+
+		var query = new GetTournamentCategoriesQuery(TournamentId);
+		var categoriesRes = await _sender.Send(query);
+
+		if (categoriesRes.IsError)
+		{
+			_toastService.ShowErrors(categoriesRes.Errors);
+			shouldExit = true;
+		} else
+		{
+			_categories = categoriesRes.Value.ToList();
+		}
 
 		await Task.CompletedTask;
+	}
+
+	protected override void OnAfterRender(bool _)
+	{
+		if (shouldExit) _js.GoBack();
+	}
+
+	void Cancel()
+	{
+		_js.GoBack();
+	}
+
+	bool CanSend()
+	{
+		return Request.CategoryId is not null && Request.Number is not null;
+	}
+
+	async Task Save()
+	{
+		var command = _mapper.Map<EditInscriptionCommand>((Request, TournamentId));
+		var res = await _sender.Send(command);
+
+		if (res.IsError)
+		{
+			_toastService.ShowErrors(res.Errors);
+		} else
+		{
+			_toastService.ShowSuccess("Inscripción editada");
+			await _js.GoBack();
+		}
 	}
 }

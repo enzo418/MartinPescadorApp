@@ -32,5 +32,13 @@ public static partial class Errors
             code: "Tournament.TournamentIsOver",
             description: "Tournament is over"
         );
+
+        public static Error InscriptionNumberAlreadyExists => Error.Conflict(
+            code: "Tournament.InscriptionNumberAlreadyExists",
+            description: "Inscription number already exists");
+
+        public static Error InscriptionNotFound => Error.NotFound(
+            code: "Tournament.InscriptionNotFound",
+            description: "Inscription not found");
     }
 }

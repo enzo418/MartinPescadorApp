@@ -30,7 +30,7 @@ namespace FisherTournament.Application.Fishers.Queries
 
 				query = _context.Fishers
 							.Join(_context.Users, f => f.Id, u => u.FisherId, (f, u) => new { f, u })
-							.Select(r => new FisherItem(r.f.Id, r.u.FirstName, r.u.LastName, r.u.DNI));
+							.Select(r => new FisherItem(r.f.Id.ToString(), r.u.FirstName, r.u.LastName, r.u.DNI));
 			} else
 			{
 				var tmpQuery = _context.Fishers
@@ -46,7 +46,7 @@ namespace FisherTournament.Application.Fishers.Queries
 					tmpQuery = tmpQuery.Where(r => EF.Functions.Like(r.u.DNI, $"%{request.DNI}%"));
 				}
 
-				query = tmpQuery.Select(r => new FisherItem(r.f.Id, r.u.FirstName, r.u.LastName, r.u.DNI));
+				query = tmpQuery.Select(r => new FisherItem(r.f.Id.ToString(), r.u.FirstName, r.u.LastName, r.u.DNI));
 			}
 
 			var fishers = await PagedList<FisherItem>.CreateAsync(query, request.Page, request.PageSize);

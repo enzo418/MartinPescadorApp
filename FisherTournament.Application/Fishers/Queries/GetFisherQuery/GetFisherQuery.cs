@@ -7,42 +7,42 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FisherTournament.Application.Fishers.Queries
 {
-    public record struct GetFisherQuery(string FisherId)
-        : IRequest<ErrorOr<FisherItem>>;
+	public record struct GetFisherQuery(string FisherId)
+		: IRequest<ErrorOr<FisherItem>>;
 
-    public class GetFisherQueryHandler
-        : IRequestHandler<GetFisherQuery, ErrorOr<FisherItem>>
-    {
-        public ITournamentFisherDbContext _context;
+	public class GetFisherQueryHandler
+		: IRequestHandler<GetFisherQuery, ErrorOr<FisherItem>>
+	{
+		public ITournamentFisherDbContext _context;
 
-        public GetFisherQueryHandler(ITournamentFisherDbContext context)
-        {
-            _context = context;
-        }
+		public GetFisherQueryHandler(ITournamentFisherDbContext context)
+		{
+			_context = context;
+		}
 
-        public async Task<ErrorOr<FisherItem>> Handle(GetFisherQuery request, CancellationToken cancellationToken)
-        {
-            var fisherId = FisherId.Create(request.FisherId);
+		public async Task<ErrorOr<FisherItem>> Handle(GetFisherQuery request, CancellationToken cancellationToken)
+		{
+			var fisherId = FisherId.Create(request.FisherId);
 
-            if (fisherId.IsError)
-            {
-                return Errors.Id.NotValidWithProperty(nameof(request.FisherId));
-            }
+			if (fisherId.IsError)
+			{
+				return Errors.Id.NotValidWithProperty(nameof(request.FisherId));
+			}
 
-            var result = await _context.Fishers
-                                    .Where(f => f.Id == fisherId.Value)
-                                    .Join(_context.Users,
-                                          f => f.Id,
-                                          u => u.FisherId,
-                                          (f, u) => new { f, u })
-                                    .FirstOrDefaultAsync(cancellationToken);
+			var result = await _context.Fishers
+									.Where(f => f.Id == fisherId.Value)
+									.Join(_context.Users,
+										  f => f.Id,
+										  u => u.FisherId,
+										  (f, u) => new { f, u })
+									.FirstOrDefaultAsync(cancellationToken);
 
-            if (result is null)
-            {
-                return Errors.Fishers.NotFound;
-            }
+			if (result is null)
+			{
+				return Errors.Fishers.NotFound;
+			}
 
-            return new FisherItem(result.f.Id, result.u.FirstName, result.u.LastName, result.u.DNI);
-        }
-    }
+			return new FisherItem(result.f.Id.ToString(), result.u.FirstName, result.u.LastName, result.u.DNI);
+		}
+	}
 }
