@@ -1,5 +1,6 @@
 ﻿using ErrorOr;
 using FisherTournament.Application.Common.Persistence;
+using FisherTournament.Application.Common.Resources;
 using FisherTournament.Domain.Common.Errors;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using MediatR;
@@ -10,14 +11,12 @@ namespace FisherTournament.Application.Competitions.Queries.GetTournamentCompeti
 	public record struct GetTournamentCompetitionsQuery(string TournamentId)
 	: IRequest<ErrorOr<List<GetTournamentCompetitionsQueryResult>>>;
 
-	public record struct GetTournamentCompetitionsLocationQueryResult(string City, string State, string Country, string Place);
-
 	public record struct GetTournamentCompetitionsQueryResult(
 		string Id,
 		int N,
 		DateTime StartDate,
 		DateTime? EndDate,
-		GetTournamentCompetitionsLocationQueryResult Location
+		CompetitionLocationResource Location
 	);
 
 	public class GetTournamentCompetitionsQueryHandler
@@ -54,7 +53,7 @@ namespace FisherTournament.Application.Competitions.Queries.GetTournamentCompeti
 					c.N,
 					c.StartDateTime,
 					c.EndDateTime,
-					new GetTournamentCompetitionsLocationQueryResult(c.Location.City, c.Location.State, c.Location.Country, c.Location.Place)))
+					new CompetitionLocationResource(c.Location.City, c.Location.State, c.Location.Country, c.Location.Place)))
 				.ToListAsync(cancellationToken);
 
 			return competitions;

@@ -2,6 +2,8 @@
 @page "/tournament/{TournamentId}/competition"
 
 @using FisherTournament.Application.Fishers.Queries;
+@using FisherTournament.Application.Tournaments.Commands.AddCompetitions;
+@using FisherTournament.Contracts.Competitions;
 @using FisherTournament.Domain.FisherAggregate.ValueObjects;
 @using Microsoft.AspNetCore.WebUtilities;
 @using Microsoft.Extensions.Primitives;
@@ -11,8 +13,9 @@
 @inject NavigationManager _nav
 @inject ISender _sender
 @inject IJSRuntime _js
+@inject IMapper _mapper
 
-<div class="relative h-full">
+<EditForm class="relative h-full" OnSubmit="Submit" EditContext="@_editContext">
 
 	<h1 class="page-title-no-pt">Agregar Competición</h1>
 
@@ -21,13 +24,14 @@
 
 	<div class="flex flex-col items-center">
 		<div>
-			<FluentDatePicker @bind-Value="@SelectedDate">
+			<FluentDatePicker @bind-Value="@SelectedDate" Required="true">
 				@* TODO: No deberia ser simplemente fecha de la competencia? *@
 				<LabelTemplate>
-				Fecha de Inicio <span class="red">*</span>
-
+					Fecha de Inicio <span class="red">*</span>
 				</LabelTemplate>
 			</FluentDatePicker>
+			<FluentTimePicker @bind-Value="@SelectedDate" Label="" />
+			<ValidationMessage For="() => Model!.StartDateTime" />
 		</div>
 	</div>
 
@@ -45,11 +49,13 @@
 
 	<div class="flex flex-row justify-evenly w-full">
 		<div>
-			<FluentTextField>
+			<FluentTextField @bind-Value="@Model.Location.Place" Required="false" AutoComplete="off">
 				Direccion/Nombre del lugar
 				&nbsp;&nbsp;&nbsp;
 				<FluentBadge Appearance="Appearance.Neutral" Fill="lowlight" BackgroundColor="#000" Color="#fff">Opcional</FluentBadge>
 			</FluentTextField>
+			<ValidationMessage For="() => Model!.Location" />
+			<ValidationMessage For="() => Model!.Location.Place" />
 		</div>
 	</div>
 
@@ -58,23 +64,62 @@
 		<FluentButton 
 				IconStart="@(new Icons.Regular.Size16.Checkmark())" 
 				Appearance="Appearance.Accent"
-				OnClick="Save">Guardar</FluentButton>
+				Type="ButtonType.Submit">Guardar</FluentButton>
 	</div>
-</div>
+</EditForm>
 
 @code {
 	[Parameter]
-    public string TournamentId { get; set; } = null!;
+	public string TournamentId { get; set; } = null!;
 
-	DateTime? SelectedDate { get; set; } = DateTime.Now;
+	AddCompetitionRequest Model { get; set; } = default!;
+
+	private DateTime? SelectedDate { 
+		get
+		{
+			return Model.StartDateTime.ToLocalTime();
+		}
+
+		set
+		{
+			if (value is null)  return;
+
+			Model.StartDateTime = value.Value.ToUniversalTime();
+			//Model.EndDateTime = value.Value.AddDays(1).ToUniversalTime();
+		}
+	}
+
+	EditContext _editContext = default!;
+	ValidationMessageStore _validationMessageStore = default!;
+
+	protected override void OnInitialized()
+	{
+		Model = new AddCompetitionRequest(DateTime.UtcNow, null, new());
+		_editContext = new EditContext(Model);
+		_validationMessageStore = new ValidationMessageStore(_editContext);
+	}
+
 
 	void Cancel()
 	{
 		_js.GoBack();
 	}
 
-	void Save()
+	async Task Submit()
 	{
-		// TODO
+		if (!_editContext.Validate()) return;
+
+		var command = _mapper.Map<AddCompetitionsCommand>((new AddCompetitionsRequest(new() { Model }), TournamentId));
+		var res = await _sender.Send(command);
+
+		if (res.IsError)
+		{
+			_editContext.AddValidationErrors(res.Errors, _validationMessageStore, Model, _toastService);
+		}
+		else
+		{
+			_toastService.ShowSuccess("Competición agregada");
+			await _js.GoBack();
+		}
 	}
 }

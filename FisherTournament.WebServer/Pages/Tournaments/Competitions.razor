@@ -2,6 +2,8 @@
 
 @page "/tournament/{TournamentId}/competitions"
 @using System.Globalization;
+@using FisherTournament.Application.Competitions.Commands.DeleteCompetition;
+@using FisherTournament.Application.Competitions.Queries.GetTournamentCompetitions;
 
 @inject IToastService _toastService
 @inject IDialogService _dialogService
@@ -16,20 +18,24 @@
     <FluentGridItem sm="12" md="6" Class="flex justify-end">
         <FluentButton Appearance="Appearance.Accent"
                       IconStart="@(new Icons.Regular.Size16.Add())"
-                      OnClick="@(() => _nav.NavigateTo("/tournaments/competition"))">Agregar Competición</FluentButton>
+                      OnClick="@(() => _nav.NavigateTo($"/tournament/{TournamentId}/competition"))">Agregar Competición</FluentButton>
     </FluentGridItem>
 </FluentGrid>
 
-<FluentDataGrid Items="@competitions" GridTemplateColumns="0.2fr 0.6fr 0.6fr 1fr">
+<FluentDataGrid Items="@competitions" GridTemplateColumns="0.1fr 0.8fr 0.3fr 0.6fr 0.3fr">
 	<ChildContent>
 		<PropertyColumn Title="N°" Property="@(c => c.N)" />
 
-		<PropertyColumn Title="Fecha Inicio" Property="@(c => c.StartDate)" Format="@CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern" />
+		<TemplateColumn Title="Fecha Inicio">
+			@context.StartDate.ToLocalTime().ToString(CultureInfo.CurrentCulture.DateTimeFormat.FullDateTimePattern)
+		</TemplateColumn>
 
-		<PropertyColumn Title="Fecha Fin" Property="@(c => c.EndDate)" Format="@CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern" />
+		<TemplateColumn Title="Fecha Fin">
+			@context.EndDate?.ToLocalTime().ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern)
+		</TemplateColumn>
 
-		<TemplateColumn Title="Acciones">
-			@(context.Location.Place + ", " + context.Location.City + ", " + context.Location.State + ", " + context.Location.Country)
+		<TemplateColumn Title="Lugar">
+			@GetInlineLocation(context)
 		</TemplateColumn>
 
 		<TemplateColumn Title="Acciones" Align="@Align.End">
@@ -47,7 +53,7 @@
 	</ChildContent>
 
 	<EmptyContent>
-		<div Style="min-height: 300px;" class="empty-content">
+		<div Style="min-height: 300px;" class="flex items-center empty-content pt-2">
 			<FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
 			&nbsp; Todavía no hay competiciones.
 		</div>
@@ -56,43 +62,72 @@
 
 @code {
 	[Parameter]
-    public string TournamentId { get; set; } = null!;
+	public string TournamentId { get; set; } = null!;
 
-	public record struct CompetitionLocation(string City, string State, string Country, string Place);
+	IQueryable<GetTournamentCompetitionsQueryResult> competitions = new List<GetTournamentCompetitionsQueryResult>().AsQueryable();
 
-	record struct Competition(string Id, int N, DateTime StartDate, DateTime EndDate, CompetitionLocation Location);
-
-	IQueryable<Competition> competitions = new Competition[] {
-		new Competition("1", 1, DateTime.Now, DateTime.Now.AddDays(9), new CompetitionLocation("Mar del Plata", "Buenos Aires", "Argentina", "Playa Grande")),
-		new Competition("2", 2, DateTime.Now.AddDays(12), DateTime.Now.AddDays(16), new CompetitionLocation("Mar del Plata", "Buenos Aires", "Argentina", "Playa Grande")),
-		new Competition("3", 3, DateTime.Now.AddDays(20), DateTime.Now.AddDays(23), new CompetitionLocation("Mar del Plata", "Buenos Aires", "Argentina", "Playa Grande")),
-		new Competition("4", 4, DateTime.Now.AddDays(25), DateTime.Now.AddDays(30), new CompetitionLocation("Mar del Plata", "Buenos Aires", "Argentina", "Playa Grande")),
-		new Competition("5", 5, DateTime.Now.AddDays(32), DateTime.Now.AddDays(35), new CompetitionLocation("Mar del Plata", "Buenos Aires", "Argentina", "Playa Grande")),
-	}.AsQueryable();
-
-	void Edit(Competition competition)
+	protected override async Task OnInitializedAsync()
 	{
-		_nav.NavigateTo($"/tournaments/competition/{competition.Id}");
+		await GetCompetitions();
 	}
 
-	async Task Delete(Competition competition)
+	private async Task GetCompetitions()
+	{
+		var query = new GetTournamentCompetitionsQuery(TournamentId);
+		var res = await _sender.Send(query);
+		if (res.IsError)
+		{
+			_toastService.ShowErrors(res.Errors);
+		} else
+		{
+			competitions = res.Value.AsQueryable();
+		}
+	}
+
+	void Edit(GetTournamentCompetitionsQueryResult competition)
+	{
+		_nav.NavigateTo($"/tournament/{TournamentId}/competition/{competition.Id}");
+	}
+
+	async Task Delete(GetTournamentCompetitionsQueryResult competition)
 	{
 		var dialog = await _dialogService.ShowConfirmationAsync(
 			$"Eliminar la competición N° {competition.N}?",
-			"Eliminar Competición",
 			"Eliminar",
-			"Cancelar");
+			"Cancelar",
+			"Eliminar Competición");
 
 		var result = await dialog.Result;
 		if (!result.Cancelled)
 		{
-			_toastService.ShowSuccess($"Eliminada competición N° {competition.N}");
-			competitions = competitions.Where(c => c.N != competition.N);
+
+			var command = new DeleteCompetitionCommand(competition.Id);
+			var res = await _sender.Send(command);
+			if (res.IsError)
+			{
+				_toastService.ShowErrors(res.Errors);
+			}
+			else
+			{
+				_toastService.ShowSuccess($"Eliminada competición N° {competition.N}");
+				await GetCompetitions();
+			}
 		}
 	}
 
-	void GoToPositions(Competition competition)
+	void GoToPositions(GetTournamentCompetitionsQueryResult competition)
 	{
 		_nav.NavigateTo($"/tournaments/leaderboard/{competition.Id}");
 	}
+
+	private string GetInlineLocation(GetTournamentCompetitionsQueryResult competition)
+	{
+		string location = string
+			.Join(", ", new[] { competition.Location.City, competition.Location.State, competition.Location.Country, competition.Location.Place }
+						.Where(x => !string.IsNullOrEmpty(x))
+			);
+
+		return location;
+	}
+
 }

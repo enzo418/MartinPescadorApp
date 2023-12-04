@@ -1,5 +1,6 @@
 using ErrorOr;
 using FisherTournament.Application.Common.Persistence;
+using FisherTournament.Application.Common.Resources;
 using FisherTournament.Domain.Common.Errors;
 using FisherTournament.Domain.CompetitionAggregate;
 using FisherTournament.Domain.CompetitionAggregate.Entities;
@@ -10,22 +11,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FisherTournament.Application.Tournaments.Commands.AddCompetitions;
 
-// TODO: You should not return the entities, you should return DTOs. Else it seems you can modify it from outside.
-
 public record struct AddCompetitionsCommand(
 	string TournamentId,
-	List<AddCompetitionCommand> Competitions) : IRequest<ErrorOr<List<Competition>>>;
+	List<AddCompetitionCommand> Competitions) : IRequest<ErrorOr<List<AddCompetitionCommandResponse>>>;
+
+public record struct AddCompetitionCommandResponse(
+	string Id,
+	DateTime StartDateTime,
+	CompetitionLocationResource Location);
 
 public record struct AddCompetitionCommand(
 	DateTime StartDateTime,
-	string City,
-	string State,
-	string Country,
-	string Place
-);
+	CompetitionLocationResource Location);
 
 public class AddCompetitionsCommandHandler
-	: IRequestHandler<AddCompetitionsCommand, ErrorOr<List<Competition>>>
+	: IRequestHandler<AddCompetitionsCommand, ErrorOr<List<AddCompetitionCommandResponse>>>
 {
 	private readonly ITournamentFisherDbContext _context;
 
@@ -34,7 +34,7 @@ public class AddCompetitionsCommandHandler
 		_context = context;
 	}
 
-	public async Task<ErrorOr<List<Competition>>> Handle(AddCompetitionsCommand request, CancellationToken cancellationToken)
+	public async Task<ErrorOr<List<AddCompetitionCommandResponse>>> Handle(AddCompetitionsCommand request, CancellationToken cancellationToken)
 	{
 		ErrorOr<TournamentId> tournamentId = TournamentId.Create(request.TournamentId);
 
@@ -63,10 +63,10 @@ public class AddCompetitionsCommandHandler
 				competition.StartDateTime,
 				tournamentId.Value,
 				Location.Create(
-					competition.City,
-					competition.State,
-					competition.Country,
-					competition.Place),
+					competition.Location.City,
+					competition.Location.State,
+					competition.Location.Country,
+					competition.Location.Place),
 				++totalCompetitions
 				)).ToArray();
 
@@ -79,6 +79,12 @@ public class AddCompetitionsCommandHandler
 
 		await _context.SaveChangesAsync(cancellationToken);
 
-		return new List<Competition>(competitions.ToList());
+		return competitions.Select(c => new AddCompetitionCommandResponse(
+			c.Id.ToString(),
+			c.StartDateTime,
+			new CompetitionLocationResource(c.Location.City,
+			c.Location.State,
+			c.Location.Country,
+			c.Location.Place))).ToList();
 	}
 }

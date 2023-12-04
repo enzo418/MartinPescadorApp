@@ -76,6 +76,11 @@ public sealed class Competition : AggregateRoot<CompetitionId>
 		EndDateTime = dateTimeProvider.Now;
 	}
 
+	public void UndoEndCompetition()
+	{
+		EndDateTime = null;
+	}
+
 	public void AddParticipation(FisherId fisherId)
 	{
 		if (_participations.Any(x => x.FisherId == fisherId))
@@ -86,6 +91,19 @@ public sealed class Competition : AggregateRoot<CompetitionId>
 		_participations.Add(participation);
 
 		AddDomainEvent(new ParticipationAddedDomainEvent(fisherId, this.Id));
+	}
+
+	public void EditStartDate(DateTime startDateTime)
+	{
+		if (startDateTime.Kind != DateTimeKind.Utc)
+			throw new ArgumentException("DateTime must be UTC", nameof(startDateTime));
+
+		StartDateTime = startDateTime;
+	}
+
+	public void EditLocation(Location location)
+	{
+		Location = location;
 	}
 
 #pragma warning disable CS8618

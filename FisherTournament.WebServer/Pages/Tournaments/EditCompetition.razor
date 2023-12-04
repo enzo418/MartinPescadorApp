@@ -1,7 +1,10 @@
 ﻿@layout TournamentLayout
 @page "/tournament/{TournamentId}/competition/{CompetitionId}"
 
+@using FisherTournament.Application.Competitions.Commands.EditCompetition;
+@using FisherTournament.Application.Competitions.Queries.GetCompetition;
 @using FisherTournament.Application.Fishers.Queries;
+@using FisherTournament.Contracts.Competitions;
 @using FisherTournament.Domain.FisherAggregate.ValueObjects;
 @using Microsoft.AspNetCore.WebUtilities;
 @using Microsoft.Extensions.Primitives;
@@ -11,8 +14,9 @@
 @inject NavigationManager _nav
 @inject ISender _sender
 @inject IJSRuntime _js
+@inject IMapper _mapper
 
-<div class="relative h-full">
+<EditForm class="relative h-full" EditContext="_editContext" OnSubmit="Submit">
 	<h1 class="page-title-no-pt">Editar Competición</h1>
 
 	<p class="m-0 color-fg"></p>
@@ -27,6 +31,7 @@
 				</LabelTemplate>
 			</FluentDatePicker>
 			<FluentTimePicker @bind-Value="@SelectedDate" Label="" />
+			<ValidationMessage For="() => Model!.StartDateTime" />
 		</div>
 
 		@if (EndDate is not null)
@@ -40,21 +45,25 @@
 					</FluentDatePicker>
 				</div>
 
-				<FluentButton 
-					IconStart="@(new Icons.Regular.Size16.ArrowUndo())"
-					OnClick="UndoEnded"
-					Class="mb-1.5">
-					Deshacer finalización
-				</FluentButton>
+				<FluentCheckbox
+					class="pb-2"
+					@bind-Value="@EndCompetitionFlag">Marcar como sin finalizar</FluentCheckbox>
 			</div>
-		} else {
-			<div>
-				<FluentButton 
-					Appearance="Appearance.Accent" 
-					OnClick="EndCompetition"
-					IconStart="@(new Icons.Regular.Size16.CalendarCheckmark())">Marcar competición como finalizada</FluentButton>
+		} else
+		{
+			<div class="flex flex-row gap-x-5 items-end">
+				<div>
+					<FluentTextField Value="Sin finalizar" Disabled="true" Appearance="FluentInputAppearance.Outline">
+						<LabelTemplate>
+							Fecha de Fin
+						</LabelTemplate>
+					</FluentTextField>
+				</div>
+
+				<FluentCheckbox class="pb-2" @bind-Value="@EndCompetitionFlag">Marcar como finalizada</FluentCheckbox>
 			</div>
 		}
+		<ValidationMessage For="() => Model!.CompetitionFinishedState" />
 	</div>
 
 
@@ -72,11 +81,13 @@
 	<div class="flex flex-row justify-evenly w-full">
 		<div>
 			<FluentTextField
+				AutoComplete="off"
 				@bind-Value=Place>
 				Direccion/Nombre del lugar
 				&nbsp;&nbsp;&nbsp;
 				<FluentBadge Appearance="Appearance.Neutral" Fill="lowlight" BackgroundColor="#000" Color="#fff">Opcional</FluentBadge>
 			</FluentTextField>
+			<ValidationMessage For="() => Model!.Location" />
 		</div>
 	</div>
 
@@ -85,35 +96,105 @@
 		<FluentButton 
 				IconStart="@(new Icons.Regular.Size16.Checkmark())" 
 				Appearance="Appearance.Accent"
-				OnClick="Save">Guardar</FluentButton>
+				Type="ButtonType.Submit">Guardar</FluentButton>
 	</div>
-</div>
+</EditForm>
 
 @code {
 	[Parameter]
-    public string TournamentId { get; set; } = null!;
+	public string TournamentId { get; set; } = null!;
 
 	[Parameter]
 	public string CompetitionId { get; set; } = null!;
 
-	DateTime? SelectedDate { get; set; } = DateTime.Now.AddDays(-10);
-	DateTime? EndDate { get; set; } = null;
+	GetCompetitionQueryResponse competition = default!;
 
-	string Place = "TODO";
+	EditCompetitionRequest Model { get; set; } = default!;
+
+	private DateTime? SelectedDate { 
+		get
+		{
+			return (Model.StartDateTime ?? competition.StartDateTime).ToLocalTime();
+		}
+
+		set
+		{
+			if (value is not null) {
+				Model.StartDateTime = value.Value.ToUniversalTime();
+			}
+		}
+	}
+
+	private bool EndCompetitionFlag
+	{
+		get
+		{
+			return Model.CompetitionFinishedState.HasValue;
+		}
+
+		set
+		{
+			// EndTime Has value -> CompetitionFinishedState = false = mark it as not finished
+			Model.CompetitionFinishedState = value ? !competition.EndDateTime.HasValue : null;
+		}
+	}
+
+	private string Place {
+		// TODO: Use separate fields for city, state, etc
+
+		get {
+			return Model.Location is null ? GetInlineLocation(competition) : GetInlineLocation(Model);
+		}
+
+		set {
+			if (Model.Location is null) {
+				Model.Location = new()
+				{
+					City = competition.Location.City,
+					State = competition.Location.State,
+					Country = competition.Location.Country,
+					Place = competition.Location.Place
+				};
+			}
+
+			Model.Location.Place = value;
+		}
+	}
+
+	DateTime? EndDate { 
+		get 
+		{
+			return competition.EndDateTime;
+		}
+
+		set {}
+	}
+
+	EditContext _editContext = default!;
+	ValidationMessageStore _validationMessageStore = default!;
+
+	private bool _shouldExit = false;
 
 	protected async override Task OnInitializedAsync()
 	{
-		// TODO: Get competition metadata
+		var query = new GetCompetitionQuery(CompetitionId);
+		var result = await _sender.Send(query);
 
-		//if (result.IsFailure) {
-			_toastService.ShowError("La competición no existe.");
-			//_toastService.ShowErrors(result.Errors);
-			//await _js.GoBack();			
-		//}
+		if (result.IsError) {			
+			_toastService.ShowErrors(result.Errors);
+			_shouldExit = true; 
+		}
 
-		//var competition = result.Value;
+		competition = result.Value;
 
-		await Task.CompletedTask;
+		Model = new();
+		_editContext = new EditContext(Model);
+		_validationMessageStore = new ValidationMessageStore(_editContext);
+	}
+
+	protected override void OnAfterRender(bool _)
+	{
+		if (_shouldExit) _nav.NavigateTo("/404");
 	}
 
 	void Cancel()
@@ -121,20 +202,43 @@
 		_js.GoBack();
 	}
 
-	void EndCompetition()
+	async Task Submit()
 	{
-		// TODO
-		EndDate = DateTime.Now;
+		if (!_editContext.Validate()) return;
+
+		var command = _mapper.Map<EditCompetitionCommand>((Model, CompetitionId));
+		var res = await _sender.Send(command);
+
+		if (res.IsError)
+		{
+			_editContext.AddValidationErrors(res.Errors, _validationMessageStore, Model, _toastService);
+		}
+		else
+		{
+			_toastService.ShowSuccess("Competición editada");
+			await _js.GoBack();
+		}
 	}
 
-	void UndoEnded()
+	private string GetInlineLocation(GetCompetitionQueryResponse competition)
 	{
-		// TODO
-		EndDate = null;
+		string location = string
+			.Join(", ", new[] { competition.Location.City, competition.Location.State, competition.Location.Country, competition.Location.Place }
+						.Where(x => !string.IsNullOrEmpty(x))
+			);
+
+		return location;
 	}
 
-	void Save()
+	private string GetInlineLocation(EditCompetitionRequest competition)
 	{
-		// TODO
+		if (competition.Location is null) return "";
+
+		string location = string
+			.Join(", ", new[] { competition.Location.City, competition.Location.State, competition.Location.Country, competition.Location.Place }
+						.Where(x => !string.IsNullOrEmpty(x))
+			);
+
+		return location;
 	}
 }

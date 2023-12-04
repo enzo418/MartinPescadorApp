@@ -84,6 +84,8 @@
 
     string dateValidationClasses = "hidden";
 
+    private bool _shouldExit = false;
+
     protected override async Task OnInitializedAsync()
     {
         var query = await _sender.Send(new GetFisherQuery(FisherId));
@@ -91,7 +93,7 @@
         if (query.IsError)
         {
             _toastService.ShowError($"No se encontró pescador con id {FisherId}");
-            await JSRuntime.GoBack();
+            _shouldExit = true;
         }
 
         _fisherId = query.Value.Id;
@@ -101,6 +103,11 @@
         messageStore = new(editContext);
 
         editContext.MarkAsUnmodified();
+    }
+
+    protected override void OnAfterRender(bool _)
+    {
+        if (_shouldExit) _nav.NavigateTo("/404");
     }
 
     private void ValidateDateFormat(ChangeEventArgs e)

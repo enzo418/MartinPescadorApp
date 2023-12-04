@@ -64,7 +64,7 @@
         *@
 
         <TemplateColumn Title="Acciones" Align="@Align.End">
-            <FluentButton IconEnd="@(new Icons.Regular.Size16.Delete().WithColor(Color.Error))" Disabled=!_canEdit OnClick="@(() => Delete(context))" />
+            <FluentButton IconEnd="@(new Icons.Regular.Size24.Delete().WithColor("red"))" Disabled=!_canEdit OnClick="@(() => Delete(context))" />
         </TemplateColumn>
     </ChildContent>
 
