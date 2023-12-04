@@ -99,6 +99,33 @@ public class Tournament : AggregateRoot<TournamentId>
         return category;
     }
 
+    public ErrorOr<Success> DeleteCategory(CategoryId categoryId)
+    {
+        var category = _categories.Find(c => c.Id == categoryId);
+
+        if (category == null)
+        {
+            return Errors.Categories.NotFound;
+        }
+
+        _categories.Remove(category);
+
+        return Result.Success;
+    }
+
+    public ErrorOr<Success> EditCategory(CategoryId id, string name)
+    {
+        if (_categories.Any(c => c.Id == id))
+        {
+            _categories.Find(c => c.Id == id)?.ChangeName(name);
+
+            return Result.Success;
+        } else
+        {
+            return Errors.Categories.NotFound;
+        }
+    }
+
     public static Tournament Create(string name,
                                     DateTime startDate,
                                     DateTime? endDate,

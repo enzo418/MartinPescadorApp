@@ -9,7 +9,7 @@
     <FluentStack Orientation="Orientation.Horizontal" Width="100%" Class="h-full">
         <div style="color: var(--neutral-foreground-rest);">
             <FluentNavMenu Width="300">
-                <FluentNavLink Icon="@(new Icons.Regular.Size24.Home())" Href=@($"/tournament/{TournamentId}")>Información General</FluentNavLink>
+                <FluentNavLink Match=NavLinkMatch.All Icon="@(new Icons.Regular.Size24.Home())" Href=@($"/tournament/{TournamentId}")>Información General</FluentNavLink>
                 <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleList())" Href=@($"/tournament/{TournamentId}/categories")>Categorías</FluentNavLink>
                 <FluentNavGroup Title="Inscripciones" Icon="@(new Icons.Regular.Size24.People())" Expanded=true>
                     <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleAdd())" Href=@($"/tournament/{TournamentId}/inscription")>Agregar inscripción</FluentNavLink>

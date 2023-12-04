@@ -6,45 +6,46 @@ using MediatR;
 
 namespace FisherTournament.Application.Tournaments.Queries.GetTournamentCategories
 {
-	public record GetTournamentCategoriesQuery(string TournamentId)
-	: IRequest<ErrorOr<IEnumerable<GetTournamentCategoriesResultQueryResult>>>;
+    public record GetTournamentCategoriesQuery(string TournamentId)
+    : IRequest<ErrorOr<IEnumerable<GetTournamentCategoriesQueryResult>>>;
 
-	public record struct GetTournamentCategoriesResultQueryResult(
-		string Name
-	);
+    public record struct GetTournamentCategoriesQueryResult(
+        string Id,
+        string Name
+    );
 
-	public class GetTournamentCategoriesQueryHandler
-		 : IRequestHandler<GetTournamentCategoriesQuery, ErrorOr<IEnumerable<GetTournamentCategoriesResultQueryResult>>>
-	{
-		private readonly ITournamentFisherDbContext _context;
+    public class GetTournamentCategoriesQueryHandler
+         : IRequestHandler<GetTournamentCategoriesQuery, ErrorOr<IEnumerable<GetTournamentCategoriesQueryResult>>>
+    {
+        private readonly ITournamentFisherDbContext _context;
 
-		public GetTournamentCategoriesQueryHandler(ITournamentFisherDbContext context)
-		{
-			_context = context;
-		}
+        public GetTournamentCategoriesQueryHandler(ITournamentFisherDbContext context)
+        {
+            _context = context;
+        }
 
-		public async Task<ErrorOr<IEnumerable<GetTournamentCategoriesResultQueryResult>>>
-			Handle(GetTournamentCategoriesQuery request, CancellationToken cancellationToken)
-		{
-			var tournamentId = TournamentId.Create(request.TournamentId);
+        public async Task<ErrorOr<IEnumerable<GetTournamentCategoriesQueryResult>>>
+            Handle(GetTournamentCategoriesQuery request, CancellationToken cancellationToken)
+        {
+            var tournamentId = TournamentId.Create(request.TournamentId);
 
-			if (tournamentId.IsError)
-			{
-				return Errors.Id.NotValidWithProperty(nameof(request.TournamentId));
-			}
+            if (tournamentId.IsError)
+            {
+                return Errors.Id.NotValidWithProperty(nameof(request.TournamentId));
+            }
 
-			var tournament = await _context.Tournaments
-				.FindAsync(new object[] { tournamentId.Value }, cancellationToken: cancellationToken);
+            var tournament = await _context.Tournaments
+                .FindAsync(new object[] { tournamentId.Value }, cancellationToken: cancellationToken);
 
-			if (tournament == null)
-			{
-				return Errors.Tournaments.NotFound;
-			}
+            if (tournament == null)
+            {
+                return Errors.Tournaments.NotFound;
+            }
 
-			var categories = tournament.Categories.Select(
-				c => new GetTournamentCategoriesResultQueryResult(c.Name));
+            var categories = tournament.Categories.Select(
+                c => new GetTournamentCategoriesQueryResult(c.Id.ToString(), c.Name));
 
-			return categories.ToList();
-		}
-	}
+            return categories.ToList();
+        }
+    }
 }

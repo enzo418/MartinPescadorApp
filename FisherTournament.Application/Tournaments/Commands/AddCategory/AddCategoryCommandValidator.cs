@@ -6,9 +6,9 @@ using FluentValidation;
 
 namespace FisherTournament.Application.Tournaments.Commands.AddCategory
 {
-    public class AddCategoryCommandValidator : AbstractValidator<AddCategoryCommand>
+    public class EditCategoryCommandValidator : AbstractValidator<AddCategoryCommand>
     {
-        public AddCategoryCommandValidator()
+        public EditCategoryCommandValidator()
         {
             RuleFor(c => c.TournamentId).NotEmpty();
             RuleFor(c => c.Name).NotEmpty();

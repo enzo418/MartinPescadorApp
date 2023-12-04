@@ -1,20 +1,48 @@
 ﻿@layout TournamentLayout
 @page "/tournament/{TournamentId}/categories"
 
+@using FisherTournament.Application.Tournaments.Commands.AddCategory;
+@using FisherTournament.Application.Tournaments.Commands.DeleteCategory;
+@using FisherTournament.Application.Tournaments.Commands.EditCategory;
+@using FisherTournament.Application.Tournaments.Queries.GetTournament;
+@using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
 @using Microsoft.Fast.Components.FluentUI;
 
 @inject IToastService _toastService
+@inject ISender _sender
 
-<h1 class="page-title-no-pt">Categorias</h1>
+<FluentGrid>
+    <FluentGridItem sm="12" md="6">
+        <h1 class="page-title-no-pt">Categorias</h1>
+    </FluentGridItem>
+
+    <FluentGridItem sm="12" md="6" Class="flex justify-end">
+        <FluentSwitch Value="@_canEdit" @onchange=OnToggleCanEdit title="Editar">
+            <span class="label">Editar</span>
+            <span slot="unchecked-message">
+                <FluentIcon class="align-middle" Icon="Icons.Regular.Size20.LockClosed" Color="Color.Neutral" />
+            </span>
+            <span slot="checked-message">
+                <FluentIcon class="align-middle" Icon="Icons.Regular.Size20.Edit" Color="Color.Neutral" />
+            </span>
+        </FluentSwitch>
+    </FluentGridItem>
+</FluentGrid>
+
 
 <FluentDataGrid Items="@cats">
     <ChildContent>
         <TemplateColumn Title="Categoría">
+            @if(_canEdit){
 		    <FluentTextField 
                 Value="@context.Name"
-                @onchange="@(v => OnNameChanged(context, v))"
+                ValueChanged="@((v) => OnNameChanged(context.Name, context, v))"
                 tabindex="@(GetCatIndex(context)+1)" />
-	    </TemplateColumn>
+            } else
+            {
+                <FluentLabel class="p-1">@context.Name</FluentLabel>
+            }
+        </TemplateColumn>
         
         @*
         <TemplateColumn Title="Edad límite">
@@ -36,7 +64,7 @@
         *@
 
         <TemplateColumn Title="Acciones" Align="@Align.End">
-            <FluentButton IconEnd="@(new Icons.Regular.Size16.Delete().WithColor(Color.Error))" OnClick="@(() => Delete(context))" />
+            <FluentButton IconEnd="@(new Icons.Regular.Size16.Delete().WithColor(Color.Error))" Disabled=!_canEdit OnClick="@(() => Delete(context))" />
         </TemplateColumn>
     </ChildContent>
 
@@ -48,62 +76,164 @@
     </EmptyContent>
 </FluentDataGrid>
 
-<div class="dashed-rect cursor-pointer"
+@if (_canEdit)
+{
+    <div class="dashed-rect cursor-pointer"
     @onclick="@(v => OnNewCategoryClicked())">
-    <FluentIcon Icon="Icons.Regular.Size24.Add" Color="@Color.Accent" />
-    <span class="color-fg">Nueva categoría</span>
-</div>
+        <FluentIcon Icon="Icons.Regular.Size24.Add" Color="@Color.Accent" />
+        <span class="color-fg">Nueva categoría</span>
+    </div>
+}
+
 
 @code {
     [Parameter]
     public string TournamentId { get; set; } = null!;
 
-    record struct Cat(int Id, string Name, int minAge, int MaxAge);
+    private bool _canEdit = false;
 
     int _tabIndex = 0;
 
-    Task OnMinAgeChanged(Cat context, ChangeEventArgs value)
+    IQueryable<GetTournamentCategoriesQueryResult> cats = new List<GetTournamentCategoriesQueryResult>().AsQueryable();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var query = new GetTournamentQuery(TournamentId);
+        var res = await _sender.Send(query);
+        if (!res.IsError)
+        {
+            _canEdit = res.Value.EndDate is null && res.Value.StartDate > DateTime.UtcNow;
+        }
+
+        await GetCategories();
+    }
+
+    public async Task GetCategories()
+    {
+        var query = new GetTournamentCategoriesQuery(TournamentId);
+        var res = await _sender.Send(query);
+
+        if (res.IsError)
+        {
+            _toastService.ShowErrors(res.Errors);
+        } else
+        {
+            cats = res.Value.AsQueryable();
+        }
+    }
+
+    Task OnMinAgeChanged(GetTournamentCategoriesQueryResult context, ChangeEventArgs value)
     {
         _toastService.ClearSuccessToasts();
         _toastService.ShowSuccess($"Cambio guardado", 1);
         return Task.CompletedTask;
     }
 
-    Task OnMaxAgeChanged(Cat context, ChangeEventArgs value)
+    Task OnMaxAgeChanged(GetTournamentCategoriesQueryResult context, ChangeEventArgs value)
     {
         _toastService.ClearSuccessToasts();
         _toastService.ShowSuccess($"Cambio guardado", 1);
         return Task.CompletedTask;
     }
 
-    Task OnNameChanged(Cat context, ChangeEventArgs value)
+    async Task OnNameChanged(string prevName, GetTournamentCategoriesQueryResult context, ChangeEventArgs value)
     {
-        _toastService.ClearSuccessToasts();
-        _toastService.ShowSuccess($"Cambio guardado", 1);
-        return Task.CompletedTask;
+        string newName = value.Value?.ToString() ?? "";
+
+        var categoryRef = cats.FirstOrDefault(c => c.Id == context.Id);
+
+        if (newName == context.Name || string.IsNullOrEmpty(newName))
+        {
+            categoryRef.Name = prevName;
+
+            StateHasChanged();
+
+            return;
+        }
+
+        var command = new EditCategoryCommand(TournamentId, context.Id, newName);
+        var res = await _sender.Send(command);
+
+        if (res.IsError)
+        {
+            _toastService.ShowErrors(res.Errors);
+            categoryRef.Name = prevName;
+        } else
+        {
+            categoryRef.Name = newName;
+            _toastService.ClearSuccessToasts();
+            _toastService.ShowSuccess($"Cambio guardado", 1);        
+        }
     }
 
-    Task OnNewCategoryClicked()
+    async Task OnNameChanged(string prevName, GetTournamentCategoriesQueryResult context, string? value)
     {
-        cats = cats.Append(new Cat(cats.Count(), "Nueva categoría", 0, 0));
-        return Task.CompletedTask;
+        string newName = value ?? "";
+
+        var categoryRef = cats.FirstOrDefault(c => c.Id == context.Id);
+
+        if (newName == context.Name || string.IsNullOrEmpty(newName))
+        {
+            categoryRef.Name = prevName;
+
+            StateHasChanged();
+
+            return;
+        }
+
+        var command = new EditCategoryCommand(TournamentId, context.Id, newName);
+        var res = await _sender.Send(command);
+
+        if (res.IsError)
+        {
+            _toastService.ShowErrors(res.Errors);
+            categoryRef.Name = prevName;
+        } else
+        {
+//            categoryRef.Name = newName;
+            await GetCategories();
+            _toastService.ClearSuccessToasts();
+            _toastService.ShowSuccess($"Cambio guardado", 1);
+        }
     }
 
-    Task Delete(Cat context)
+    async Task OnNewCategoryClicked()
+    {
+        var command = new AddCategoryCommand(TournamentId, "Nueva categoria");
+        var res = await _sender.Send(command);
+
+        if (res.IsError)
+		{
+			_toastService.ShowErrors(res.Errors);
+		} else
+		{
+			await GetCategories();
+		}
+    }
+
+    async Task Delete(GetTournamentCategoriesQueryResult context)
 	{
-		cats = cats.Where(c => c.Id != context.Id);
-        return Task.CompletedTask;
+		var command = new DeleteCategoryCommand(TournamentId, context.Id);
+        var res = await _sender.Send(command);
+
+        if (res.IsError)
+        {
+            _toastService.ShowErrors(res.Errors);
+        } else
+        {
+            _toastService.ClearSuccessToasts();
+            _toastService.ShowSuccess($"Categoría eliminada", 1);
+            await GetCategories();
+        }
 	}
 
-    int GetCatIndex(Cat context)
+    void OnToggleCanEdit()
+	{
+		_canEdit = !_canEdit;
+	}
+
+    int GetCatIndex(GetTournamentCategoriesQueryResult context)
 	{
 		return cats.ToList().FindIndex(c => c.Id == context.Id);
 	}
-
-    IQueryable<Cat> cats = new[]
-    {
-        new Cat(1, "Senior", 60, 200),
-        new Cat(2, "Damas", 60, 200),
-        new Cat(3, "Juvenil", 14, 17),
-    }.AsQueryable();
 }

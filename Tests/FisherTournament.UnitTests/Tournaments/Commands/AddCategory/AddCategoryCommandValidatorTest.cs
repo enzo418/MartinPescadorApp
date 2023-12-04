@@ -5,7 +5,7 @@ namespace FisherTournament.UnitTests.Tournaments.Commands
 {
     public class AddCategoryCommandValidatorTest
     {
-        private readonly AddCategoryCommandValidator _validator;
+        private readonly EditCategoryCommandValidator _validator;
 
         public AddCategoryCommandValidatorTest()
         {
