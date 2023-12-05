@@ -169,5 +169,41 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
 			result.IsError.Should().BeTrue();
 			result.Errors.First().Should().Be(Errors.Tournaments.InscriptionNumberAlreadyExists);
 		}
+
+		[Fact]
+		public async Task Handler_Should_ReturnError_When_FisherHasAlreadyScored()
+		{
+			using var context = _fixture.TournamentContext;
+
+			var fisher = context.PrepareFisher("First", "Last", out var _);
+
+			var tournament = await TournamentBuilder.Create(context, _fixture.DateTimeProvider)
+				.WithName("Test Tournament")
+				.WithStartDate(_fixture.DateTimeProvider.Now.AddDays(1))
+				.WithEndDate(_fixture.DateTimeProvider.Now.AddDays(2))
+				.WithCategory("test")
+				.WithInscription(fisher.Id, 1, "test")
+				.Build(CancellationToken.None);
+
+			var category = tournament.Categories.Where(c => c.Name == "test").FirstOrDefault();
+
+			var competition = await CompetitionBuilder.Create(context, _fixture.DateTimeProvider)
+				.WithTournament(tournament.Id)
+				.WithScore(fisher.Id, 20)
+				.Build(CancellationToken.None);
+
+			var command = new EditInscriptionCommand(
+				tournament.Id.ToString(),
+				FisherId: fisher.Id.ToString(),
+				CategoryId: null,
+				NewNumber: null);
+
+			// Act
+			var result = await _fixture.SendAsync(command);
+
+			// Assert
+			result.IsError.Should().BeTrue();
+			result.Errors.First().Should().Be(Errors.Tournaments.FisherHasAlreadyScored);
+		}
 	}
 }

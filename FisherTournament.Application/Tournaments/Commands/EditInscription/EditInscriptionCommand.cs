@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FisherTournament.Application.Tournaments.Commands.EditInscription
 {
-	public record struct EditInscriptionCommand(string TournamentId, string FisherId, string? categoryId, int? NewNumber)
+	public record struct EditInscriptionCommand(string TournamentId, string FisherId, string? CategoryId, int? NewNumber)
 		: IRequest<ErrorOr<Updated>>;
 
 	public class EditInscriptionCommandHandler
@@ -40,7 +40,6 @@ namespace FisherTournament.Application.Tournaments.Commands.EditInscription
 				return Errors.Id.NotValidWithProperty(nameof(request.FisherId));
 			}
 
-
 			var tournament = await _context.Tournaments.FindAsync(tournamentId.Value);
 
 			if (tournament is null)
@@ -57,16 +56,26 @@ namespace FisherTournament.Application.Tournaments.Commands.EditInscription
 
 			CategoryId? categoryId = null;
 
-			if (request.categoryId != null)
+			if (request.CategoryId != null)
 			{
-				var categoryIdRes = CategoryId.Create(request.categoryId);
+				var categoryIdRes = CategoryId.Create(request.CategoryId);
 
 				if (categoryIdRes.IsError)
 				{
-					return Errors.Id.NotValidWithProperty(nameof(request.categoryId));
+					return Errors.Id.NotValidWithProperty(nameof(request.CategoryId));
 				}
 
 				categoryId = categoryIdRes.Value;
+			}
+
+			bool fisherHasAlreadyScored = await _context.Competitions
+							.Where(c => c.TournamentId == tournamentId.Value)
+							.Where(c => c.Participations.Any(p => p.FisherId == fisherId.Value))
+							.AnyAsync(cancellationToken);
+
+			if (fisherHasAlreadyScored)
+			{
+				return Errors.Tournaments.FisherHasAlreadyScored;
 			}
 
 			var res = tournament.UpdateInscription(fisherId.Value, categoryId, request.NewNumber, _dateTimeProvider);
