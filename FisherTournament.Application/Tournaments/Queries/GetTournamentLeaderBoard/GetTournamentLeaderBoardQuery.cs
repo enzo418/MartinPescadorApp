@@ -2,7 +2,6 @@ using ErrorOr;
 using FisherTournament.Application.Common.Instrumentation;
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.Common.Errors;
-using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using FisherTournament.Domain.TournamentAggregate.Entities;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using FisherTournament.ReadModels.Persistence;
@@ -16,14 +15,14 @@ public record GetTournamentLeaderBoardQuery(string TournamentId)
   : IRequest<ErrorOr<IEnumerable<TournamentLeaderBoardCategory>>>;
 
 public record struct TournamentLeaderBoardItem(
-    FisherId FisherId,
+    string FisherId,
     string Name,
     int Position,
     List<int> CompetitionPositions
 );
 
 public record struct TournamentLeaderBoardCategory(
-    CategoryId Id,
+    string Id,
     string Name,
     IEnumerable<TournamentLeaderBoardItem> LeaderBoard
 );
@@ -94,7 +93,7 @@ public class GetTournamentLeaderBoardQueryHandler
                         var fisher = fishersNames.FirstOrDefault(f => f.Id == r.FisherId);
 
                         return new TournamentLeaderBoardItem(
-                            r.FisherId,
+                            r.FisherId.ToString(),
                             fisher?.Name ?? string.Empty,
                             r.Position,
                             r.Positions
@@ -103,6 +102,23 @@ public class GetTournamentLeaderBoardQueryHandler
                 )
             );
 
-        return categories.ToList();
+        // Calculate "General" category, which is the sum of all categories. Whoever has the lowest sum wins.
+        int position = 0;
+        var generalCategory = new TournamentLeaderBoardCategory(
+                                    "General",
+                                    "General",
+                                    categories.SelectMany(c => c.LeaderBoard)
+                                        .OrderBy(l => l.CompetitionPositions.Sum())
+                                        .ThenBy(l => l.FisherId)
+                                        .Select(l => new TournamentLeaderBoardItem(
+                                            l.FisherId,
+                                            l.Name,
+                                            ++position,
+                                            l.CompetitionPositions
+                                        ))
+                                        .ToList()
+                                    );
+
+        return new List<TournamentLeaderBoardCategory>(categories) { generalCategory };
     }
 }

@@ -83,7 +83,8 @@
 
     private bool _openExport = false;
 
-    List<GetTournamentCategoriesQueryResult> _categories = new();
+    public record struct Category(string Id, string Name);
+    List<Category> _categories = new();
 
     IQueryable<LeaderBoardItem> positions = new List<LeaderBoardItem>().AsQueryable();
 
@@ -110,21 +111,6 @@
             competition = competitionRes.Value;
         }
 
-
-        // Get tournament categories
-        var query = new GetTournamentCategoriesQuery(TournamentId);
-        var categoriesRes = await _sender.Send(query);
-
-        if (categoriesRes.IsError)
-        {
-            _toastService.ShowErrors(categoriesRes.Errors);
-            shouldExit = true;
-        } else
-        {
-            _categories = categoriesRes.Value.ToList();            
-            _selectedCategoryId  = _categories.Count > 0 ? _categories.First().Id : "";
-        }
-
         await SearchAsync();
     }
 
@@ -143,6 +129,8 @@
             _toastService.ShowErrors(res.Errors);
         } else
         {
+            _categories = res.Value.Select(c => new Category(c.Id, c.Name)).ToList();
+
             lastQuery = res.Value.ToList();
 
             if (res.Value.Any(p => p.Id == _selectedCategoryId))

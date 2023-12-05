@@ -1,19 +1,22 @@
 ﻿@layout TournamentLayout
 @page "/tournament/{TournamentId}/leaderboard"
+@using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
+@using FisherTournament.Application.Tournaments.Queries.GetTournamentLeaderBoard;
 
 @inject IToastService _toastService
 @inject NavigationManager _nav
 @inject ISender _sender
+@inject IJSRuntime _js
 
 <h1 class="page-title-no-pt">Tabla de posiciones del torneo</h1>
 
 <div class="mt-7 mb-7 flex flex-row w-full justify-between items-end">
     <div class="flex flex-row gap-x-2">
         <div>
-            <FluentSelect Items=cats
+            <FluentSelect Items=_categories
                             OptionText="@(i => i.Name)"
-                            OptionValue="@(i => i.Name)"
-                            @bind-Value="@SelectedCategory"
+                            OptionValue="@(i => i.Id)"
+                            @bind-Value="@_selectedCategoryId"
                             @oninput="OnSelectedCategoryAsync">
                 <LabelTemplate>
                     Categoría
@@ -46,11 +49,11 @@
 
  <FluentDataGrid Items="@positions" GridTemplateColumns="0.1fr 0.6fr 0.3fr 0.5fr">
     <ChildContent>
-        <PropertyColumn Title="Posición" Property="@(c => c.Pos)" />
+        <PropertyColumn Title="Posición" Property="@(c => c.Position)" />
 
         <PropertyColumn Title="Nombre" Property="@(c => c.Name)" />
 
-        <PropertyColumn Title="Suma de posiciones" Property="@(c => c.Total)" />
+        <PropertyColumn Title="Suma de posiciones" Property="@(c => c.CompetitionPositions.Sum())" />
 
         <TemplateColumn Title="Acciones" Align="@Align.End">
             <FluentButton IconStart="@(new Icons.Regular.Size24.Info())"
@@ -70,81 +73,66 @@
 </FluentDataGrid>
 
 @code {
-	[Parameter]
+    [Parameter]
     public string TournamentId { get; set; } = null!;
 
     record struct Competencia(int Id, int N);
-    List<Competencia> competencias = new()
-	{
-		new Competencia(0, 1),
-		new Competencia(1, 2),
-		new Competencia(2, 3),
-		new Competencia(3, 4),
-		new Competencia(4, 5),
-	};
+    List<Competencia> competencias = new();
 
-    record struct Cat(int Id, string Name, int minAge, int MaxAge);
-    List<Cat> cats = new()
-    {
-        new Cat(0, "General", 0, 0),
-        new Cat(1, "Menores", 0, 17),
-        new Cat(2, "Mayores", 18, 99),
-    };
+    public record struct Category(string Id, string Name);
+    List<Category> _categories = new();
 
     record struct Position(int Pos, string Name, int Total);
-    IQueryable<Position> positions = new List<Position>().AsQueryable();
+    IQueryable<TournamentLeaderBoardItem> positions = new List<TournamentLeaderBoardItem>().AsQueryable();
+    List<TournamentLeaderBoardCategory> _lastRequest = new();
 
-    string SelectedCategory = "General";
+    string _selectedCategoryId = "General";
 
-    string SelectedCompetition = "Todas";
+    string SelectedCompetition = "Todas las competiciones";
+
+    private bool shouldExit = false;
 
     protected async override Task OnInitializedAsync()
     {
-        positions = new List<Position>()
-        {
-                new Position(1, "Carlos Perez", 15),
-                new Position(2, "Juan Perez", 10),
-                new Position(3, "Pedro Pepe", 7),
-                new Position(4, "Jose Perez", 5),
-                new Position(5, "Santos Tre", 3),
-                new Position(6, "Foo bar", 1)
-        }.AsQueryable();
+        await FetchLeaderboard();
+    }
 
-        await Task.CompletedTask;
+    async Task FetchLeaderboard()
+    {
+        var query = new GetTournamentLeaderBoardQuery(TournamentId);
+        var result = await _sender.Send(query);
+
+        if (result.IsError)
+        {
+            _toastService.ShowErrors(result.Errors);
+            shouldExit = true;
+            return;
+        }
+
+        _lastRequest = result.Value.ToList();
+
+        _categories = result.Value.Select(c => new Category(c.Id, c.Name)).ToList();
+    }
+
+    void SetRendedContent()
+    {
+        if (string.IsNullOrEmpty(_selectedCategoryId)) return;
+
+        if (!_lastRequest.Any(c => c.Id == _selectedCategoryId)) return;
+
+        positions = _lastRequest.Where(c => c.Id == _selectedCategoryId).First().LeaderBoard.AsQueryable();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (shouldExit) await _js.GoBack();
     }
 
     async Task OnSelectedCategoryAsync(ChangeEventArgs e)
     {
-        string? selected = e.Value?.ToString();
+        _selectedCategoryId = e.Value?.ToString();
 
-        if (selected == "Mayores"){
-            positions = new List<Position>()
-            {
-                new Position(1, "Juan Perez", 10),
-                new Position(2, "Pedro Pepe", 7),
-                new Position(3, "Jose Perez", 5)
-            }.AsQueryable();
-        } else if (selected == "Menores")
-        {
-            positions = new List<Position>()
-            {
-                new Position(1, "Carlos Perez", 15),
-                new Position(2, "Santos Tre", 3),
-                new Position(3, "Foo bar", 1)
-            }.AsQueryable();
-        } else if (selected == "General") {
-            positions = new List<Position>()
-            {
-                new Position(1, "Carlos Perez", 15),
-                new Position(2, "Juan Perez", 10),
-                new Position(3, "Pedro Pepe", 7),
-                new Position(4, "Jose Perez", 5),
-                new Position(5, "Santos Tre", 3),
-                new Position(6, "Foo bar", 1)
-            }.AsQueryable();
-        }
-
-        await Task.CompletedTask;
+        SetRendedContent();
     }
 
     async Task OnSelectedCompetitionAsync()
@@ -153,7 +141,7 @@
         await Task.CompletedTask;
     }
 
-    void OpenDetails(Position position)
+    void OpenDetails(TournamentLeaderBoardItem position)
     {
         _toastService.ShowInfo($"Abriendo detalles de {position.Name}");
     }

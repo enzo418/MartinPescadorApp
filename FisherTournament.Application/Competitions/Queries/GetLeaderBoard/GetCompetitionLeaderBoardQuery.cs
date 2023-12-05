@@ -1,14 +1,14 @@
 using ErrorOr;
+using FisherTournament.Application.Common.Instrumentation;
 using FisherTournament.Application.Common.Persistence;
+using FisherTournament.Domain.Common.Errors;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using FisherTournament.Domain.Common.Errors;
+using FisherTournament.Domain.TournamentAggregate.Entities;
 using FisherTournament.ReadModels.Models;
 using FisherTournament.ReadModels.Persistence;
-using FisherTournament.Application.Common.Instrumentation;
-using FisherTournament.Domain.TournamentAggregate.Entities;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
@@ -16,7 +16,7 @@ namespace FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
 public record struct GetCompetitionLeaderBoardQuery(string CompetitionId)
      : IRequest<ErrorOr<IEnumerable<LeaderBoardCategory>>>;
 
-public record struct LeaderBoardItem(FisherId FisherId, string Name, int Position, int TotalScore);
+public record struct LeaderBoardItem(string FisherId, string Name, int Position, int TotalScore);
 
 public record struct LeaderBoardCategory(string Name, string Id, IEnumerable<LeaderBoardItem> LeaderBoard);
 
@@ -98,7 +98,7 @@ public class GetCompetitionLeaderBoardQueryHandler
                         var fisher = fishersNames.FirstOrDefault(f => f.Id == r.FisherId);
 
                         return new LeaderBoardItem(
-                            r.FisherId,
+                            r.FisherId.ToString(),
                             fisher?.Name ?? string.Empty,
                             r.Position,
                             r.Score
@@ -107,6 +107,22 @@ public class GetCompetitionLeaderBoardQueryHandler
                 )
             );
 
-        return new List<LeaderBoardCategory>(categories);
+        // Calculate "General" category, which is merging all categories. Whoever has the highest score wins.
+        int position = 0;
+        var generalCategory = new LeaderBoardCategory(
+                                "General",
+                                "General",
+                                categories.SelectMany(c => c.LeaderBoard)
+                                    .OrderByDescending(l => l.TotalScore)
+                                    .Select(l => new LeaderBoardItem(
+                                        l.FisherId,
+                                        l.Name,
+                                        ++position,
+                                        l.TotalScore
+                                    ))
+                                    .ToList()
+                                );
+
+        return new List<LeaderBoardCategory>(categories) { generalCategory };
     }
 }
