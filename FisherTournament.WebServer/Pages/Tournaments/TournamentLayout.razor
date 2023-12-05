@@ -12,14 +12,15 @@
                 <FluentNavLink Match=NavLinkMatch.All Icon="@(new Icons.Regular.Size24.Home())" Href=@($"/tournament/{TournamentId}")>Información General</FluentNavLink>
                 <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleList())" Href=@($"/tournament/{TournamentId}/categories")>Categorías</FluentNavLink>
                 <FluentNavGroup Title="Inscripciones" Icon="@(new Icons.Regular.Size24.People())" Expanded=true>
-                    <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleAdd())" Href=@($"/tournament/{TournamentId}/inscription")>Agregar inscripción</FluentNavLink>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleAdd())" Href=@($"/tournament/{TournamentId}/add/inscription")>Agregar inscripción</FluentNavLink>
                     <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAgenda())" Href=@($"/tournament/{TournamentId}/inscriptions")>Ver inscripciones</FluentNavLink>
                 </FluentNavGroup>
                 <FluentNavGroup Title="Competiciones" Icon="@(new Icons.Regular.Size24.CalendarDate())" Expanded=true>
-                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAdd())" Href=@($"/tournament/{TournamentId}/competition")>Agregar competición</FluentNavLink>
+                    <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAdd())" Href=@($"/tournament/{TournamentId}/add/competition")>Agregar competición</FluentNavLink>
                     <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarAgenda())" Href=@($"/tournament/{TournamentId}/competitions")>Ver competiciones</FluentNavLink>
                 </FluentNavGroup>
                 <FluentNavLink Icon="@(new Icons.Regular.Size24.CalendarMultiple())" Href=@($"/tournament/{TournamentId}/leaderboard")>Tabla de posiciones</FluentNavLink>
+                <FluentNavLink Icon="@(new Icons.Regular.Size24.FoodFish())" Href=@($"/tournament/{TournamentId}/add/score")>Agregar puntaje</FluentNavLink>
             </FluentNavMenu>
         </div>
 

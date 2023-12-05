@@ -18,7 +18,7 @@
     <FluentGridItem sm="12" md="6" Class="flex justify-end">
         <FluentButton Appearance="Appearance.Accent"
                       IconStart="@(new Icons.Regular.Size16.Add())"
-                      OnClick="@(() => _nav.NavigateTo($"/tournament/{TournamentId}/competition"))">Agregar Competición</FluentButton>
+                      OnClick="@(() => _nav.NavigateTo($"/tournament/{TournamentId}/add/competition"))">Agregar Competición</FluentButton>
     </FluentGridItem>
 </FluentGrid>
 
@@ -42,7 +42,7 @@
 			<FluentButton Class="underline"
 				Appearance="Appearance.Lightweight"
 				IconEnd="@(new Icons.Regular.Size16.Open())" 
-				OnClick="@(() => GoToPositions(context))">Posiciones</FluentButton>
+				OnClick="@(() => GoToPositions(context))">Tabla de posiciones</FluentButton>
 			<FluentButton
 						  IconEnd="@(new Icons.Regular.Size24.Edit())"
 						  OnClick="@(() => Edit(context))" />
@@ -117,7 +117,7 @@
 
 	void GoToPositions(GetTournamentCompetitionsQueryResult competition)
 	{
-		_nav.NavigateTo($"/tournaments/leaderboard/{competition.Id}");
+		_nav.NavigateTo($"/tournament/{TournamentId}/leaderboard/{competition.Id}");
 	}
 
 	private string GetInlineLocation(GetTournamentCompetitionsQueryResult competition)

@@ -1,7 +1,18 @@
 namespace FisherTournament.Contracts.Competitions
 {
-    public record struct AddScoreRequest(
-        string FisherId, // string works for all the possible id types
-        int Score
-    );
+	public class AddScoreRequest
+	{
+		public string FisherId { get; set; } = null!;
+		public int Score { get; set; }
+
+		public AddScoreRequest(string fisherId, int score)
+		{
+			FisherId = fisherId;
+			Score = score;
+		}
+
+		public AddScoreRequest()
+		{
+		}
+	}
 }

@@ -122,7 +122,7 @@
 	{
 		Request = new(FisherId);
 
-		var inscriptionQuery = new GetInscriptionQuery(TournamentId, FisherId);
+		var inscriptionQuery = new GetInscriptionQueryByFisherId(TournamentId, FisherId);
 		var inscriptionRes = await _sender.Send(inscriptionQuery);
 
 		if (inscriptionRes.IsError)
@@ -160,8 +160,6 @@
 		{
 			_categories = categoriesRes.Value.ToList();
 		}
-
-		await Task.CompletedTask;
 	}
 
 	protected override void OnAfterRender(bool _)

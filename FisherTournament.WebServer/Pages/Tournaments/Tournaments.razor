@@ -35,8 +35,13 @@
 					<FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())" Class="align-middle" />
 				</FluentNavLink>
 
-				<FluentNavLink Href="@("/tournament/"+tournament.tournament.Id+"/inscription")" Class="flex gap-x-2">
+				<FluentNavLink Href="@("/tournament/"+tournament.tournament.Id+"/add/inscription")" Class="flex gap-x-2">
 					Agregar Inscripción
+					<FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())" Class="align-middle" />
+				</FluentNavLink>
+
+				<FluentNavLink Href="@("/tournament/"+tournament.tournament.Id+"/add/score")" Class="flex gap-x-2">
+					Agregar Puntaje
 					<FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())" Class="align-middle" />
 				</FluentNavLink>
 			</div>
@@ -75,11 +80,10 @@
 							<td>@competition.N</td>
 							<td>@competition.StartDate.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern)</td>
 							<td>
-								<FluentNavLink  
-									Class="flex gap-x-2 underline w-full justify-center" 
-									Href="@("/tournament/"+tournament.tournament.Id+"/leaderboard/"+competition.Id)"
+								<FluentNavLink Class="flex gap-x-2 underline w-full justify-center whitespace-nowrap"
+											   Href="@("/tournament/"+tournament.tournament.Id+"/leaderboard/"+competition.Id)"
 									Style="color: var(--accent-fill-rest);">
-									Posiciones
+									Tabla de posiciones
 									<FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())" Class="align-middle" />
 								</FluentNavLink>
 							</td>
@@ -133,7 +137,13 @@
 		<PropertyColumn Property="@(p => p.StartDate)" Format="@CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern" Sortable="false" Title="Inicio de la fecha" />
 		<PropertyColumn Property="@(p => p.EndDate)" Format="@CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern" Sortable="false" Title="Fin de la fecha" />
 		<TemplateColumn Title="Acciones" Align="@Align.End">
-			<FluentButton IconEnd="@(new Icons.Regular.Size16.ArrowRight())" OnClick="@(() => GoToTournament(context))" />
+			<FluentButton IconEnd="@(new Icons.Regular.Size16.Share())" OnClick="@(() => GoToTournament(context))">
+			Ir al torneo
+			</FluentButton>
+
+			<FluentButton IconEnd="@(new Icons.Regular.Size16.Share())" OnClick="@(() => GoToLeaderboard(context))">
+			Tabla de posiciones
+			</FluentButton>
 		</TemplateColumn>
 	</ChildContent>
 
@@ -190,7 +200,7 @@
 				@context.CategoriesCount Categorias
 			</FluentButton>
 
-			<FluentButton IconEnd="@(new Icons.Regular.Size16.ArrowRight())" OnClick="@(() => GoToTournament(context))">
+			<FluentButton IconEnd="@(new Icons.Regular.Size16.Share())" OnClick="@(() => GoToTournament(context))">
 			Ir al torneo	
 			</FluentButton>
 		</TemplateColumn>
@@ -361,5 +371,10 @@
 	void GoToCategories(GetTournamentsSummaryQueryResult s)
 	{
 		_nav.NavigateTo("/tournament/"+s.Id+"/categories");
+	}
+
+	void GoToLeaderboard(SearchCompetitionsQueryResult s)
+	{
+		_nav.NavigateTo("/tournament/"+s.TournamentId+"/leaderboard/"+s.Id);
 	}
 }

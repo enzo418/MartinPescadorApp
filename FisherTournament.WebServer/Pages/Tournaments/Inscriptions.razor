@@ -19,14 +19,15 @@
         <FluentButton
             Appearance="Appearance.Accent" 
             IconStart="@(new Icons.Regular.Size16.Add())"
-            OnClick="@(() => _nav.NavigateTo($"/tournament/{TournamentId}/inscription"))">Agregar Inscripción</FluentButton>
+            OnClick="@(() => _nav.NavigateTo($"/tournament/{TournamentId}/add/inscription"))">Agregar Inscripción</FluentButton>
     </FluentGridItem>
 </FluentGrid>
 
 <div class="flex flex-row w-full justify-center gap-10 mb-4">
     <div>
         <FluentSelect Items="@_categories"
-        @bind-Value="@SelectedCategoryId"
+        @bind-Value="@_selectedCategoryId"
+        @bind-Value:after="Search"
                       OptionText="@(i => i.Name)"
                       OptionValue="@(i => i.Id)">
             <LabelTemplate>
@@ -80,20 +81,6 @@
 
     List<GetTournamentCategoriesQueryResult> _categories = new();
     string _selectedCategoryId = "all";
-    string SelectedCategoryId
-    {
-        get
-        {
-            return _selectedCategoryId;
-        }
-
-        set
-        {
-            _selectedCategoryId = value;
-
-            Search();
-        }
-    }
 
     protected override async Task OnInitializedAsync()
     {

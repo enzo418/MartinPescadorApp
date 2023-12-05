@@ -1,35 +1,61 @@
 ﻿@layout TournamentLayout
 @page "/tournament/{TournamentId}/leaderboard/{CompetitionId}"
+@using FisherTournament.Application.Competitions.Queries.GetCompetition;
+@using FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
+@using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
 
 @inject IToastService _toastService
 @inject NavigationManager _nav
 @inject ISender _sender
+@inject IJSRuntime _js
 
-<h1 class="page-title-no-pt">Tabla de posiciones de la competencia N° @CompetitionId</h1>
+<h1 class="page-title-no-pt">Tabla de posiciones de la competencia N° @competition.N</h1>
 
 <div class="mt-7 mb-7 flex flex-row w-full justify-between items-end">
     <div>
-        <FluentSelect Items=cats
-                        OptionText="@(i => i.Name)"
-                        OptionValue="@(i => i.Name)"
-                        @bind-Value="@SelectedCategory"
-                        @oninput="SearchAsync">
+        <FluentSelect Items=_categories
+                      OptionText="@(i => i.Name)"
+                      OptionValue="@(i => i.Id)"
+                        @bind-Value="@_selectedCategoryId"
+                        @bind-Value:after=SearchAsync>
             <LabelTemplate>
                 Categoría
             </LabelTemplate>
         </FluentSelect>
     </div>
-    <FluentButton IconStart="@(new Icons.Regular.Size16.Share())" Appearance="Appearance.Outline">Exportar</FluentButton>
+    
+    <FluentButton 
+        Id="btnOpenExport"
+        IconEnd="@(new Icons.Regular.Size16.ChevronDown())"
+        @onclick="@(() => _openExport = !_openExport)" 
+        Appearance="Appearance.Outline">
+        Exportar
+    </FluentButton>
+
+    <FluentMenu Anchor="btnOpenExport" @bind-Open="_openExport" Class="rounded-md">
+        @if (GetCurrentCategoryName() is var catName && !string.IsNullOrEmpty(catName))
+        {
+            <FluentMenuItem OnClick=ExportCategory Class="gap-x-3.5 flex flex-row pl-2">
+                <span slot="start"><FluentIcon Value="@(new Icons.Regular.Size24.Share())" Color="Color.Accent" Slot="start" /></span>
+                Exportar categoria "@catName"
+            </FluentMenuItem>
+            <FluentDivider />
+        }
+        <FluentMenuItem OnClick=ExportAllCategories Class="gap-x-3.5 flex flex-row pl-2">
+            <span slot="start"><FluentIcon Value="@(new Icons.Regular.Size24.Share())" Color="Color.Accent" Slot="start" /></span>
+            Exportar todas las categorias
+        </FluentMenuItem>
+    </FluentMenu>
 </div>
 @* <FluentDivider class="mt-4 mb-4" />  *@
 
- <FluentDataGrid Items="@positions" GridTemplateColumns="0.1fr 0.6fr 0.3fr 0.5fr">
+<FluentDataGrid Items="@positions" Virtualize="true" GridTemplateColumns="0.1fr 0.6fr 0.3fr 0.5fr">
     <ChildContent>
-        <PropertyColumn Title="Posición" Property="@(c => c.Pos)" />
+        <PropertyColumn Title="Posición" Property="@(c => c.Position)" />
 
         <PropertyColumn Title="Nombre" Property="@(c => c.Name)" />
 
-        <PropertyColumn Title="Suma de Puntos" Property="@(c => c.PointsSum)" />
+        <PropertyColumn Title="Suma de Puntos" Property="@(c => c.TotalScore)" />
 
         <TemplateColumn Title="Acciones" Align="@Align.End">
             <FluentButton IconStart="@(new Icons.Regular.Size24.Info())"
@@ -41,7 +67,7 @@
     </ChildContent>
 
     <EmptyContent>
-        <div Style="min-height: 300px;" class="empty-content">
+        <div Style="min-height: 300px;" class="flex items-center empty-content pt-2">
             <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
             &nbsp; No hay posiciones registradas para esta competición
         </div>
@@ -55,70 +81,100 @@
     [Parameter]
     public string CompetitionId { get; set; } = null!;
 
-    record struct Cat(int Id, string Name, int minAge, int MaxAge);
-    List<Cat> cats = new()
-    {
-        new Cat(0, "General", 0, 0),
-        new Cat(1, "Menores", 0, 17),
-        new Cat(2, "Mayores", 18, 99),
-    };
+    private bool _openExport = false;
 
-    record struct Position(int Pos, string Name, int PointsSum);
-    IQueryable<Position> positions = new List<Position>().AsQueryable();
+    List<GetTournamentCategoriesQueryResult> _categories = new();
 
-    string SelectedCategory = "General";
+    IQueryable<LeaderBoardItem> positions = new List<LeaderBoardItem>().AsQueryable();
+
+    private List<LeaderBoardCategory> lastQuery = new();
+
+    string _selectedCategoryId = "";
+
+    GetCompetitionQueryResponse competition = default!;
+
+    private bool shouldExit = false;
 
     protected async override Task OnInitializedAsync()
     {
-        positions = new List<Position>()
+        // Get competition
+        var competitionQuery = new GetCompetitionQuery(CompetitionId);
+        var competitionRes = await _sender.Send(competitionQuery);
+
+        if (competitionRes.IsError)
         {
-                new Position(1, "Carlos Perez", 170),
-                new Position(2, "Juan Perez", 100),
-                new Position(3, "Pedro Pepe", 90),
-                new Position(4, "Jose Perez", 80),
-                new Position(5, "Santos Tre", 40),
-                new Position(6, "Foo bar", 20)
-        }.AsQueryable();
-
-        await Task.CompletedTask;
-    }
-
-    async Task SearchAsync(ChangeEventArgs e)
-    {
-        string? selected = e.Value?.ToString();
-
-        if (selected == "Mayores"){
-            positions = new List<Position>()
-            {
-                new Position(1, "Juan Perez", 100),
-                new Position(2, "Pedro Pepe", 90),
-                new Position(3, "Jose Perez", 80)
-            }.AsQueryable();
-        } else if (selected == "Menores")
-            {
-            positions = new List<Position>()
-            {
-                new Position(1, "Carlos Perez", 170),
-                new Position(2, "Santos Tre", 40),
-                new Position(3, "Foo bar", 20)
-            }.AsQueryable();
-        } else if (selected == "General") {
-            positions = new List<Position>()
-            {
-                new Position(1, "Carlos Perez", 170),
-                new Position(2, "Juan Perez", 100),
-                new Position(3, "Pedro Pepe", 90),
-                new Position(4, "Jose Perez", 80),
-                new Position(5, "Santos Tre", 40),
-                new Position(6, "Foo bar", 20)
-            }.AsQueryable();
+            _toastService.ShowErrors(competitionRes.Errors);
+            shouldExit = true;
+        } else
+        {
+            competition = competitionRes.Value;
         }
 
-        await Task.CompletedTask;
+
+        // Get tournament categories
+        var query = new GetTournamentCategoriesQuery(TournamentId);
+        var categoriesRes = await _sender.Send(query);
+
+        if (categoriesRes.IsError)
+        {
+            _toastService.ShowErrors(categoriesRes.Errors);
+            shouldExit = true;
+        } else
+        {
+            _categories = categoriesRes.Value.ToList();            
+            _selectedCategoryId  = _categories.Count > 0 ? _categories.First().Id : "";
+        }
+
+        await SearchAsync();
     }
-      
-    void OpenDetails(Position position)
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (shouldExit) _js.GoBack();
+    }
+
+    async Task SearchAsync()
+    {
+        var query = new GetCompetitionLeaderBoardQuery(CompetitionId);
+        var res = await _sender.Send(query);
+
+        if (res.IsError)
+        {
+            _toastService.ShowErrors(res.Errors);
+        } else
+        {
+            lastQuery = res.Value.ToList();
+
+            if (res.Value.Any(p => p.Id == _selectedCategoryId))
+            {
+                positions = res.Value.First(p => p.Id == _selectedCategoryId).LeaderBoard.AsQueryable();
+            }
+        }
+    }
+
+    void OpenDetails(LeaderBoardItem position)
     {
         _toastService.ShowInfo($"Abriendo detalles de {position.Name}");
     }
+
+    string? GetCurrentCategoryName()
+    {
+        if (_categories.Any(p => p.Id == _selectedCategoryId))
+        {
+            return _categories.First(p => p.Id == _selectedCategoryId).Name;
+        }
+
+        return null;
+    }
+
+    void ExportCategory()
+    {
+        
+    }
+
+    void ExportAllCategories() {
+
+    }
+
+
 }
