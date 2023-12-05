@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Elementos de la solución",
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "i8n", "i8n\i8n.csproj", "{BFA16F9C-6CCC-44A1-AEF1-10BC311830F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,6 +84,10 @@ Global
 		{188D69F3-FEE7-4F0B-A901-510703498574}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{188D69F3-FEE7-4F0B-A901-510703498574}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{188D69F3-FEE7-4F0B-A901-510703498574}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFA16F9C-6CCC-44A1-AEF1-10BC311830F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFA16F9C-6CCC-44A1-AEF1-10BC311830F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFA16F9C-6CCC-44A1-AEF1-10BC311830F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFA16F9C-6CCC-44A1-AEF1-10BC311830F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

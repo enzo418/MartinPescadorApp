@@ -130,7 +130,7 @@ public class Tournament : AggregateRoot<TournamentId>
 	{
 		if (_categories.Any(c => c.Name == categoryName))
 		{
-			return Errors.Categories.AlreadyExists;
+			return Errors.Categories.AlreadyExistsWithName;
 		}
 
 		var category = Category.Create(categoryName);
@@ -144,7 +144,7 @@ public class Tournament : AggregateRoot<TournamentId>
 	{
 		if (_categories.Any(c => c.Name == category.Name))
 		{
-			return Errors.Categories.AlreadyExists;
+			return Errors.Categories.AlreadyExistsWithName;
 		}
 
 		_categories.Add(category);

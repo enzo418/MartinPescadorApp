@@ -32,5 +32,6 @@
 
   <PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <NeutralLanguage>es</NeutralLanguage>
   </PropertyGroup>
 </Project>
