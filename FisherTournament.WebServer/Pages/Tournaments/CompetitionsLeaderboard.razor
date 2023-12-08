@@ -2,14 +2,17 @@
 @page "/tournament/{TournamentId}/leaderboard/{CompetitionId}"
 @using FisherTournament.Application.Competitions.Queries.GetCompetition;
 @using FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
+@using FisherTournament.Application.Competitions.Queries.GetLeaderboardItemDetails;
 @using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
+@using FisherTournament.WebServer.Pages.Tournaments.Dialog;
 
 @inject IToastService _toastService
 @inject NavigationManager _nav
 @inject ISender _sender
 @inject IJSRuntime _js
+@inject IDialogService _dialogService
 
-<h1 class="page-title-no-pt">Tabla de posiciones de la competencia N° @competition.N</h1>
+<h1 class="page-title-no-pt">Tabla de posiciones de la <span style="color: var(--accent-fill-rest);">competencia N° @competition.N</span></h1>
 
 <div class="mt-7 mb-7 flex flex-row w-full justify-between items-end">
     <div>
@@ -49,7 +52,7 @@
 </div>
 @* <FluentDivider class="mt-4 mb-4" />  *@
 
-<FluentDataGrid Items="@positions" Virtualize="true" GridTemplateColumns="0.1fr 0.6fr 0.3fr 0.5fr">
+<FluentDataGrid Items="@positions" Virtualize="true" ItemSize="50" GridTemplateColumns="0.1fr 0.6fr 0.3fr 0.5fr">
     <ChildContent>
         <PropertyColumn Title="Posición" Property="@(c => c.Position)" />
 
@@ -94,6 +97,8 @@
 
     GetCompetitionQueryResponse competition = default!;
 
+    private FluentDialog? _dialog;
+
     private bool shouldExit = false;
 
     protected async override Task OnInitializedAsync()
@@ -133,6 +138,14 @@
 
             lastQuery = res.Value.ToList();
 
+            if (string.IsNullOrEmpty(_selectedCategoryId))
+            {
+                if (_categories.Any(c => c.Name == "General"))
+                {
+                    _selectedCategoryId = _categories.First(c => c.Name == "General").Id;
+                } else _selectedCategoryId = _categories.First().Id;                
+            }
+
             if (res.Value.Any(p => p.Id == _selectedCategoryId))
             {
                 positions = res.Value.First(p => p.Id == _selectedCategoryId).LeaderBoard.AsQueryable();
@@ -140,9 +153,15 @@
         }
     }
 
-    void OpenDetails(LeaderBoardItem position)
+    async Task OpenDetails(LeaderBoardItem position)
     {
-        _toastService.ShowInfo($"Abriendo detalles de {position.Name}");
+        var dialogData = (CompetitionId, position);
+        var dialog = await _dialogService.ShowDialogAsync<CompetitionLeaderboardItemDetails>(dialogData, new DialogParameters()
+        {
+            Width = "90%",
+            PrimaryAction = null,
+            SecondaryAction = null
+        });
     }
 
     string? GetCurrentCategoryName()

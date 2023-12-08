@@ -2,13 +2,16 @@
 @page "/tournament/{TournamentId}/leaderboard"
 @using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
 @using FisherTournament.Application.Tournaments.Queries.GetTournamentLeaderBoard;
+@using FisherTournament.Application.Competitions.Queries.GetTournamentCompetitions;
+@using FisherTournament.WebServer.Pages.Tournaments.Dialog;
 
 @inject IToastService _toastService
 @inject NavigationManager _nav
 @inject ISender _sender
 @inject IJSRuntime _js
+@inject IDialogService _dialogService
 
-<h1 class="page-title-no-pt">Tabla de posiciones del torneo</h1>
+<h1 class="page-title-no-pt">Tabla de posiciones del <span style="color: var(--accent-fill-rest);">torneo</span></h1>
 
 <div class="mt-7 mb-7 flex flex-row w-full justify-between items-end">
     <div class="flex flex-row gap-x-2">
@@ -24,22 +27,18 @@
             </FluentSelect>
         </div>
 
-        <div class="ml-3">
-            <FluentSelect TOption="string" @bind-Value="@SelectedCompetition"
-                          @oninput="OnSelectedCompetitionAsync">
-                <LabelTemplate>
-                    Competición
-                </LabelTemplate>
+        <FluentDivider Orientation="Orientation.Vertical" />
 
-                <ChildContent>
-                    <FluentOption Value="Todas">Todas las competencias</FluentOption>
-                    
-                    @foreach (var competencia in competencias)
+        <div class="ml-3 flex items-end">
+            @if (competitions.Count > 0) {
+                <FluentLabel Typo="Typography.H6" Class="pr-3 pb-2">Ir a la competencia</FluentLabel>
+                <FluentHorizontalScroll Style="width: 400px;" Speed="600" Easing=ScrollEasing.EaseInOut>
+					@foreach (var competition in competitions)
 					{
-						<FluentOption Value="@competencia.N.ToString()">N° @competencia.N</FluentOption>
+						<FluentButton OnClick="@(() => GoToCompetition(competition))">N° @competition.N</FluentButton>
 					}
-                </ChildContent>
-            </FluentSelect>
+                </FluentHorizontalScroll>
+            }
         </div>
 
     </div>
@@ -47,7 +46,7 @@
 </div>
 @* <FluentDivider class="mt-4 mb-4" />  *@
 
- <FluentDataGrid Items="@positions" GridTemplateColumns="0.1fr 0.6fr 0.3fr 0.5fr">
+<FluentDataGrid Items="@positions" Virtualize="true" ItemSize="50" GridTemplateColumns="0.1fr 0.6fr 0.3fr 0.5fr">
     <ChildContent>
         <PropertyColumn Title="Posición" Property="@(c => c.Position)" />
 
@@ -76,8 +75,8 @@
     [Parameter]
     public string TournamentId { get; set; } = null!;
 
-    record struct Competencia(int Id, int N);
-    List<Competencia> competencias = new();
+    record struct Competencia(string Id, int N);
+    List<Competencia> competitions = new();
 
     public record struct Category(string Id, string Name);
     List<Category> _categories = new();
@@ -86,7 +85,7 @@
     IQueryable<TournamentLeaderBoardItem> positions = new List<TournamentLeaderBoardItem>().AsQueryable();
     List<TournamentLeaderBoardCategory> _lastRequest = new();
 
-    string _selectedCategoryId = "General";
+    string _selectedCategoryId = "";
 
     string SelectedCompetition = "Todas las competiciones";
 
@@ -95,6 +94,18 @@
     protected async override Task OnInitializedAsync()
     {
         await FetchLeaderboard();
+
+        if (_categories.Count > 0)
+        {
+            if (_categories.Any(c => c.Name == "General"))
+            {
+                _selectedCategoryId = _categories.First(c => c.Name == "General").Id;
+            } else _selectedCategoryId = _categories.First().Id;
+
+            SetRendedContent();
+        }
+
+        await FetchTournamentCompetitions();
     }
 
     async Task FetchLeaderboard()
@@ -112,6 +123,22 @@
         _lastRequest = result.Value.ToList();
 
         _categories = result.Value.Select(c => new Category(c.Id, c.Name)).ToList();
+    }
+
+    async Task FetchTournamentCompetitions()
+    {
+        var query = new GetTournamentCompetitionsQuery(TournamentId);
+        var result = await _sender.Send(query);
+
+        if (result.IsError)
+		{
+			_toastService.ShowErrors(result.Errors);
+			shouldExit = true;
+			return;
+		}
+
+        competitions = result.Value.Select(c => new Competencia(c.Id, c.N)).ToList();
+
     }
 
     void SetRendedContent()
@@ -141,8 +168,18 @@
         await Task.CompletedTask;
     }
 
-    void OpenDetails(TournamentLeaderBoardItem position)
+    async Task OpenDetails(TournamentLeaderBoardItem position)
     {
-        _toastService.ShowInfo($"Abriendo detalles de {position.Name}");
+        var dialog = await _dialogService.ShowDialogAsync<TournamentLeaderboardItemDetails>(position, new DialogParameters()
+            {
+                Width = "90%",
+                PrimaryAction = null,
+                SecondaryAction = null
+            });
     }
+
+    void GoToCompetition(Competencia competition)
+	{
+        _nav.NavigateTo($"/tournament/{TournamentId}/leaderboard/{competition.Id}");
+	}
 }

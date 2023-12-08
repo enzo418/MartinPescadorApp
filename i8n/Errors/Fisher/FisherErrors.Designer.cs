@@ -61,6 +61,15 @@ namespace i8n.Errors.Fisher {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a El pescador no tiene participaciones registradas en esta competición..
+        /// </summary>
+        public static string FisherHasNoParticipationRegistered {
+            get {
+                return ResourceManager.GetString("FisherHasNoParticipationRegistered", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No se encontró al pescador..
         /// </summary>
         public static string NotFound {

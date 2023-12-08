@@ -1,0 +1,44 @@
+﻿@using FisherTournament.Application.Tournaments.Queries.GetTournamentLeaderBoard;
+@implements IDialogContentComponent<TournamentLeaderBoardItem>
+
+<FluentDialogHeader Visible="false" />
+
+<div class="flex flex-row justify-between w-full">
+    <h2>Detalles @Content.Name</h2>
+    <FluentButton Appearance="Appearance.Stealth" IconEnd="@(new Icons.Regular.Size16.Dismiss())" OnClick="Close" />
+</div>
+
+<FluentLabel Class="whitespace-nowrap pr-3 pt-2" Typo="Typography.H5" Color="Color.Accent">Posiciones por fecha </FluentLabel>
+
+<FluentStack Orientation="Orientation.Horizontal" Class="dialog-details">
+    <FluentGrid Spacing="3" Class="dialog-details pt-4">
+        @if (Content.CompetitionPositions != null && Content.CompetitionPositions.Count > 0)
+        {
+            @foreach (var (index, pos) in Content.CompetitionPositions.Select((pos, index) => (index, pos)))
+            {
+                <FluentGridItem xs="6" sm="2">
+                    <FluentLabel class="details-header pieza" Typo="Typography.Body">Fecha N° @(index + 1)</FluentLabel>
+                        <p>@(pos)°</p>
+                    </FluentGridItem>
+            }
+        }
+
+        <FluentGridItem sm="12">
+            <FluentLabel class="details-header" Typo="Typography.Body" Color="Color.Accent">Total</FluentLabel>
+            <p>@Content.CompetitionPositions?.Sum()</p>
+        </FluentGridItem>
+    </FluentGrid>
+</FluentStack>
+
+@code {
+    [Parameter]
+	public TournamentLeaderBoardItem Content { get; set; }
+
+    [CascadingParameter]
+    public FluentDialog? Dialog { get; set; } = default!;
+
+    private Task Close()
+    {
+        return Dialog!.CloseAsync();
+    }
+}

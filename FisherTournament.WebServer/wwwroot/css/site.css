@@ -65,3 +65,17 @@ fluent-data-grid-row.header {
 span.fluent-nav-icon {
     display: none;
 }
+
+.dialog-details *, .dialog-details p {
+    width: 100%;
+    text-align: center;
+}
+
+.dialog-details .details-header {
+    /*border-bottom: 1px solid var(--accent-fill-rest);*/
+    color: var(--neutral-foreground-rest);
+}
+
+.details-header.total {
+
+}

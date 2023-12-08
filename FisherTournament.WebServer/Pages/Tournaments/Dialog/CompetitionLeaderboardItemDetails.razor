@@ -1,0 +1,124 @@
+﻿@using FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
+@using FisherTournament.Application.Competitions.Queries.GetLeaderboardItemDetails;
+
+@inject ISender _sender;
+@inject IToastService _toastService;
+
+@implements IDialogContentComponent<(string CompetitionId, LeaderBoardItem Item)>
+
+<FluentDialogHeader Visible="false" />
+
+<div class="flex flex-row justify-between w-full">
+    <h2>Detalles @Content.Item.Name</h2>
+    <FluentButton Appearance="Appearance.Stealth" IconEnd="@(new Icons.Regular.Size16.Dismiss())" OnClick="Close" />
+</div>
+
+@if (Data is not null){
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="10">
+        <div class="w-full">
+            <FluentLabel Class="whitespace-nowrap pr-3" Typo="Typography.H5" Color="Color.Accent">Piezas </FluentLabel>
+                            @* <FluentLabel Class="text-center w-full" Typo="Typography.Body" Color="Color.Disabled">@pos.DateTime.ToLocalTime().ToShortTimeString()</FluentLabel> *@
+
+            @* <FluentStack Orientation="Orientation.Horizontal" Class="dialog-details pt-4">
+                @if (Data?.Caught != null && Data?.Caught.Count() > 0)
+                {
+                    @foreach (var (index, pos) in Data.Caught.Select((pos, index) => (index, pos)))
+                    {
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="3">
+                            <h5 class="details-header">Pieza @(index + 1)</h5>
+                            <p>@(pos.Score)</p>
+                        
+                        </FluentStack>
+                    }
+                }
+
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="3">
+                    <h5 class="details-header">Total</h5>
+                    <p>@Content.Item.TotalScore</p>
+                </FluentStack>
+            </FluentStack> *@
+
+            <FluentGrid Spacing="3" Class="dialog-details pt-4">
+                @if (Data?.Caught != null && Data?.Caught.Count() > 0)
+			    {
+				    @foreach (var (index, pos) in Data?.Caught.Select((pos, index) => (index, pos)))
+				    {
+					    <FluentGridItem xs="6" sm="2">
+                            <FluentLabel class="details-header pieza" Typo="Typography.Body">Pieza @(index + 1)</FluentLabel>
+						    <p>@pos.Score</p>
+					    </FluentGridItem>
+				    }
+			    }
+
+			    <FluentGridItem sm="12">
+                    <FluentLabel class="details-header" Typo="Typography.Body" Color="Color.Accent">Puntaje total</FluentLabel>
+                    <p>@Content.Item.TotalScore</p>
+			    </FluentGridItem>
+            </FluentGrid>
+        </div>
+
+        <div class="flex flex-row pt-2.5">
+            <FluentLabel Class="whitespace-nowrap pr-3" Typo="Typography.H5" Color="Color.Accent">Pieza mayor </FluentLabel>
+
+            <div class="flex flex-row w-full items-center">
+                <FluentLabel Typo="Typography.Body">@Data?.Caught.Max(p => p.Score)</FluentLabel>
+            </div>
+        </div>
+
+        <div class="flex flex-row pt-2.5 pb-2.5">
+            <FluentLabel Class="whitespace-nowrap pr-3" Typo="Typography.H5" Color="Color.Accent">Cantidad de piezas </FluentLabel>
+
+            <div class="flex flex-row w-full items-center">
+                <FluentLabel Typo="Typography.Body">@Data?.Caught.Count()</FluentLabel>
+            </div>
+        </div>
+    </FluentStack>
+} else
+{
+    <FluentLabel Class="w-full">El pescador no tiene piezas registradas.</FluentLabel>
+}
+
+@code {
+    [Parameter]
+    public (string CompetitionId, LeaderBoardItem Item) Content { get; set; } = default!;
+
+    GetLeaderboardItemDetailsQueryResult? Data;
+
+    [CascadingParameter]
+    public FluentDialog? Dialog { get; set; } = default!;
+
+    private bool shouldClose = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var query = new GetLeaderboardItemDetailsQuery(Content.CompetitionId, Content.Item.FisherId);
+        var res = await _sender.Send(query);
+
+        if (res.IsError)
+        {
+            if (!(res.Errors.Count == 1 && res.FirstError.Code == "Fisher.FisherHasNoParticipationRegistered"))
+            {
+                _toastService.ShowErrors(res.Errors);
+                shouldClose = true;
+                return;
+            }
+        }
+        else
+        {
+            Data = res.Value;
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (shouldClose) Close();
+    }
+
+    private Task Close()
+    {
+        return Dialog!.CloseAsync();
+    }
+}
