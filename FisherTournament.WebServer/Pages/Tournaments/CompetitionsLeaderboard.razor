@@ -4,13 +4,17 @@
 @using FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
 @using FisherTournament.Application.Competitions.Queries.GetLeaderboardItemDetails;
 @using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
+@using FisherTournament.WebServer.NotificationServices.Leaderboard;
 @using FisherTournament.WebServer.Pages.Tournaments.Dialog;
+
+@implements IDisposable
 
 @inject IToastService _toastService
 @inject NavigationManager _nav
 @inject ISender _sender
 @inject IJSRuntime _js
 @inject IDialogService _dialogService
+@inject LeaderboardNotificationService _leaderboardNotificationService
 
 <h1 class="page-title-no-pt">Tabla de posiciones de la <span style="color: var(--accent-fill-rest);">competencia N° @competition.N</span></h1>
 
@@ -117,6 +121,8 @@
         }
 
         await SearchAsync();
+
+        _leaderboardNotificationService.OnLeaderboardWasUpdated += OnLeaderboardUpdated;
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -176,11 +182,26 @@
 
     void ExportCategory()
     {
-        
+
     }
 
     void ExportAllCategories() {
 
+    }
+
+    async Task OnLeaderboardUpdated(LeaderboardUpdatedEventArgs e)
+    {
+        await InvokeAsync(async () =>
+        {
+            await SearchAsync();
+
+            StateHasChanged();
+        });
+    }
+
+    void IDisposable.Dispose()
+    {
+        _leaderboardNotificationService.OnLeaderboardWasUpdated -= OnLeaderboardUpdated;
     }
 
 

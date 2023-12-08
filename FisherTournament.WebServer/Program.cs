@@ -5,6 +5,7 @@ using FisherTournament.Infrastracture.Persistence.Tournaments;
 using FisherTournament.WebServer;
 using FisherTournament.WebServer.Common.Validation;
 using FluentValidation;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Fast.Components.FluentUI;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,15 +14,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
+builder.Services.AddSignalR();
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+          new[] { "application/octet-stream" });
+});
+
 builder.Services.AddSettings(builder.Configuration)
-				.AddApplication()
-				.AddInfrastructure()
-				.AddWebServer();
+                .AddApplication()
+                .AddInfrastructure()
+                .AddWebServer();
 
 builder.Services.AddFluentUIComponents(options =>
 {
-	//options.HostingModel = BlazorHostingModel.Server;
-	//options.
+    //options.HostingModel = BlazorHostingModel.Server;
+    //options.
 });
 
 builder.Services.AddLocalization();
@@ -29,15 +37,15 @@ builder.Services.AddLocalization();
 var app = builder.Build();
 
 app.UseRequestLocalization(new RequestLocalizationOptions()
-	.AddSupportedCultures(new[] { "es", "en-US" })
-	.AddSupportedUICultures(new[] { "es", "en-US" }));
+    .AddSupportedCultures(new[] { "es", "en-US" })
+    .AddSupportedUICultures(new[] { "es", "en-US" }));
 
 ValidatorOptions.Global.LanguageManager = new LanguageManagerWithoutPropertyNames();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-	app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/Error");
 }
 
 app.UseStaticFiles();
@@ -47,16 +55,18 @@ app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
+app.UseResponseCompression();
+
 // Ensure DB CREATED
 using (var scope = app.Services.CreateScope())
 {
-	var services = scope.ServiceProvider;
+    var services = scope.ServiceProvider;
 
-	var dbReadModels = services.GetRequiredService<ReadModelsDbContext>();
-	dbReadModels.Database.EnsureCreated();
+    var dbReadModels = services.GetRequiredService<ReadModelsDbContext>();
+    dbReadModels.Database.EnsureCreated();
 
-	var dbMain = services.GetRequiredService<TournamentFisherDbContext>();
-	dbMain.Database.EnsureCreated();
+    var dbMain = services.GetRequiredService<TournamentFisherDbContext>();
+    dbMain.Database.EnsureCreated();
 }
 
 

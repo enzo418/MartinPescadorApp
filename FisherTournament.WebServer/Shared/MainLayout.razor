@@ -1,11 +1,15 @@
-﻿@using Microsoft.Fast.Components.FluentUI.DesignTokens
+﻿@using FisherTournament.WebServer.NotificationServices.Leaderboard;
+@using Microsoft.Fast.Components.FluentUI.DesignTokens
 
 @namespace FisherTournament.WebServer.Shared
 
 @inherits LayoutComponentBase
+@implements IDisposable
 
 @inject BaseLayerLuminance BaseLayerLuminance
 @inject GlobalState GlobalState
+@inject LeaderboardNotificationService _leaderboardNotificationService
+@inject IToastService _toast
 
 <PageTitle>FisherTournament.WebServer</PageTitle>
 
@@ -31,6 +35,9 @@
     protected override void OnInitialized()
     {
         IsInDarkMode = _baseLayerLuminance == StandardLuminance.DarkMode;
+
+        _leaderboardNotificationService.OnLeaderboardWasUpdated += OnLeaderboardUpdated;
+
         base.OnInitialized();
     }
 
@@ -48,5 +55,16 @@
         await BaseLayerLuminance.SetValueFor(container, _baseLayerLuminance.GetLuminanceValue());
 
         GlobalState.SetLuminance(_baseLayerLuminance);
+    }
+
+    Task OnLeaderboardUpdated(LeaderboardUpdatedEventArgs e)
+    {
+        _toast.ShowInfo("Se actualizó la tabla de posiciones");
+        return Task.CompletedTask;
+    }
+
+    void IDisposable.Dispose()
+    {
+        _leaderboardNotificationService.OnLeaderboardWasUpdated -= OnLeaderboardUpdated;
     }
 }

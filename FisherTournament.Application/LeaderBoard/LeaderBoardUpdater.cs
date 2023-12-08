@@ -28,13 +28,20 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
     private readonly ITournamentFisherDbContext _context;
     private readonly ILogger<LeaderBoardUpdater> _logger;
     private readonly IReadModelsUnitOfWork _readModelsUnitOfWork;
+    private readonly IEnumerable<ILeaderboardNotificationClient> _leaderboardNotificationClients;
 
-    public LeaderBoardUpdater(ApplicationInstrumentation instrumentation, ITournamentFisherDbContext context, ILogger<LeaderBoardUpdater> logger, IReadModelsUnitOfWork readModelsUnitOfWork)
+    public LeaderBoardUpdater(
+        ApplicationInstrumentation instrumentation,
+        ITournamentFisherDbContext context,
+        ILogger<LeaderBoardUpdater> logger,
+        IReadModelsUnitOfWork readModelsUnitOfWork,
+        IEnumerable<ILeaderboardNotificationClient> leaderboardNotificationClients)
     {
         _instrumentation = instrumentation;
         _context = context;
         _logger = logger;
         _readModelsUnitOfWork = readModelsUnitOfWork;
+        _leaderboardNotificationClients = leaderboardNotificationClients;
     }
 
     /// <summary>
@@ -70,6 +77,15 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
         }
 
         await UpdateTournamentLeaderBoard(tournamentId, categoryId);
+
+        // Run notification in parallel
+        var competitionsIdsString = competitionsIds.Select(x => x.ToString());
+        var tasks = _leaderboardNotificationClients.Select(client => client.OnLeaderboardUpdated(
+            tournamentId.ToString(),
+            categoryId.ToString(),
+            competitionsIdsString));
+
+        await Task.WhenAll(tasks);
     }
 
     private async Task UpdateCompetitionLeaderBoard(CompetitionId competitionId, CategoryId categoryId, CancellationToken cancellationToken = default)

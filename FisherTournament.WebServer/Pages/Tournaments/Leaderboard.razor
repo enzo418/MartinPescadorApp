@@ -3,6 +3,7 @@
 @using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
 @using FisherTournament.Application.Tournaments.Queries.GetTournamentLeaderBoard;
 @using FisherTournament.Application.Competitions.Queries.GetTournamentCompetitions;
+@using FisherTournament.WebServer.NotificationServices.Leaderboard;
 @using FisherTournament.WebServer.Pages.Tournaments.Dialog;
 
 @inject IToastService _toastService
@@ -10,6 +11,8 @@
 @inject ISender _sender
 @inject IJSRuntime _js
 @inject IDialogService _dialogService
+@inject LeaderboardNotificationService _notificationService
+@implements IDisposable
 
 <h1 class="page-title-no-pt">Tabla de posiciones del <span style="color: var(--accent-fill-rest);">torneo</span></h1>
 
@@ -106,6 +109,13 @@
         }
 
         await FetchTournamentCompetitions();
+
+        _notificationService.OnLeaderboardWasUpdated += OnLeaderboardUpdated;
+    }
+
+    void IDisposable.Dispose()
+    {
+        _notificationService.OnLeaderboardWasUpdated -= OnLeaderboardUpdated;
     }
 
     async Task FetchLeaderboard()
@@ -131,11 +141,11 @@
         var result = await _sender.Send(query);
 
         if (result.IsError)
-		{
-			_toastService.ShowErrors(result.Errors);
-			shouldExit = true;
-			return;
-		}
+        {
+            _toastService.ShowErrors(result.Errors);
+            shouldExit = true;
+            return;
+        }
 
         competitions = result.Value.Select(c => new Competencia(c.Id, c.N)).ToList();
 
@@ -155,11 +165,13 @@
         if (shouldExit) await _js.GoBack();
     }
 
-    async Task OnSelectedCategoryAsync(ChangeEventArgs e)
+    Task OnSelectedCategoryAsync(ChangeEventArgs e)
     {
         _selectedCategoryId = e.Value?.ToString();
 
         SetRendedContent();
+
+        return Task.CompletedTask;
     }
 
     async Task OnSelectedCompetitionAsync()
@@ -179,7 +191,21 @@
     }
 
     void GoToCompetition(Competencia competition)
-	{
+    {
         _nav.NavigateTo($"/tournament/{TournamentId}/leaderboard/{competition.Id}");
-	}
+    }
+
+    async Task OnLeaderboardUpdated(LeaderboardUpdatedEventArgs e)
+    {
+        if (e.TournamentId != TournamentId) return;
+        
+        await InvokeAsync(async () =>
+		{
+            await FetchLeaderboard();
+
+            SetRendedContent();
+
+            StateHasChanged();
+		});
+    }
 }

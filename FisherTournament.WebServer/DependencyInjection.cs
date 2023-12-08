@@ -1,4 +1,6 @@
+using FisherTournament.Application.LeaderBoard;
 using FisherTournament.Infrastracture.Common.Mapping;
+using FisherTournament.WebServer.NotificationServices.Leaderboard;
 using Mapster;
 using System.Linq.Expressions;
 
@@ -15,6 +17,16 @@ namespace FisherTournament.WebServer
             TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
 
             services.AddMappings();
+
+            services.AddLeaderboardNotifier();
+
+            return services;
+        }
+
+        private static IServiceCollection AddLeaderboardNotifier(this IServiceCollection services)
+        {
+            services.AddSingleton<LeaderboardNotificationService>();
+            services.AddSingleton<ILeaderboardNotificationClient>(provider => provider.GetRequiredService<LeaderboardNotificationService>());
 
             return services;
         }
