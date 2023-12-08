@@ -1,18 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FisherTournament.Domain.TournamentAggregate.ValueObjects;
-using FisherTournament.Application.Common.Metrics;
 using FisherTournament.Application.Common.Instrumentation;
+using FisherTournament.Application.Common.Metrics;
 using FisherTournament.Application.Common.Persistence;
+using FisherTournament.Domain.CompetitionAggregate.Entities;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
+using FisherTournament.Domain.TournamentAggregate.ValueObjects;
+using FisherTournament.ReadModels.Models;
+using FisherTournament.ReadModels.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using FisherTournament.ReadModels.Persistence;
-using FisherTournament.ReadModels.Models;
-using FisherTournament.Domain.CompetitionAggregate.Entities;
 
 namespace FisherTournament.Application.LeaderBoard;
 
@@ -104,7 +100,7 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
                     {
                         FisherId = f.Id,
                         Score = p == null ? -1 : p.TotalScore,
-                        LargerPiece = p.FishCaught.Max(piece => piece.Score)
+                        LargerPiece = p == null ? 0 : p.FishCaught.Max(piece => piece.Score)
                     }
                 ).ToListAsync(cancellationToken);
 
@@ -275,8 +271,7 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
                 existing.Positions = positions;
 
                 leaderBoardRepository.UpdateTournamentLeaderBoardItem(existing);
-            }
-            else
+            } else
             {
                 leaderBoardRepository.AddTournamentLeaderBoardItem(
                     new LeaderboardTournamentCategoryItem
@@ -317,8 +312,7 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
                 previousLeaderBoardItem.Score = newScore;
 
                 leaderBoardRepository.UpdateCompetitionLeaderBoardItem(previousLeaderBoardItem);
-            }
-            else
+            } else
             {
                 leaderBoardRepository.AddCompetitionLeaderBoardItem(
                     new LeaderboardCompetitionCategoryItem

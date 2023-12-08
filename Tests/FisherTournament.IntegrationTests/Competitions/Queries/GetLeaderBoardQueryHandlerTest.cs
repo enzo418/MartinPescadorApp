@@ -428,5 +428,67 @@ namespace FisherTournament.IntegrationTests.Competitions.Queries
                         .ShouldHavePosition(2, fisher2.Id, 35)
                         .ShouldHavePosition(3, fisher3.Id, 35);
         }
+
+        [Fact]
+        /// <summary>
+        /// When a fisher didn't participate in a competition, but was inscribed in the tournament,
+        /// the leaderboard should still show the fisher with 0 points.
+        public async Task Handler_Should_ReturnValidLeaderboard_WhenParticipationIsNull()
+        {
+            // Arrange
+            using var context = _fixture.TournamentContext;
+            var fisher1 = context.PrepareFisher("First1", "Last1", out var _);
+            var fisher2 = context.PrepareFisher("First2", "Last2", out var _);
+            var fisher3 = context.PrepareFisher("First3", "Last3", out var _);
+
+            var tournament = await TournamentBuilder.Create(context, _fixture.DateTimeProvider)
+                .WithName("Test Tournament")
+                .WithStartDate(_fixture.DateTimeProvider.Now)
+                .WithEndDate(_fixture.DateTimeProvider.Now.AddDays(2))
+
+                .WithCategory("Primary")
+
+                .WithInscription(fisher1.Id, 1, "Primary")
+                .WithInscription(fisher2.Id, 2, "Primary")
+                .WithInscription(fisher3.Id, 3, "Primary")
+
+                .Build(CancellationToken.None);
+
+            var categoryPrimary = tournament.Categories.First(c => c.Name == "Primary");
+
+            var competition = await context.WithAsync(CompetitionBuilder.Create(_fixture.DateTimeProvider)
+                .WithTournament(tournament.Id)
+                .WithLocation(Location.Create("Test City", "Test State", "Test Country", "Test Place"))
+
+                .WithScore(fisher1.Id, 50)
+                .WithScore(fisher1.Id, 5)
+
+                // Don't register a "CompetitionParticipation" ->> .WithScore(fisher2.Id, 50)
+
+                .WithScore(fisher3.Id, 15)
+
+                .WithN(1)
+
+                .Build());
+
+
+            Func<Task> updateCall = () => _fixture.ExecutePendingLeaderBoardJobs();
+
+            // Act
+            await updateCall.Should().NotThrowAsync();
+
+            var result = await _fixture.SendAsync(new GetCompetitionLeaderBoardQuery(competition.Id.ToString()));
+
+            // Assert
+            result.IsError.Should().BeFalse();
+            result.Value.Should().NotBeNull();
+            result.Value!.Should().HaveCount(2);
+
+            result.Value.ShouldHaveCategoryLeaderBoard("Primary", categoryPrimary.Id)
+                        .ShouldHaveNPositions(3)
+                        .ShouldHavePosition(1, fisher1.Id, 55)
+                        .ShouldHavePosition(2, fisher3.Id, 15)
+                        .ShouldHavePosition(3, fisher2.Id, -1);
+        }
     }
 }
