@@ -125,7 +125,7 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
         // first let's prepare for the worts case scenario
         var fishersToLoadCaughtFish = fishersFromCategoryWithScore
                 .GroupBy(f => new { f.Score, f.LargerPiece })
-                .Where(group => group.Key.Score != 0) // Filter out those that did not catch any fish
+                .Where(group => group.Key.Score > 0) // Filter out those that did not catch any fish
                 .Where(group => group.Count() > 1) // Only groups with more than 1 fisher
                 .Select(group => group.ToList());
 
@@ -155,7 +155,7 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
                 .OrderByDescending(f => f.Score)
                 .ThenByDescending(f => f.LargerPiece)
                 .ThenByDescending(f => f.TieDiscriminator)
-                .ThenByDescending(f => f.FisherId)
+                .ThenByDescending(f => f.FisherId.Value)
                 .ToList();
 
         // 4. Get the fishers positions respecting the system rules
@@ -165,18 +165,12 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
                                                 .GetCompetitionCategoryLeaderBoard(competitionId,
                                                                                    categoryId);
 
-        int currentPosition = 0;
-        int previousScore = int.MaxValue;
+        int currentPosition = 1;
 
         _logger.LogInformation($"Will update {fishersFromCategoryWithScore.Count} fishers");
 
         foreach (var fisher in fishersFromCategoryWithScore)
         {
-            if (fisher.Score != previousScore)
-            {
-                currentPosition++;
-            }
-
             UpdateFisherPositionOnCompetition(competitionId,
                                               categoryId,
                                               leaderBoardRepository,
@@ -185,49 +179,72 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
                                               newScore: fisher.Score,
                                               fisher.FisherId);
 
-            previousScore = fisher.Score;
+            if (fisher.Score > 0) // the position can only be repeated for -1 and 0
+            {
+                currentPosition++;
+            }
         }
 
         _readModelsUnitOfWork.Commit();
     }
 
     /// <summary>
-    /// break the tie by "go to the first catch of both, the bigger one wins, if they are the same, go to the second catch, and so on."
+    /// This function generates a "TieDiscriminator" for each fisher that has the same score and larger piece.
+    /// Break the tie by "go to the first catch of both, the bigger one wins, if they are the same, go to the second catch, and so on."
     /// </summary>
     /// <param name="fishersToBreakTie"></param>
     /// <param name="fisherCaughtFish"></param>
-    private static void BreakTieByFirstLargerPiece(IEnumerable<List<FisherWithScore>> fishersToBreakTie,
+    private void BreakTieByFirstLargerPiece(IEnumerable<List<FisherWithScore>> fishersToBreakTie,
                                                    Dictionary<FisherId, IEnumerable<FishCaught>> fisherCaughtFish)
     {
+        using var _ = _instrumentation.ActivitySource.StartActivity("BreakTieByFirstLargerPiece");
+
         foreach (var fishers in fishersToBreakTie)
         {
-            int maxCaughtFishCount = fishers.Max(f => fisherCaughtFish[f.FisherId].Count());
-            int tiesToBreak = fishers.Count;
+            BreakTieByFirstLargerPiece(fishers, fisherCaughtFish);
+        }
+    }
 
-            for (int i = 0; i < maxCaughtFishCount; i++)
+    private static void BreakTieByFirstLargerPiece(
+        List<FisherWithScore> fishers,
+        Dictionary<FisherId, IEnumerable<FishCaught>> fisherCaughtFish,
+        int startFromFishCount = 0)
+    {
+        int maxCaughtFishCount = fishers.Max(f => fisherCaughtFish[f.FisherId].Count());
+        int tiesToBreak = fishers.Count;
+
+        for (int i = startFromFishCount; i < maxCaughtFishCount; i++)
+        {
+            if (tiesToBreak == 1 || tiesToBreak == 0)
             {
-                if (tiesToBreak == 1)
-                {
-                    // the reminder fisher will have -1 as tie discriminator, 
-                    // making it the last by descending order.
-                    break;
-                }
+                // If tiesToBreak == 1 the reminder fisher will have -1 as tie discriminator, 
+                // making it the last by descending order.
+                break;
+            }
 
-                // 1. Get the larger piece in this index. 
-                int biggestCaughtPiece = fishers.Max(f => f.TieDiscriminator != -1
-                                                                ? 0 // Ignore the piece if the fisher has a valid tie discriminator
-                                                                : fisherCaughtFish[f.FisherId].ElementAtOrDefault(i)?.Score ?? 0);
+            // Order them by descending score in this index, if two or more fishers (that were not sorted before -> TieDiscriminator == -1)
+            // have the same score in this index, then BreakTieByFirstLargerPiece will be called again with the fishers that have the same
+            // score in this index.
+            var fishersWithSameScore = fishers.Where(f => f.TieDiscriminator == -1)
+                                                .GroupBy(p => fisherCaughtFish[p.FisherId].ElementAtOrDefault(i)?.Score ?? 0)
+                                                .Where(group => group.Count() > 1)
+                                                .SelectMany(group => group)
+                                                .ToList();
 
-                // 2. Select all the fishers that have the same score and larger piece in this index.
-                var fishersWithSameLargerPiece = fishers.Where(f => fisherCaughtFish[f.FisherId].ElementAtOrDefault(i)?.Score == biggestCaughtPiece);
+            var fishersWithDifferentScore = fishers.Where(f => f.TieDiscriminator == -1)
+                                                    .Except(fishersWithSameScore)
+                                                    .OrderByDescending(f => fisherCaughtFish[f.FisherId].ElementAtOrDefault(i)?.Score ?? 0)
+                                                    .ToList();
 
-                // 3. If there is only one fisher set the tie discriminator to the current value and decrease it
-                if (fishersWithSameLargerPiece.Count() == 1)
-                {
-                    fishersWithSameLargerPiece.First().TieDiscriminator = tiesToBreak--;
-                }
+            foreach (var fisher in fishersWithDifferentScore)
+            {
+                fisher.TieDiscriminator = tiesToBreak--;
+            }
 
-                // else, keep going
+            if (fishersWithSameScore.Count > 0)
+            {
+                BreakTieByFirstLargerPiece(fishersWithSameScore, fisherCaughtFish, i + 1);
+                break;
             }
         }
     }

@@ -40,10 +40,16 @@ namespace FisherTournament.IntegrationTests.Tournaments.Queries
                                                                                 FisherId fisherId,
                                                                                 List<int> competitionPositions)
         {
-            var leaderBoardPosition = leaderBoard.ElementAt(position - 1);
-            leaderBoardPosition.FisherId.Should().Be(fisherId.ToString());
-            leaderBoardPosition.Position.Should().Be(position);
-            leaderBoardPosition.CompetitionPositions.Should().BeEquivalentTo(competitionPositions);
+            var leaderBoardPosition = leaderBoard.Where(p => p.Position == position).ToList();
+
+            leaderBoardPosition.Count.Should().Be(1);
+
+            leaderBoardPosition.First().FisherId.Should().Be(fisherId.ToString());
+
+            leaderBoardPosition.First().Position.Should().Be(position);
+
+            leaderBoardPosition.First().CompetitionPositions.Should().BeEquivalentTo(competitionPositions);
+
             return leaderBoard;
         }
     }
