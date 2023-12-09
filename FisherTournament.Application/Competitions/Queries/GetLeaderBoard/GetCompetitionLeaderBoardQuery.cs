@@ -16,7 +16,7 @@ namespace FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
 public record struct GetCompetitionLeaderBoardQuery(string CompetitionId)
      : IRequest<ErrorOr<IEnumerable<LeaderBoardCategory>>>;
 
-public record struct LeaderBoardItem(string FisherId, string Name, int Position, int TotalScore);
+public record struct LeaderBoardItem(string FisherId, string Name, int Position, int TotalScore, string? TieBreakingReason);
 
 public record struct LeaderBoardCategory(string Name, string Id, IEnumerable<LeaderBoardItem> LeaderBoard);
 
@@ -101,7 +101,8 @@ public class GetCompetitionLeaderBoardQueryHandler
                             r.FisherId.ToString(),
                             fisher?.Name ?? string.Empty,
                             r.Position,
-                            r.Score
+                            r.Score,
+                            r.TieBreakingReason
                         );
                     })
                 )
@@ -118,7 +119,8 @@ public class GetCompetitionLeaderBoardQueryHandler
                                         l.FisherId,
                                         l.Name,
                                         ++position,
-                                        l.TotalScore
+                                        l.TotalScore,
+                                        null
                                     ))
                                     .ToList()
                                 );

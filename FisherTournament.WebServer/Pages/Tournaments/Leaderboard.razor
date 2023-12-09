@@ -3,8 +3,11 @@
 @using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
 @using FisherTournament.Application.Tournaments.Queries.GetTournamentLeaderBoard;
 @using FisherTournament.Application.Competitions.Queries.GetTournamentCompetitions;
-@using FisherTournament.WebServer.NotificationServices.Leaderboard;
+@using FisherTournament.WebServer.Services.ExportLeaderboard;
+@using FisherTournament.WebServer.Services.LeaderboardNotification;
 @using FisherTournament.WebServer.Pages.Tournaments.Dialog;
+
+@implements IDisposable
 
 @inject IToastService _toastService
 @inject NavigationManager _nav
@@ -12,7 +15,9 @@
 @inject IJSRuntime _js
 @inject IDialogService _dialogService
 @inject LeaderboardNotificationService _notificationService
-@implements IDisposable
+@inject ExportLeaderboardService _exportService
+@inject ILogger<Leaderboard> _logger
+
 
 <h1 class="page-title-no-pt">Tabla de posiciones del <span style="color: var(--accent-fill-rest);">torneo</span></h1>
 
@@ -45,7 +50,7 @@
         </div>
 
     </div>
-    <FluentButton IconStart="@(new Icons.Regular.Size16.Share())" Appearance="Appearance.Outline">Exportar</FluentButton>
+    <FluentButton IconStart="@(new Icons.Regular.Size16.Share())" OnClick="ExportLeaderboard" Appearance="Appearance.Outline">Exportar</FluentButton>
 </div>
 @* <FluentDivider class="mt-4 mb-4" />  *@
 
@@ -198,14 +203,34 @@
     async Task OnLeaderboardUpdated(LeaderboardUpdatedEventArgs e)
     {
         if (e.TournamentId != TournamentId) return;
-        
+
         await InvokeAsync(async () =>
-		{
+        {
             await FetchLeaderboard();
 
             SetRendedContent();
 
             StateHasChanged();
-		});
+        });
+    }
+
+    async Task ExportLeaderboard()
+    {
+        try{
+            var exportReq = await _exportService.ExportTournamentLeaderboard(TournamentId);
+
+            if (exportReq.IsError)
+            {
+                _toastService.ShowErrors(exportReq.Errors);
+            }
+            else
+            {
+                _toastService.ShowSuccess($"Tabla de posiciones exportada correctamente. Puede encontrar el archivo en la carpeta de descargas de su navegador con el nombre {exportReq.Value}");
+            }
+        }catch(Exception e)
+		{
+            _logger.LogError(e, "Error exporting leaderboard");
+			_toastService.ShowError("Ocurrió un error al exportar la tabla de posiciones");
+		}
     }
 }

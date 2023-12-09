@@ -1,6 +1,6 @@
 ﻿using FisherTournament.Application.LeaderBoard;
 
-namespace FisherTournament.WebServer.NotificationServices.Leaderboard
+namespace FisherTournament.WebServer.Services.LeaderboardNotification
 {
     public record struct LeaderboardUpdatedEventArgs(string TournamentId, string CategoryId, IEnumerable<string>? CompetitionIds);
     public delegate Task LeaderboardUpdateHandler(LeaderboardUpdatedEventArgs args);

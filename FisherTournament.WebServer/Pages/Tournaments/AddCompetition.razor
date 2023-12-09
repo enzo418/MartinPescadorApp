@@ -64,6 +64,7 @@
 		<FluentButton 
 				IconStart="@(new Icons.Regular.Size16.Checkmark())" 
 				Appearance="Appearance.Accent"
+				Disabled="@_saving"
 				Type="ButtonType.Submit">Guardar</FluentButton>
 	</div>
 </EditForm>
@@ -73,6 +74,8 @@
 	public string TournamentId { get; set; } = null!;
 
 	AddCompetitionRequest Model { get; set; } = default!;
+
+	private bool _saving = false;
 
 	private DateTime? SelectedDate { 
 		get
@@ -107,8 +110,9 @@
 
 	async Task Submit()
 	{
-		if (!_editContext.Validate()) return;
+		if (!_editContext.Validate() || _saving) return;
 
+		_saving = true;
 		var command = _mapper.Map<AddCompetitionsCommand>((new AddCompetitionsRequest(new() { Model }), TournamentId));
 		var res = await _sender.Send(command);
 
@@ -118,6 +122,7 @@
 		}
 		else
 		{
+			//_saving = false;
 			_toastService.ShowSuccess("Competición agregada");
 			await _js.GoBack();
 		}

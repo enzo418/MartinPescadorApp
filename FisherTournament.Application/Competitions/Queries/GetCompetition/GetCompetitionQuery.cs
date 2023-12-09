@@ -13,6 +13,7 @@ namespace FisherTournament.Application.Competitions.Queries.GetCompetition
 
     public record struct GetCompetitionQueryResponse(
         string CompetitionId,
+        string TuornamentId,
         int N,
         DateTime StartDateTime,
         DateTime? EndDateTime,
@@ -42,6 +43,7 @@ namespace FisherTournament.Application.Competitions.Queries.GetCompetition
                 .Where(c => c.Id == competitionId.Value)
                 .Select(c => new GetCompetitionQueryResponse(
                     c.Id.ToString(),
+                    c.TournamentId.ToString(),
                     c.N,
                     c.StartDateTime,
                     c.EndDateTime,

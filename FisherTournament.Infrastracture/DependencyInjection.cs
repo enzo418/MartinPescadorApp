@@ -19,83 +19,84 @@ namespace FisherTournament.Infrastracture;
 
 public static partial class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
-    {
-        services.AddDbContext<ITournamentFisherDbContext, TournamentFisherDbContext>((provider, options) =>
-        {
-            var dataBaseConnectionSettings = provider.GetRequiredService<DataBaseConnectionSettings>();
-            ArgumentNullException.ThrowIfNull(dataBaseConnectionSettings.TournamentDbConnectionString);
-            // options.UseSqlServer(dataBaseConnectionSettings.ConnectionString);
-            options.UseSqlite(dataBaseConnectionSettings.TournamentDbConnectionString);
-            // options.LogTo(System.Console.WriteLine);
-            // options.EnableSensitiveDataLogging();
+	public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+	{
+		services.AddDbContext<ITournamentFisherDbContext, TournamentFisherDbContext>((provider, options) =>
+		{
+			var dataBaseConnectionSettings = provider.GetRequiredService<DataBaseConnectionSettings>();
+			ArgumentNullException.ThrowIfNull(dataBaseConnectionSettings.TournamentDbConnectionString);
+			// options.UseSqlServer(dataBaseConnectionSettings.ConnectionString);
+			options.UseSqlite(dataBaseConnectionSettings.TournamentDbConnectionString);
+			// options.LogTo(System.Console.WriteLine);
+			// options.EnableSensitiveDataLogging();
 
-            options.AddInterceptors(new TraceDbConnectionInterceptor(provider.GetRequiredService<ILogger<TraceDbConnectionInterceptor>>()));
+			options.AddInterceptors(new TraceDbConnectionInterceptor(provider.GetRequiredService<ILogger<TraceDbConnectionInterceptor>>()));
 
-            options.AddInterceptors(new RelaxSqliteDbConnectionInterceptor());
-        });
+			options.AddInterceptors(new RelaxSqliteDbConnectionInterceptor());
+		});
 
-        services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+		services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
-        AddReadModels(services);
-        AddLeaderBoardUpdateServices(services);
+		AddReadModels(services);
+		AddLeaderBoardUpdateServices(services);
 
-        return services;
-    }
+		return services;
+	}
 
-    private static void AddLeaderBoardUpdateServices(IServiceCollection services)
-    {
-        services.AddSingleton<ILeaderBoardUpdateScheduler, BatchLeaderBoardUpdateScheduler>();
-        services.AddScoped<ILeaderBoardUpdater, LeaderBoardUpdater>();
+	private static void AddLeaderBoardUpdateServices(IServiceCollection services)
+	{
+		services.AddSingleton<ILeaderBoardUpdateScheduler, BatchLeaderBoardUpdateScheduler>();
 
-        services.AddQuartz(q =>
-        {
-            var jobKey = LeaderBoardUpdateJobExecuter.JobKey;
+		services.AddScoped<ILeaderBoardUpdater, LeaderBoardUpdater>();
 
-            q.AddJob<LeaderBoardUpdateJobExecuter>(opts => opts.WithIdentity(jobKey))
-                .AddTrigger(opt =>
-                        opt.ForJob(jobKey)
-                            .WithSimpleSchedule(s =>
-                            s.WithInterval(BatchLeaderBoardUpdateScheduler.CallInterval)
-                             .RepeatForever()));
+		services.AddQuartz(q =>
+		{
+			var jobKey = LeaderBoardUpdateJobExecuter.JobKey;
 
-            q.UseMicrosoftDependencyInjectionJobFactory();
-        });
+			q.AddJob<LeaderBoardUpdateJobExecuter>(opts => opts.WithIdentity(jobKey))
+				.AddTrigger(opt =>
+						opt.ForJob(jobKey)
+							.WithSimpleSchedule(s =>
+							s.WithInterval(BatchLeaderBoardUpdateScheduler.CallInterval)
+							 .RepeatForever()));
 
-        services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
-    }
+			q.UseMicrosoftDependencyInjectionJobFactory();
+		});
 
-    private static void AddReadModels(IServiceCollection services)
-    {
-        services.AddSingleton<RelaxSqliteDbConnectionInterceptor>();
-        services.AddSingleton<TraceDbConnectionInterceptor>();
+		services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+	}
 
-        services.AddDbContext<ReadModelsDbContext>((provider, builder) =>
-        {
-            var dataBaseConnectionSettings = provider.GetRequiredService<DataBaseConnectionSettings>();
-            builder.UseSqlite(dataBaseConnectionSettings.ReadModelsDbConnectionString);
+	private static void AddReadModels(IServiceCollection services)
+	{
+		services.AddSingleton<RelaxSqliteDbConnectionInterceptor>();
+		services.AddSingleton<TraceDbConnectionInterceptor>();
 
-            builder.AddInterceptors(provider.GetRequiredService<TraceDbConnectionInterceptor>());
-            builder.AddInterceptors(provider.GetRequiredService<RelaxSqliteDbConnectionInterceptor>());
-        });
+		services.AddDbContext<ReadModelsDbContext>((provider, builder) =>
+		{
+			var dataBaseConnectionSettings = provider.GetRequiredService<DataBaseConnectionSettings>();
+			builder.UseSqlite(dataBaseConnectionSettings.ReadModelsDbConnectionString);
 
-        services.AddScoped<IReadModelsUnitOfWork, ReadModelsUnitOfWork>();
-        services.AddScoped<ILeaderBoardRepository, LeaderBoardRepository>();
-    }
+			builder.AddInterceptors(provider.GetRequiredService<TraceDbConnectionInterceptor>());
+			builder.AddInterceptors(provider.GetRequiredService<RelaxSqliteDbConnectionInterceptor>());
+		});
 
-    public static IServiceCollection AddSettings(this IServiceCollection services, IConfiguration configuration)
-    {
-        { // DB
-            DataBaseConnectionSettings dataBaseConnectionSettings = new();
+		services.AddScoped<IReadModelsUnitOfWork, ReadModelsUnitOfWork>();
+		services.AddScoped<ILeaderBoardRepository, LeaderBoardRepository>();
+	}
 
-            configuration.Bind(
-                nameof(DataBaseConnectionSettings),
-                dataBaseConnectionSettings);
+	public static IServiceCollection AddSettings(this IServiceCollection services, IConfiguration configuration)
+	{
+		{ // DB
+			DataBaseConnectionSettings dataBaseConnectionSettings = new();
 
-            services.AddSingleton(dataBaseConnectionSettings);
-        }
+			configuration.Bind(
+				nameof(DataBaseConnectionSettings),
+				dataBaseConnectionSettings);
+
+			services.AddSingleton(dataBaseConnectionSettings);
+		}
 
 
-        return services;
-    }
+		return services;
+	}
 }

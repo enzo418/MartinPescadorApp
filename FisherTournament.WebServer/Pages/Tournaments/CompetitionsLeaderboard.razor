@@ -4,7 +4,8 @@
 @using FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
 @using FisherTournament.Application.Competitions.Queries.GetLeaderboardItemDetails;
 @using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
-@using FisherTournament.WebServer.NotificationServices.Leaderboard;
+@using FisherTournament.WebServer.Services.ExportLeaderboard;
+@using FisherTournament.WebServer.Services.LeaderboardNotification;
 @using FisherTournament.WebServer.Pages.Tournaments.Dialog;
 
 @implements IDisposable
@@ -14,7 +15,9 @@
 @inject ISender _sender
 @inject IJSRuntime _js
 @inject IDialogService _dialogService
+@inject ExportLeaderboardService _exportService
 @inject LeaderboardNotificationService _leaderboardNotificationService
+@inject ILogger<CompetitionsLeaderboard> _logger
 
 <h1 class="page-title-no-pt">Tabla de posiciones de la <span style="color: var(--accent-fill-rest);">competencia N° @competition.N</span></h1>
 
@@ -31,38 +34,39 @@
         </FluentSelect>
     </div>
     
-    <FluentButton 
-        Id="btnOpenExport"
-        IconEnd="@(new Icons.Regular.Size16.ChevronDown())"
-        @onclick="@(() => _openExport = !_openExport)" 
-        Appearance="Appearance.Outline">
-        Exportar
-    </FluentButton>
 
-    <FluentMenu Anchor="btnOpenExport" @bind-Open="_openExport" Class="rounded-md">
-        @if (GetCurrentCategoryName() is var catName && !string.IsNullOrEmpty(catName))
-        {
-            <FluentMenuItem OnClick=ExportCategory Class="gap-x-3.5 flex flex-row pl-2">
-                <span slot="start"><FluentIcon Value="@(new Icons.Regular.Size24.Share())" Color="Color.Accent" Slot="start" /></span>
-                Exportar categoria "@catName"
-            </FluentMenuItem>
-            <FluentDivider />
-        }
-        <FluentMenuItem OnClick=ExportAllCategories Class="gap-x-3.5 flex flex-row pl-2">
-            <span slot="start"><FluentIcon Value="@(new Icons.Regular.Size24.Share())" Color="Color.Accent" Slot="start" /></span>
-            Exportar todas las categorias
-        </FluentMenuItem>
-    </FluentMenu>
+    <FluentButton IconStart="@(new Icons.Regular.Size16.Share())" OnClick="ExportLeaderboard" Appearance="Appearance.Outline">Exportar</FluentButton>
 </div>
-@* <FluentDivider class="mt-4 mb-4" />  *@
 
-<FluentDataGrid Items="@positions" Virtualize="true" ItemSize="50" GridTemplateColumns="0.1fr 0.6fr 0.3fr 0.5fr">
+<FluentDataGrid Items="@positions" Virtualize="true" ItemSize="50" GridTemplateColumns=@(_selectedCategoryId == "General" ? "0.2fr 0.6fr 0.3fr 0.5fr" : "0.2fr 0.6fr 0.3fr 0.4fr 0.5fr")>
     <ChildContent>
         <PropertyColumn Title="Posición" Property="@(c => c.Position)" />
 
         <PropertyColumn Title="Nombre" Property="@(c => c.Name)" />
 
         <PropertyColumn Title="Suma de Puntos" Property="@(c => c.TotalScore)" />
+
+        @* <PropertyColumn Title="Desempate" Property="@(c => c.TieBreakingReason)" /> *@
+        @if (_selectedCategoryId != "General")
+        {
+            <TemplateColumn Title="Desempate">
+                @if (context.TieBreakingReason is not null)
+                {
+                    <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
+                        <span>@context.TieBreakingReason</span>                
+                        <FluentIcon Id="@context.FisherId" Icon="Icons.Regular.Size16.Info" />
+
+                        <FluentTooltip Anchor="@context.FisherId">
+                            M/P = Por mayor pieza
+                            <br />
+                            M/NP = Por la mayor N-ésima pieza
+                            <br />
+                            D = Aleatorio
+                        </FluentTooltip>
+                    </FluentStack>
+                }
+            </TemplateColumn>
+        }
 
         <TemplateColumn Title="Acciones" Align="@Align.End">
             <FluentButton IconStart="@(new Icons.Regular.Size24.Info())"
@@ -100,8 +104,6 @@
     string _selectedCategoryId = "";
 
     GetCompetitionQueryResponse competition = default!;
-
-    private FluentDialog? _dialog;
 
     private bool shouldExit = false;
 
@@ -187,6 +189,26 @@
 
     void ExportAllCategories() {
 
+    }
+
+    async Task ExportLeaderboard()
+    {
+        try
+        {
+            var exportReq = await _exportService.ExportCompetitionLeaderboard(CompetitionId);
+
+            if (exportReq.IsError)
+            {
+                _toastService.ShowErrors(exportReq.Errors);
+            } else
+            {
+                _toastService.ShowSuccess($"Tabla de posiciones exportada correctamente. Puede encontrar el archivo en la carpeta de descargas de su navegador con el nombre {exportReq.Value}");
+            }
+        } catch (Exception e)
+        {
+            _logger.LogError(e, "Error exporting leaderboard");
+            _toastService.ShowError("Ocurrió un error al exportar la tabla de posiciones");
+        }
     }
 
     async Task OnLeaderboardUpdated(LeaderboardUpdatedEventArgs e)

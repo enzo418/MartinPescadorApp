@@ -12,4 +12,5 @@ public class LeaderboardCompetitionCategoryItem : EntityModel
     public int Position { get; set; }
     public CategoryId CategoryId { get; set; } = null!;
     public int Score { get; set; }
+    public string? TieBreakingReason { get; set; }
 }

@@ -1,6 +1,6 @@
-using System.Reflection;
 using ErrorOr;
 using FisherTournament.Domain.Common.Errors;
+using System.Reflection;
 
 namespace FisherTournament.Domain;
 
@@ -28,8 +28,7 @@ public abstract class GuidId<T> : ValueObject
                            | BindingFlags.NonPublic
                            | BindingFlags.Public,
                        null, new object[] { id }, null)!;
-        }
-        catch (System.Exception)
+        } catch (System.Exception)
         {
             return GenerateErrorWithNames();
         }
