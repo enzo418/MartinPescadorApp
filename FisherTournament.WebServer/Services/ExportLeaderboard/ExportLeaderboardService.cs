@@ -43,22 +43,20 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
                 var ws = wb.Worksheets.Add($"{sanitizedCatName}");
 
                 // Header with the tournament name and year and the category name
-                var rngHeader = ws.Cell(1, 1).SetValue($"Torneo {sanitizedTournamentName} {tournamentDataRequest.Value.StartDate.Year} - categoría {cat.Name}");
-                rngHeader.Style.Font.Bold = true;
-                ws.Range(rngHeader, ws.Cell(1, 2 + tournamentCompetitionsRequest.Value.Count)).Merge();
-                rngHeader.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                var rngHeader = ws.Cell(1, 1).SetValue($"Torneo {sanitizedTournamentName} {tournamentDataRequest.Value.StartDate.Year} - categoría {cat.Name}".ToUpper());
 
                 // Next is Pos final | Nombre | Fecha 1 | Fecha 2 | Fecha 3 | ... | Total
-                ws.Cell(2, 1).SetValue("Pos final");
-                ws.Cell(2, 2).SetValue("Nombre");
+                ws.Cell(2, 1).SetValue("POS");
+                ws.Cell(2, 2).SetValue("PESCADOR");
 
                 int col = 3;
 
                 tournamentCompetitionsRequest.Value.OrderBy(c => c.N).ToList().ForEach(comp =>
-                    ws.Cell(2, col++).SetValue($"Fecha {comp.N}")
+                    ws.Cell(2, col++).SetValue($"{comp.N}ª")
                 );
 
-                ws.Cell(2, ++col).SetValue("Total");
+                ws.Cell(2, col).SetValue("TOTAL");
+
 
                 // Now we add the data
                 int row = 3;
@@ -66,7 +64,7 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
                 cat.LeaderBoard.ToList().ForEach(item =>
                 {
                     ws.Cell(row, 1).SetValue(item.Position);
-                    ws.Cell(row, 2).SetValue(item.Name);
+                    ws.Cell(row, 2).SetValue(item.Name.ToUpper());
 
                     int j = 3;
                     item.CompetitionPositions.ForEach(score =>
@@ -78,14 +76,13 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
 
                     row++;
                 });
+
+                ApplyCategoryHeaderStyle(ws.Range(1, 1, 1, ws.Worksheet.ColumnsUsed().Count()));
+                ApplyCategoryColumsHeaderStyle(ws.Range(2, 1, 2, ws.Worksheet.ColumnsUsed().Count()));
+                ApplyPositionsRowStyle(ws.Range(2, 1, ws.Worksheet.RowsUsed().Count(), 1));
             }
 
-            // Final styling
-            wb.Worksheets.ToList().ForEach(ws =>
-            {
-                ws.Columns().AdjustToContents();
-                ws.Rows().AdjustToContents();
-            });
+            ApplyDefaultStyle(wb);
 
             var fileName = $"Torneo {sanitizedTournamentName} {tournamentDataRequest.Value.StartDate.Year} - categorias.xlsx";
             wb.SaveAs(fileName);
@@ -115,16 +112,17 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
                 var ws = wb.Worksheets.Add($"{sanitizedCatName}");
 
                 // Title
-                var rngHeader = ws.Cell(1, 1).SetValue($"Categoría {cat.Name} - {competitionDataRequest.Value.N}° Fecha");
-                rngHeader.Style.Font.Bold = true;
-                ws.Range(rngHeader, ws.Cell(1, 4)).Merge();
-                rngHeader.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                ws.Cell(1, 1).SetValue($"Categoría {cat.Name} - {competitionDataRequest.Value.N}° Fecha".ToUpper());
+                ApplyCategoryHeaderStyle(ws.Range(1, 1, 1, 4));
 
                 // Colums header
-                ws.Cell(2, 1).SetValue("Posición");
-                ws.Cell(2, 2).SetValue("Nombre");
-                ws.Cell(2, 3).SetValue("Puntaje total");
-                ws.Cell(2, 4).SetValue("Desempate");
+                ws.Cell(2, 1).SetValue("POS");
+                ws.Cell(2, 2).SetValue("PESCADOR");
+                ws.Cell(2, 3).SetValue("TOTAL");
+                ws.Cell(2, 4).SetValue("DESEMPATE");
+
+                var rngHeader2 = ws.Range(2, 1, 2, 4);
+                ApplyCategoryColumsHeaderStyle(rngHeader2);
 
                 // Now we add the data
                 int row = 3;
@@ -132,20 +130,17 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
                 cat.LeaderBoard.ToList().ForEach(item =>
                 {
                     ws.Cell(row, 1).SetValue(item.Position);
-                    ws.Cell(row, 2).SetValue(item.Name);
+                    ws.Cell(row, 2).SetValue(item.Name.ToUpper());
                     ws.Cell(row, 3).SetValue(item.TotalScore);
                     ws.Cell(row, 4).SetValue(item.TieBreakingReason);
 
                     row++;
                 });
+
+                ApplyPositionsRowStyle(ws.Range(2, 1, ws.Worksheet.RowsUsed().Count(), 1));
             }
 
-            // Final styling
-            wb.Worksheets.ToList().ForEach(ws =>
-            {
-                ws.Columns().AdjustToContents();
-                ws.Rows().AdjustToContents();
-            });
+            ApplyDefaultStyle(wb);
 
             var fileName = $"Torneo {sanitizedTournamentName} - {competitionDataRequest.Value.N}° Fecha.xlsx";
 
@@ -153,5 +148,46 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
 
             return fileName;
         }
+
+        internal static void ApplyCategoryHeaderStyle(IXLRange range)
+        {
+            range.Merge();
+            range.Style.Font.Bold = true;
+            range.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        }
+
+        internal static void ApplyCategoryColumsHeaderStyle(IXLRange range)
+        {
+            range.Style.Fill.SetBackgroundColor(XLColor.FromArgb(139, 174, 182))
+                            .Font.SetBold(true)
+                            .Font.SetItalic(true);
+        }
+
+        internal static void ApplyPositionsRowStyle(IXLRange range)
+        {
+            range.Style.Fill.SetBackgroundColor(XLColor.FromArgb(139, 174, 182))
+                       .Font.SetBold(true);
+        }
+
+        internal static void ApplyDefaultStyle(IXLRange range)
+        {
+            range.Style.Font.SetFontName("Arial")
+                            .Font.SetFontSize(12)
+                            .Border.SetTopBorder(XLBorderStyleValues.Thin)
+                            .Border.SetRightBorder(XLBorderStyleValues.Thin)
+                            .Border.SetBottomBorder(XLBorderStyleValues.Thin)
+                            .Border.SetLeftBorder(XLBorderStyleValues.Thin);
+        }
+
+        internal static void ApplyDefaultStyle(XLWorkbook wb)
+        {
+            wb.Worksheets.ToList().ForEach(ws =>
+            {
+                ApplyDefaultStyle(ws.RangeUsed());
+                ws.Columns().AdjustToContents(10, Double.MaxValue);
+                ws.Rows().AdjustToContents(10, Double.MaxValue);
+            });
+        }
     }
+
 }
