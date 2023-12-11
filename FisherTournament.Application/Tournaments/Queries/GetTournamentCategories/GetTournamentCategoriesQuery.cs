@@ -1,6 +1,7 @@
 ﻿using ErrorOr;
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.Common.Errors;
+using FisherTournament.Domain.TournamentAggregate;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 using MediatR;
 
@@ -42,8 +43,8 @@ namespace FisherTournament.Application.Tournaments.Queries.GetTournamentCategori
                 return Errors.Tournaments.NotFound;
             }
 
-            var categories = tournament.Categories.Select(
-                c => new GetTournamentCategoriesQueryResult(c.Id.ToString(), c.Name));
+            var categories = tournament.Categories.Where(c => c.Name != Tournament.GeneralCategoryName)
+                                                  .Select(c => new GetTournamentCategoriesQueryResult(c.Id.ToString(), c.Name));
 
             return categories.ToList();
         }

@@ -42,5 +42,9 @@ public static partial class Errors
         public static Error FisherHasAlreadyScored => Error.Conflict(
             code: "Tournament.FisherHasAlreadyScored",
             description: TournamentErrors.FisherHasAlreadyScored);
+
+        public static Error CannotAddInscriptionToGeneralCategory => Error.Conflict(
+            code: "Tournament.CannotAddInscriptionToGeneralCategory",
+            description: TournamentErrors.CannotAddInscriptionToGeneralCategory);
     }
 }

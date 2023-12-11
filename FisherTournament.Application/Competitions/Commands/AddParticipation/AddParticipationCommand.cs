@@ -1,7 +1,6 @@
 using ErrorOr;
 using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Domain.Common.Errors;
-using FisherTournament.Domain.CompetitionAggregate.DomainEvents;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using MediatR;
@@ -63,8 +62,6 @@ public class AddParticipationCommandHandler : IRequestHandler<AddParticipationCo
         {
             return Errors.Fishers.NotFound;
         }
-
-        competition.AddDomainEvent(new ParticipationAddedDomainEvent(fisherId.Value, competition.Id));
 
         competition.AddParticipation(fisherId.Value);
 

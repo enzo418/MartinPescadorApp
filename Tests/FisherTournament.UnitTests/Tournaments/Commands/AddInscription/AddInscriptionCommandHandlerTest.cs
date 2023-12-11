@@ -1,17 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FisherTournament.Application.Common.Persistence;
 using FisherTournament.Application.Tournaments.Commands.AddInscription;
-using FisherTournament.Domain.Common.Provider;
-using FisherTournament.Domain.FisherAggregate;
-using FisherTournament.Domain.TournamentAggregate;
 using FisherTournament.Domain.TournamentAggregate.Entities;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
-using FisherTournament.Domain.UserAggregate.ValueObjects;
-using MockQueryable.Moq;
-using Moq;
 
 namespace FisherTournament.UnitTests.Tournaments.Commands
 {

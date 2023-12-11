@@ -120,6 +120,9 @@
   <data name="AlreadyEnded" xml:space="preserve">
     <value>El torneo ya ha terminado.</value>
   </data>
+  <data name="CannotAddInscriptionToGeneralCategory" xml:space="preserve">
+    <value>No se puede inscribir en la categoría "General". Es reservada.</value>
+  </data>
   <data name="CompetitionHasEarlierStartDate" xml:space="preserve">
     <value>La competencia tiene una fecha de inicio anterior.</value>
   </data>

@@ -1,5 +1,4 @@
 using FisherTournament.Application.Tournaments.Commands.AddInscription;
-using FisherTournament.Domain.TournamentAggregate.Entities;
 
 namespace FisherTournament.IntegrationTests.Tournaments.Commands
 {
@@ -42,6 +41,38 @@ namespace FisherTournament.IntegrationTests.Tournaments.Commands
                 .HaveCount(1)
                 .And
                 .Contain(i => i.FisherId == fisher.Id);
+        }
+
+
+
+        [Fact]
+        public async Task Handler_ShouldNot_AllowEnrollment_WhenCategoryIsGeneral()
+        {
+            using var context = _fixture.TournamentContext;
+
+            var tournament = context.PrepareAdd(Tournament.Create(
+                "Test Tournament",
+                _fixture.DateTimeProvider.Now.AddDays(1),
+                _fixture.DateTimeProvider.Now.AddDays(2))
+            );
+
+            var fisher = context.PrepareAdd(Fisher.Create("First", "Last"));
+
+            await context.SaveChangesAndClear();
+
+            var category = tournament.Categories.Where(c => c.Name == Tournament.GeneralCategoryName).FirstOrDefault()!;
+
+            var command = new AddInscriptionCommand(tournament.Id.ToString(),
+                                                    fisher.Id.ToString(),
+                                                    category.Id,
+                                                    1);
+
+            // Act
+            var result = await _fixture.SendAsync(command);
+
+            // Assert
+            result.IsError.Should().BeTrue();
+            result.FirstError.Should().Be(Errors.Tournaments.CannotAddInscriptionToGeneralCategory);
         }
     }
 }

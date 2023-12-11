@@ -144,4 +144,7 @@
   <data name="FisherHasAlreadyScored" xml:space="preserve">
     <value>No se puede modificar la inscripción: El pescador ya ha puntuado en este torneo</value>
   </data>
+  <data name="CannotAddInscriptionToGeneralCategory" xml:space="preserve">
+    <value>No se puede inscribir en la categoría "General". Es reservada.</value>
+  </data>
 </root>

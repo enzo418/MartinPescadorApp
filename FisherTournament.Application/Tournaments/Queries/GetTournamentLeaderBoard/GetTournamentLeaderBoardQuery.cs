@@ -100,25 +100,8 @@ public class GetTournamentLeaderBoardQueryHandler
                         );
                     })
                 )
-            );
+            ).ToList();
 
-        // Calculate "General" category, which is the sum of all categories. Whoever has the lowest sum wins.
-        int position = 0;
-        var generalCategory = new TournamentLeaderBoardCategory(
-                                    "General",
-                                    "General",
-                                    categories.SelectMany(c => c.LeaderBoard)
-                                        .OrderBy(l => l.CompetitionPositions.Sum())
-                                        .ThenBy(l => l.FisherId)
-                                        .Select(l => new TournamentLeaderBoardItem(
-                                            l.FisherId,
-                                            l.Name,
-                                            ++position,
-                                            l.CompetitionPositions
-                                        ))
-                                        .ToList()
-                                    );
-
-        return new List<TournamentLeaderBoardCategory>(categories) { generalCategory };
+        return categories;
     }
 }

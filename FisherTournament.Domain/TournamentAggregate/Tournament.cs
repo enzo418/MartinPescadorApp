@@ -11,227 +11,263 @@ namespace FisherTournament.Domain.TournamentAggregate;
 
 public class Tournament : AggregateRoot<TournamentId>
 {
-	private List<CompetitionId> _competitionsIds = new();
-	private List<TournamentInscription> _inscriptions = new();
-	private List<Category> _categories = new();
+    public static readonly string GeneralCategoryName = "General";
 
-	private Tournament(TournamentId id,
-					   string name,
-					   DateTime startDate,
-					   DateTime? endDate,
-					   List<Category> categories)
-		: base(id)
-	{
-		Name = name;
-		StartDate = startDate;
-		EndDate = endDate;
-		_categories = categories;
-	}
+    private List<CompetitionId> _competitionsIds = new();
+    private List<TournamentInscription> _inscriptions = new();
+    private List<Category> _categories = new();
 
-	public string Name { get; private set; }
-	public DateTime StartDate { get; private set; }
-	public DateTime? EndDate { get; private set; }
+    private Tournament(TournamentId id,
+                       string name,
+                       DateTime startDate,
+                       DateTime? endDate,
+                       List<Category> categories)
+        : base(id)
+    {
+        Name = name;
+        StartDate = startDate;
+        EndDate = endDate;
+        _categories = categories;
 
-	public IReadOnlyCollection<CompetitionId> CompetitionsIds => _competitionsIds.AsReadOnly();
-	public IReadOnlyCollection<TournamentInscription> Inscriptions => _inscriptions.AsReadOnly();
-	public IReadOnlyCollection<Category> Categories => _categories.AsReadOnly();
+        AddCategory(Category.Create(GeneralCategoryName));
+    }
 
-	public void AddCompetition(CompetitionId competitionId)
-	{
-		_competitionsIds.Add(competitionId);
-	}
+    public string Name { get; private set; }
+    public DateTime StartDate { get; private set; }
+    public DateTime? EndDate { get; private set; }
 
-	public void RemoveCompetition(CompetitionId competitionId)
-	{
-		_competitionsIds.Remove(competitionId);
-	}
+    public IReadOnlyCollection<CompetitionId> CompetitionsIds => _competitionsIds.AsReadOnly();
+    public IReadOnlyCollection<TournamentInscription> Inscriptions => _inscriptions.AsReadOnly();
+    public IReadOnlyCollection<Category> Categories => _categories.AsReadOnly();
 
-	public ErrorOr<Success> AddInscription(FisherId fisherId,
-										   CategoryId categoryId,
-										   int number,
-										   IDateTimeProvider dateTimeProvider)
-	{
-		if (Inscriptions.Any(i => i.FisherId == fisherId))
-		{
-			return Errors.Tournaments.InscriptionAlreadyExists;
-		}
+    public void AddCompetition(CompetitionId competitionId)
+    {
+        _competitionsIds.Add(competitionId);
 
-		if (Inscriptions.Any(i => i.Number == number))
-		{
-			return Errors.Tournaments.InscriptionNumberAlreadyExists;
-		}
+        AddDomainEvent(new CompetitionAddedDomainEvent(Id, competitionId));
+    }
 
-		if (EndDate < dateTimeProvider.Now)
-		{
-			return Errors.Tournaments.IsOver;
-		}
+    public void RemoveCompetition(CompetitionId competitionId)
+    {
+        _competitionsIds.Remove(competitionId);
+    }
 
-		if (!Categories.Any(c => c.Id == categoryId))
-		{
-			return Errors.Categories.NotFound;
-		}
+    public ErrorOr<Success> AddInscription(FisherId fisherId,
+                                           CategoryId categoryId,
+                                           int number,
+                                           IDateTimeProvider dateTimeProvider)
+    {
+        if (Inscriptions.Any(i => i.FisherId == fisherId))
+        {
+            return Errors.Tournaments.InscriptionAlreadyExists;
+        }
 
-		_inscriptions.Add(TournamentInscription.Create(Id, fisherId, categoryId, number));
+        if (Inscriptions.Any(i => i.Number == number))
+        {
+            return Errors.Tournaments.InscriptionNumberAlreadyExists;
+        }
 
-		AddDomainEvent(new InscriptionAddedDomainEvent(fisherId, categoryId, Id));
+        if (EndDate < dateTimeProvider.Now)
+        {
+            return Errors.Tournaments.IsOver;
+        }
 
-		return Result.Success;
-	}
+        if (!Categories.Any(c => c.Id == categoryId))
+        {
+            return Errors.Categories.NotFound;
+        }
 
-	public ErrorOr<Updated> UpdateInscription(FisherId fisherId,
-											  CategoryId? categoryId,
-											  int? number,
-											  IDateTimeProvider dateTimeProvider)
-	{
-		if (EndDate < dateTimeProvider.Now)
-		{
-			return Errors.Tournaments.IsOver;
-		}
+        if (Categories.Where(c => c.Name == GeneralCategoryName).Any(c => c.Id == categoryId))
+        {
+            return Errors.Tournaments.CannotAddInscriptionToGeneralCategory;
+        }
 
-		var inscription = _inscriptions.Find(i => i.FisherId == fisherId);
+        _inscriptions.Add(TournamentInscription.Create(Id, fisherId, categoryId, number));
 
-		if (inscription == null)
-		{
-			return Errors.Tournaments.InscriptionNotFound;
-		}
+        AddDomainEvent(new InscriptionAddedDomainEvent(fisherId, categoryId, Id));
 
-		if (categoryId is not null)
-		{
-			if (!Categories.Any(c => c.Id == categoryId))
-			{
-				return Errors.Categories.NotFound;
-			}
+        return Result.Success;
+    }
 
-			inscription.UpdateCategory(categoryId);
-		}
+    public ErrorOr<Updated> UpdateInscription(FisherId fisherId,
+                                              CategoryId? categoryId,
+                                              int? number,
+                                              IDateTimeProvider dateTimeProvider)
+    {
+        if (EndDate < dateTimeProvider.Now)
+        {
+            return Errors.Tournaments.IsOver;
+        }
 
-		if (number.HasValue)
-		{
-			if (Inscriptions.Any(i => i.Number == number))
-			{
-				return Errors.Tournaments.InscriptionNumberAlreadyExists;
-			}
+        var inscription = _inscriptions.Find(i => i.FisherId == fisherId);
 
-			inscription.UpdateNumber(number.Value);
-		}
+        if (inscription == null)
+        {
+            return Errors.Tournaments.InscriptionNotFound;
+        }
 
-		// TODO: Update leadeboard ???
-		//AddDomainEvent(new InscriptionUpdatedDomainEvent(fisherId, categoryId, Id));
+        if (categoryId is not null)
+        {
+            if (!Categories.Any(c => c.Id == categoryId))
+            {
+                return Errors.Categories.NotFound;
+            }
 
-		return Result.Updated;
-	}
+            if (Categories.Where(c => c.Name == GeneralCategoryName).Any(c => c.Id == categoryId))
+            {
+                return Errors.Tournaments.CannotAddInscriptionToGeneralCategory;
+            }
 
-	public bool IsFisherEnrolled(FisherId fisherId)
-	{
-		return _inscriptions.Find(x => x.FisherId == fisherId) != null;
-	}
+            inscription.UpdateCategory(categoryId);
+        }
 
-	public ErrorOr<Category> AddCategory(string categoryName)
-	{
-		if (_categories.Any(c => c.Name == categoryName))
-		{
-			return Errors.Categories.AlreadyExistsWithName;
-		}
+        if (number.HasValue)
+        {
+            if (Inscriptions.Any(i => i.Number == number))
+            {
+                return Errors.Tournaments.InscriptionNumberAlreadyExists;
+            }
 
-		var category = Category.Create(categoryName);
+            inscription.UpdateNumber(number.Value);
+        }
 
-		_categories.Add(category);
+        // TODO: Update leadeboard ???
+        //AddDomainEvent(new InscriptionUpdatedDomainEvent(fisherId, categoryId, Id));
 
-		return category;
-	}
+        return Result.Updated;
+    }
 
-	public ErrorOr<Category> AddCategory(Category category)
-	{
-		if (_categories.Any(c => c.Name == category.Name))
-		{
-			return Errors.Categories.AlreadyExistsWithName;
-		}
+    public bool IsFisherEnrolled(FisherId fisherId)
+    {
+        return _inscriptions.Find(x => x.FisherId == fisherId) != null;
+    }
 
-		_categories.Add(category);
+    public ErrorOr<Category> AddCategory(string categoryName)
+    {
+        if (_categories.Any(c => c.Name == categoryName))
+        {
+            return Errors.Categories.AlreadyExistsWithName;
+        }
 
-		return category;
-	}
+        var category = Category.Create(categoryName);
 
-	public ErrorOr<Success> DeleteCategory(CategoryId categoryId)
-	{
-		var category = _categories.Find(c => c.Id == categoryId);
+        _categories.Add(category);
 
-		if (category == null)
-		{
-			return Errors.Categories.NotFound;
-		}
+        return category;
+    }
 
-		_categories.Remove(category);
+    public ErrorOr<Category> AddCategory(Category category)
+    {
+        if (_categories.Any(c => c.Name == category.Name))
+        {
+            return Errors.Categories.AlreadyExistsWithName;
+        }
 
-		return Result.Success;
-	}
+        _categories.Add(category);
 
-	public ErrorOr<Success> EditCategory(CategoryId id, string name)
-	{
-		if (_categories.Any(c => c.Id == id))
-		{
-			_categories.Find(c => c.Id == id)?.ChangeName(name);
+        return category;
+    }
 
-			return Result.Success;
-		} else
-		{
-			return Errors.Categories.NotFound;
-		}
-	}
+    public ErrorOr<Success> DeleteCategory(CategoryId categoryId)
+    {
+        var category = _categories.Find(c => c.Id == categoryId);
 
-	public static Tournament Create(string name,
-									DateTime startDate,
-									DateTime? endDate,
-									List<Category>? categories = null)
-	{
-		return new Tournament(Guid.NewGuid(),
-							  name,
-							  startDate,
-							  endDate,
-							  categories ?? new List<Category>());
-	}
+        if (category == null)
+        {
+            return Errors.Categories.NotFound;
+        }
 
-	public ErrorOr<Success> SetName(string name)
-	{
-		Name = name;
+        if (category.Name == GeneralCategoryName)
+        {
+            return Error.Conflict();
+        }
 
-		return Result.Success;
-	}
+        _categories.Remove(category);
 
-	public ErrorOr<Success> SetStartDate(DateTime startDate)
-	{
-		if (startDate.Kind != DateTimeKind.Utc)
-		{
-			return Error.Validation(nameof(startDate), "Start date must be UTC");
-		}
+        return Result.Success;
+    }
 
-		StartDate = startDate;
+    public ErrorOr<Success> EditCategory(CategoryId id, string name)
+    {
+        if (_categories.Any(c => c.Id == id))
+        {
+            var category = _categories.FirstOrDefault(c => c.Id == id);
 
-		return Result.Success;
-	}
+            if (category is not null)
+            {
+                if (_categories.Any(c => c.Name == name))
+                {
+                    return Errors.Categories.AlreadyExistsWithName;
+                }
 
-	public ErrorOr<Success> EndTournament(IDateTimeProvider dateTimeProvider)
-	{
-		if (EndDate != null)
-		{
-			return Errors.Tournaments.AlreadyEnded;
-		}
+                if (category.Name == GeneralCategoryName)
+                {
+                    return Error.Conflict();
+                }
 
-		EndDate = dateTimeProvider.Now;
+                category.ChangeName(name);
+            }
 
-		return Result.Success;
-	}
+            return Result.Success;
+        } else
+        {
+            return Errors.Categories.NotFound;
+        }
+    }
 
-	public ErrorOr<Success> UndoEndTournament()
-	{
-		EndDate = null;
+    public static Tournament Create(string name,
+                                    DateTime startDate,
+                                    DateTime? endDate,
+                                    List<Category>? categories = null)
+    {
+        return new Tournament(Guid.NewGuid(),
+                              name,
+                              startDate,
+                              endDate,
+                              categories ?? new List<Category>());
+    }
 
-		return Result.Success;
-	}
+    public ErrorOr<Success> SetName(string name)
+    {
+        Name = name;
+
+        return Result.Success;
+    }
+
+    public ErrorOr<Success> SetStartDate(DateTime startDate)
+    {
+        if (startDate.Kind != DateTimeKind.Utc)
+        {
+            return Error.Validation(nameof(startDate), "Start date must be UTC");
+        }
+
+        StartDate = startDate;
+
+        return Result.Success;
+    }
+
+    public ErrorOr<Success> EndTournament(IDateTimeProvider dateTimeProvider)
+    {
+        if (EndDate != null)
+        {
+            return Errors.Tournaments.AlreadyEnded;
+        }
+
+        EndDate = dateTimeProvider.Now;
+
+        return Result.Success;
+    }
+
+    public ErrorOr<Success> UndoEndTournament()
+    {
+        EndDate = null;
+
+        return Result.Success;
+    }
 
 #pragma warning disable CS8618
-	private Tournament()
-	{
-	}
+    private Tournament()
+    {
+    }
 #pragma warning restore CS8618
 }

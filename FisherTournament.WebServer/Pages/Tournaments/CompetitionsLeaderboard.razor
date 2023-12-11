@@ -38,7 +38,7 @@
     <FluentButton IconStart="@(new Icons.Regular.Size16.Share())" OnClick="ExportLeaderboard" Appearance="Appearance.Outline">Exportar</FluentButton>
 </div>
 
-<FluentDataGrid Items="@positions" Virtualize="true" ItemSize="50" GridTemplateColumns=@(_selectedCategoryId == "General" ? "0.2fr 0.6fr 0.3fr 0.5fr" : "0.2fr 0.6fr 0.3fr 0.4fr 0.5fr")>
+<FluentDataGrid Items="@positions" Virtualize="true" ItemSize="50" GridTemplateColumns="0.2fr 0.6fr 0.3fr 0.4fr 0.5fr">
     <ChildContent>
         <PropertyColumn Title="Posición" Property="@(c => c.Position)" />
 
@@ -47,26 +47,24 @@
         <PropertyColumn Title="Suma de Puntos" Property="@(c => c.TotalScore)" />
 
         @* <PropertyColumn Title="Desempate" Property="@(c => c.TieBreakingReason)" /> *@
-        @if (_selectedCategoryId != "General")
-        {
-            <TemplateColumn Title="Desempate">
-                @if (context.TieBreakingReason is not null)
-                {
-                    <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
-                        <span>@context.TieBreakingReason</span>                
-                        <FluentIcon Id="@context.FisherId" Icon="Icons.Regular.Size16.Info" />
+       
+        <TemplateColumn Title="Desempate">
+            @if (context.TieBreakingReason is not null)
+            {
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
+                    <span>@context.TieBreakingReason</span>                
+                    <FluentIcon Id="@context.FisherId" Icon="Icons.Regular.Size16.Info" />
 
-                        <FluentTooltip Anchor="@context.FisherId">
-                            M/P = Por mayor pieza
-                            <br />
-                            M/NP = Por la mayor N-ésima pieza
-                            <br />
-                            D = Aleatorio
-                        </FluentTooltip>
-                    </FluentStack>
-                }
-            </TemplateColumn>
-        }
+                    <FluentTooltip Anchor="@context.FisherId">
+                        M/P = Por mayor pieza
+                        <br />
+                        M/NP = Por la mayor N-ésima pieza
+                        <br />
+                        D = Aleatorio
+                    </FluentTooltip>
+                </FluentStack>
+            }
+        </TemplateColumn>
 
         <TemplateColumn Title="Acciones" Align="@Align.End">
             <FluentButton IconStart="@(new Icons.Regular.Size24.Info())"

@@ -106,25 +106,8 @@ public class GetCompetitionLeaderBoardQueryHandler
                         );
                     })
                 )
-            );
+            ).ToList();
 
-        // Calculate "General" category, which is merging all categories. Whoever has the highest score wins.
-        int position = 0;
-        var generalCategory = new LeaderBoardCategory(
-                                "General",
-                                "General",
-                                categories.SelectMany(c => c.LeaderBoard)
-                                    .OrderByDescending(l => l.TotalScore)
-                                    .Select(l => new LeaderBoardItem(
-                                        l.FisherId,
-                                        l.Name,
-                                        ++position,
-                                        l.TotalScore,
-                                        null
-                                    ))
-                                    .ToList()
-                                );
-
-        return new List<LeaderBoardCategory>(categories) { generalCategory };
+        return categories;
     }
 }

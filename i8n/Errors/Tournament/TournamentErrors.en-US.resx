@@ -117,31 +117,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CompetitionHasEarlierStartDate">
+  <data name="CompetitionHasEarlierStartDate" xml:space="preserve">
     <value>Competition has earlier start date.</value>
   </data>
-  <data name="AlreadyEnded">
+  <data name="AlreadyEnded" xml:space="preserve">
     <value>Tournament already ended.</value>
   </data>
-  <data name="NotFound">
+  <data name="NotFound" xml:space="preserve">
     <value>Tournament not found.</value>
   </data>
-  <data name="NotEnrolled">
+  <data name="NotEnrolled" xml:space="preserve">
     <value>Fisher is not enrolled in the tournament</value>
   </data>
-  <data name="InscriptionAlreadyExists">
+  <data name="InscriptionAlreadyExists" xml:space="preserve">
     <value>Fisher is already enrolled in the tournament</value>
   </data>
-  <data name="IsOver">
+  <data name="IsOver" xml:space="preserve">
     <value>Tournament is over</value>
   </data>
-  <data name="InscriptionNumberAlreadyExists">
+  <data name="InscriptionNumberAlreadyExists" xml:space="preserve">
     <value>Inscription number already exists</value>
   </data>
-  <data name="InscriptionNotFound">
+  <data name="InscriptionNotFound" xml:space="preserve">
     <value>Inscription not found</value>
   </data>
-  <data name="FisherHasAlreadyScored">
+  <data name="FisherHasAlreadyScored" xml:space="preserve">
     <value>Inscription cannot be modified: Fisher has already scored in this tournament</value>
+  </data>
+  <data name="CannotAddInscriptionToGeneralCategory" xml:space="preserve">
+    <value>Cannot enroll in the 'General' category. It's reserved.</value>
   </data>
 </root>

@@ -70,6 +70,15 @@ namespace i8n.Errors.Tournament {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No se puede inscribir en la categoría &quot;General&quot;. Es reservada..
+        /// </summary>
+        public static string CannotAddInscriptionToGeneralCategory {
+            get {
+                return ResourceManager.GetString("CannotAddInscriptionToGeneralCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a La competencia tiene una fecha de inicio anterior..
         /// </summary>
         public static string CompetitionHasEarlierStartDate {

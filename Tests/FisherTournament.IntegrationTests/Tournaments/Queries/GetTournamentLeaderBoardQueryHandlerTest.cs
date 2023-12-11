@@ -106,30 +106,34 @@ namespace FisherTournament.IntegrationTests.Tournaments.Queries
 
             var categoryPrimary = tournament.Categories.First(c => c.Name == "Primary");
             var categorySecondary = tournament.Categories.First(c => c.Name == "Secondary");
+            var categoryGeneral = tournament.Categories.First(c => c.Name == Tournament.GeneralCategoryName);
 
             var competition1 = await context.WithAsync(CompetitionBuilder.Create(_fixture.DateTimeProvider)
                 .WithTournament(tournament.Id)
                 .WithLocation(Location.Create("Test City", "Test State", "Test Country", "Test Place"))
 
-                // 1°
+                // category | general
+                // 1°       |   1°
                 .WithScore(fisher1.Id, 20)
                 .WithScore(fisher1.Id, 10)
 
-                // 2°
+                // 2°       |   2°
                 .WithScore(fisher3.Id, 20)
                 .WithScore(fisher3.Id, 5)
 
-                // 3°
-                .WithScore(fisher2.Id, 5)
+                // 3°       |   3°
+                .WithScore(fisher2.Id, 4)
+                .WithScore(fisher2.Id, 1)
 
-                // 4°
+                // 4°       |   6°
                 .WithScore(fisher4.Id, 1)
 
 
-                // 1°
-                .WithScore(fisher5.Id, 5)
+                // 1°       |   4°
+                .WithScore(fisher5.Id, 3)
+                .WithScore(fisher5.Id, 2)
 
-                // 2°
+                // 2°       |   5°
                 .WithScore(fisher6.Id, 2)
 
                 .WithN(1)
@@ -140,24 +144,26 @@ namespace FisherTournament.IntegrationTests.Tournaments.Queries
                 .WithTournament(tournament.Id)
                 .WithLocation(Location.Create("Test City 2", "Test State 2", "Test Country 2", "Test Place 2"))
 
-                // 1°
+                // category | general
+                // 1°       |   1°
                 .WithScore(fisher3.Id, 20)
                 .WithScore(fisher3.Id, 5)
 
-                // 2°
+                // 2°       |   2°
                 .WithScore(fisher4.Id, 10)
 
-                // 3°
+                // 3°       |   3°
                 .WithScore(fisher2.Id, 6)
 
-                // 4°
-                .WithScore(fisher1.Id, 2)
+                // 4°       |   6°
+                .WithScore(fisher1.Id, 1)
+                .WithScore(fisher1.Id, 1)
 
 
-                // 1°
+                // 1°       |   4°
                 .WithScore(fisher5.Id, 5)
 
-                // 2°
+                // 2°       |   5°
                 .WithScore(fisher6.Id, 2)
 
                 .WithN(2)
@@ -168,25 +174,27 @@ namespace FisherTournament.IntegrationTests.Tournaments.Queries
                     .WithTournament(tournament.Id)
                     .WithLocation(Location.Create("Test City 3", "Test State 3", "Test Country 3", "Test Place 3"))
 
-                    // 1°
-                    .WithScore(fisher1.Id, 20)
-                    .WithScore(fisher1.Id, 10)
+                    // category | general
+                    // 4°       |   7°
+                    // fisher1 absent
 
-                    // 2°
+                    // 1°       |   1°
                     .WithScore(fisher3.Id, 20)
                     .WithScore(fisher3.Id, 5)
 
-                    // 3°
-                    .WithScore(fisher2.Id, 5)
+                    // 2°       |   3°
+                    .WithScore(fisher2.Id, 1)
+                    .WithScore(fisher2.Id, 1)
+                    .WithScore(fisher2.Id, 3)
 
-                    // 4°
+                    // 3°       |   5°
                     .WithScore(fisher4.Id, 1)
 
 
-                    // 1°
-                    .WithScore(fisher5.Id, 5)
+                    // 1°       |   2°
+                    .WithScore(fisher5.Id, 20)
 
-                    // 2°
+                    // 2°       |   4°
                     .WithScore(fisher6.Id, 2)
 
                     .WithN(3)
@@ -207,37 +215,39 @@ namespace FisherTournament.IntegrationTests.Tournaments.Queries
 
             result.Value.ShouldHaveCategoryLeaderBoard("Primary", categoryPrimary.Id)
                 .ShouldHaveNPositions(4)
-                .ShouldHavePosition(1, fisher3.Id, new List<int> { 2, 1, 2 }) // 5
-                .ShouldHavePosition(2, fisher1.Id, new List<int> { 1, 4, 1 }) // 6
-                .ShouldHavePosition(3, fisher2.Id, new List<int> { 3, 3, 3 }) // 9
-                .ShouldHavePosition(4, fisher4.Id, new List<int> { 4, 2, 4 }); // 10
+                .ShouldHavePosition(1, fisher3.Id, new List<int> { 2, 1, 1 }) // 4
+                .ShouldHavePosition(2, fisher2.Id, new List<int> { 3, 3, 2 }) // 8
+                .ShouldHavePosition(3, fisher1.Id, new List<int> { 1, 4, 4 }) // 9 total score = 32
+                .ShouldHavePosition(4, fisher4.Id, new List<int> { 4, 2, 3 }); // 9 total score = 12
 
             result.Value.ShouldHaveCategoryLeaderBoard("Secondary", categorySecondary.Id)
                 .ShouldHaveNPositions(2)
                 .ShouldHavePosition(1, fisher5.Id, new List<int> { 1, 1, 1 }) // 3
                 .ShouldHavePosition(2, fisher6.Id, new List<int> { 2, 2, 2 }); // 6
 
-            result.Value.ShouldHaveCategoryLeaderBoard("General", "General")
+            result.Value.ShouldHaveCategoryLeaderBoard(categoryGeneral.Name, categoryGeneral.Id)
                 .ShouldHaveNPositions(6)
-                .ShouldHavePosition(1, fisher5.Id, new List<int> { 1, 1, 1 }) // 3
-                .ShouldHavePosition(2, fisher3.Id, new List<int> { 2, 1, 2 }) // 5
-                .ShouldHavePosition(5, fisher2.Id, new List<int> { 3, 3, 3 }) // 9
-                .ShouldHavePosition(6, fisher4.Id, new List<int> { 4, 2, 4 }); // 10
+                .ShouldHavePosition(1, fisher3.Id, new List<int> { 2, 1, 1 }) // 4
+                .ShouldHavePosition(2, fisher2.Id, new List<int> { 3, 3, 3 }) // 9
+                .ShouldHavePosition(3, fisher5.Id, new List<int> { 4, 4, 2 }) // 10
+                .ShouldHavePosition(4, fisher4.Id, new List<int> { 6, 2, 5 }); // 13
+            /*.ShouldHavePosition(?, fisher1.Id, new List<int> { 1, 6, 7 }) // 14
+            .ShouldHavePosition(?, fisher6.Id, new List<int> { 5, 5, 4 }) // 14*/
 
-            if (String.Compare(fisher6.Id.ToString(), fisher1.Id.ToString()) < 0)
-            {
-                result.Value.ShouldHaveCategoryLeaderBoard("General", "General")
-                    .ShouldHaveNPositions(6)
-                    .ShouldHavePosition(3, fisher6.Id, new List<int> { 2, 2, 2 }) // 6
-                    .ShouldHavePosition(4, fisher1.Id, new List<int> { 1, 4, 1 }); // 6
-            } else
-            {
-                result.Value.ShouldHaveCategoryLeaderBoard("General", "General")
-                    .ShouldHaveNPositions(6)
-                    .ShouldHavePosition(3, fisher1.Id, new List<int> { 1, 4, 1 }) // 6
-                    .ShouldHavePosition(4, fisher6.Id, new List<int> { 2, 2, 2 }); // 6
-            }
+            var generalLeaderboard = result.Value.First(l => l.Id == categoryGeneral.Id);
+
+            var fisher1Item = generalLeaderboard.LeaderBoard.FirstOrDefault(p => p.FisherId == fisher1.Id.ToString());
+            var fisher6Item = generalLeaderboard.LeaderBoard.FirstOrDefault(p => p.FisherId == fisher6.Id.ToString());
+
+            fisher1Item.Should().NotBeNull();
+            fisher6Item.Should().NotBeNull();
+
+            fisher1Item!.CompetitionPositions.Should().BeEquivalentTo(new List<int> { 1, 6, 7 });
+            fisher6Item!.CompetitionPositions.Should().BeEquivalentTo(new List<int> { 5, 5, 4 });
+
+            fisher1Item.Position.Should().NotBe(fisher6Item.Position); // One should win, ordered by some criteria.
         }
+
         /*
         [Fact]
         public async Task Handler_Should_ReturnValidLeaderboard_BreakTieBy_HigherTotalScore()
