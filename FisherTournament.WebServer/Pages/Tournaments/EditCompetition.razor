@@ -175,6 +175,8 @@
 
 	private bool _shouldExit = false;
 
+	private bool _sending = false;
+
 	protected async override Task OnInitializedAsync()
 	{
 		var query = new GetCompetitionQuery(CompetitionId);
@@ -204,7 +206,9 @@
 
 	async Task Submit()
 	{
-		if (!_editContext.Validate()) return;
+		if (!_editContext.Validate() || _sending) return;
+
+		_sending = true;
 
 		var command = _mapper.Map<EditCompetitionCommand>((Model, CompetitionId));
 		var res = await _sender.Send(command);
@@ -218,6 +222,8 @@
 			_toastService.ShowSuccess("Competición editada");
 			await _js.GoBack();
 		}
+
+		_sending = false;
 	}
 
 	private string GetInlineLocation(GetCompetitionQueryResponse competition)

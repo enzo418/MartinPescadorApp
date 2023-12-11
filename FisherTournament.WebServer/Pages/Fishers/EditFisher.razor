@@ -86,6 +86,8 @@
 
     private bool _shouldExit = false;
 
+    private bool _sending = false;
+
     protected override async Task OnInitializedAsync()
     {
         var query = await _sender.Send(new GetFisherQuery(FisherId));
@@ -130,6 +132,10 @@
 
     private async Task Submit()
     {
+        if (_sending) return;
+
+        _sending = true;
+
         var mapped = _mapper.Map<EditFisherCommand>((_fisherId, Model));
         var response = _sender.Send(mapped);
 
@@ -142,6 +148,6 @@
             await JSRuntime.GoBack();
         }
 
-        await Task.CompletedTask;
+        _sending = false;
     }
 }

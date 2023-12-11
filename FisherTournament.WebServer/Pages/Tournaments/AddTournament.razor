@@ -46,6 +46,8 @@
 
     private DateTime? StartDate = DateTimeOffset.Now.LocalDateTime;
 
+    private bool _sending = false;
+
     protected override void OnInitialized()
     {
         Model = new("", DateTimeOffset.Now.LocalDateTime, null);
@@ -60,6 +62,10 @@
 
     private async Task Submit()
     {
+        if (_sending) return;
+
+        _sending = true;
+
         if (StartDate is not null)
         {
             Model.StartDate = StartDate.Value.ToUniversalTime();
@@ -85,5 +91,7 @@
         {
             _nav.NavigateTo("/tournament/"+response.Value.Id);
         }
+
+        _sending = false;
     }
 }

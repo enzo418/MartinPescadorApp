@@ -21,7 +21,7 @@
 		&nbsp; No se puede registrar un puntaje ya que todavía no hay competiciones.
 	</div>
 } else {
-	<EditForm EditContext="_editContext" OnSubmit="Save">
+	<EditForm EditContext="_editContext" OnValidSubmit="Save">
 	<p class="m-0 color-fg">Selecciona la competencia</p>
 	<FluentDivider class="mt-1 mb-4" />
 
@@ -179,6 +179,8 @@
 
 	private bool _shouldExit = false;
 
+	private bool _sending = false;
+
 	protected override async Task OnInitializedAsync()
 	{
 		var query = new GetTournamentCompetitionsQuery(TournamentId);
@@ -285,12 +287,17 @@
 
 	bool CanSave()
 	{
-		return _selectedFisher is not null && Request.Score > 0 && !string.IsNullOrEmpty(_selectedCompetitionId);
+		return !_sending
+				&& _selectedFisher is not null 
+				&& Request.Score > 0 
+				&& !string.IsNullOrEmpty(_selectedCompetitionId);
 	}
 
 	async Task Save()
 	{
-		if (_editContext.Validate() && !CanSave()) return;
+		if (!CanSave()) return;
+
+		_sending = true;
 
 		var command = _mapper.Map<AddScoreCommand>((Request, _selectedCompetitionId));
 		var res = await _sender.Send(command);
@@ -303,5 +310,7 @@
 			_toastService.ShowSuccess("Puntaje agregado");
 			await _js.GoBack();
 		}
+
+		_sending = false;
 	}
 }
