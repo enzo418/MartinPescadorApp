@@ -15,6 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Shared\ScrollerGoToCompetition.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.102.1" />
     <PackageReference Include="ExpressionDebugger" Version="2.2.1" />
     <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="3.4.1" />
@@ -35,4 +39,16 @@
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <NeutralLanguage>es</NeutralLanguage>
   </PropertyGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Shared\ScrollerGoToCompetition.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Shared\ScrollerGoToCompetition.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Pages\Tournaments\Components\ScrollerGoToCompetition.razor" />
+  </ItemGroup>
 </Project>

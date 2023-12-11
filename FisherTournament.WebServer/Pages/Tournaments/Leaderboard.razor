@@ -37,18 +37,7 @@
 
         <FluentDivider Orientation="Orientation.Vertical" />
 
-        <div class="ml-3 flex items-end">
-            @if (competitions.Count > 0) {
-                <FluentLabel Typo="Typography.H6" Class="pr-3 pb-2">Ir a la competencia</FluentLabel>
-                <FluentHorizontalScroll Style="width: 400px;" Speed="600" Easing=ScrollEasing.EaseInOut>
-					@foreach (var competition in competitions)
-					{
-						<FluentButton OnClick="@(() => GoToCompetition(competition))">N° @competition.N</FluentButton>
-					}
-                </FluentHorizontalScroll>
-            }
-        </div>
-
+        <ScrollerGoToCompetition Class="ml-3" TournamentId=@TournamentId />
     </div>
     <FluentButton IconStart="@(new Icons.Regular.Size16.Share())" OnClick="ExportLeaderboard" Appearance="Appearance.Outline">Exportar</FluentButton>
 </div>
@@ -72,9 +61,9 @@
     </ChildContent>
 
     <EmptyContent>
-        <div Style="min-height: 300px;" class="empty-content">
+        <div Style="min-height: 300px;" class="flex items-center empty-content pt-2">
             <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
-            &nbsp; No hay posiciones registradas para esta competición
+            &nbsp; No hay posiciones registradas en el torneo
         </div>
     </EmptyContent>
 </FluentDataGrid>

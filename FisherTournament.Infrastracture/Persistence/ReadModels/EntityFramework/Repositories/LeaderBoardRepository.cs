@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
@@ -104,6 +100,20 @@ namespace FisherTournament.Infrastracture.Persistence.ReadModels.EntityFramework
         public void UpdateTournamentLeaderBoardItem(LeaderboardTournamentCategoryItem item)
         {
             _dbContext.LeaderboardTournamentCategoryItems.Update(item);
+        }
+
+        public void RemoveFisherFromLeaderboardCategory(TournamentId tournamentId,
+                                                        IEnumerable<CompetitionId> tournamentCompetitions,
+                                                        CategoryId categoryId,
+                                                        FisherId fisherId)
+        {
+            _dbContext.LeaderboardCompetitionCategoryItems
+                .Where(x => tournamentCompetitions.Contains(x.CompetitionId) && x.CategoryId == categoryId && x.FisherId == fisherId)
+                .ExecuteDelete();
+
+            _dbContext.LeaderboardTournamentCategoryItems
+                .Where(x => x.TournamentId == tournamentId && x.CategoryId == categoryId && x.FisherId == fisherId)
+                .ExecuteDelete();
         }
     }
 }

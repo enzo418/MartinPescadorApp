@@ -22,7 +22,7 @@
         <article class="content px-4">
             @Body
         </article>
-        <FluentToastContainer MaxToastCount="10" RemoveToastsOnNavigation="false" />
+        <FluentToastContainer MaxToastCount="10" Timeout="5" RemoveToastsOnNavigation="false" />
         <FluentDialogProvider />
         <FluentTooltipProvider />
     </main>
@@ -60,8 +60,21 @@
 
     Task OnLeaderboardUpdated(LeaderboardUpdatedEventArgs e)
     {
-        _toast.ShowInfo("Se actualizó la tabla de posiciones");
-        return Task.CompletedTask;
+        _toast.CloseToast("leaderboard-update");
+
+        _toast.ShowConfirmationToast(new ToastParameters<ConfirmationToastContent>()
+            {
+                Id = "leaderboard-update",
+                Intent = ToastIntent.Info,
+                Title = "Se actualizó la tabla de posiciones",
+                Timeout = 5,
+                TopCTAType = ToastTopCTAType.Dismiss,
+                TopAction = null,
+                OnTopAction = null,
+                Icon = (new Icons.Regular.Size20.Info(), Color.Accent)
+            });
+        
+         return Task.CompletedTask;
     }
 
     void IDisposable.Dispose()

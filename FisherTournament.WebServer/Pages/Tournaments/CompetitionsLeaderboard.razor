@@ -19,19 +19,25 @@
 @inject LeaderboardNotificationService _leaderboardNotificationService
 @inject ILogger<CompetitionsLeaderboard> _logger
 
-<h1 class="page-title-no-pt">Tabla de posiciones de la <span style="color: var(--accent-fill-rest);">competencia N° @competition.N</span></h1>
+<h1 class="page-title-no-pt">Tabla de posiciones de la <span style="color: var(--accent-fill-rest);">fecha N° @competition.N</span></h1>
 
 <div class="mt-7 mb-7 flex flex-row w-full justify-between items-end">
-    <div>
-        <FluentSelect Items=_categories
-                      OptionText="@(i => i.Name)"
-                      OptionValue="@(i => i.Id)"
-                        @bind-Value="@_selectedCategoryId"
-                        @bind-Value:after=SearchAsync>
-            <LabelTemplate>
-                Categoría
-            </LabelTemplate>
-        </FluentSelect>
+    <div class="flex flex-row gap-x-2">
+        <div>
+            <FluentSelect Items=_categories
+                          OptionText="@(i => i.Name)"
+                          OptionValue="@(i => i.Id)"
+            @bind-Value="@_selectedCategoryId"
+            @bind-Value:after=SearchAsync>
+                <LabelTemplate>
+                    Categoría
+                </LabelTemplate>
+            </FluentSelect>
+        </div>
+
+        <FluentDivider Orientation="Orientation.Vertical" />
+
+        <ScrollerGoToCompetition Class="ml-3" TournamentId=@TournamentId />
     </div>
     
 
@@ -107,7 +113,25 @@
 
     protected async override Task OnInitializedAsync()
     {
-        // Get competition
+        await GetCompetition();
+        await SearchAsync();
+
+        _leaderboardNotificationService.OnLeaderboardWasUpdated += OnLeaderboardUpdated;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (shouldExit) _js.GoBack();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await GetCompetition();
+        await SearchAsync();
+    }
+
+    async Task GetCompetition()
+    {
         var competitionQuery = new GetCompetitionQuery(CompetitionId);
         var competitionRes = await _sender.Send(competitionQuery);
 
@@ -119,15 +143,6 @@
         {
             competition = competitionRes.Value;
         }
-
-        await SearchAsync();
-
-        _leaderboardNotificationService.OnLeaderboardWasUpdated += OnLeaderboardUpdated;
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (shouldExit) _js.GoBack();
     }
 
     async Task SearchAsync()
@@ -140,7 +155,7 @@
             _toastService.ShowErrors(res.Errors);
         } else
         {
-            _categories = res.Value.Select(c => new Category(c.Id, c.Name)).ToList();
+            _categories = res.Value.OrderBy(c => c.Id).Select(c => new Category(c.Id, c.Name)).ToList();
 
             lastQuery = res.Value.ToList();
 
@@ -150,6 +165,9 @@
                 {
                     _selectedCategoryId = _categories.First(c => c.Name == "General").Id;
                 } else _selectedCategoryId = _categories.First().Id;                
+            } else if (!_categories.Any(c => c.Id == _selectedCategoryId))
+            {
+                _selectedCategoryId = _categories.First().Id;
             }
 
             if (res.Value.Any(p => p.Id == _selectedCategoryId))

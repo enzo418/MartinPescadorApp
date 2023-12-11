@@ -1,6 +1,7 @@
 ﻿@layout TournamentLayout
 @page "/tournament/{TournamentId}/inscriptions"
 
+@using FisherTournament.Application.Tournaments.Commands.RemoveInscription;
 @using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories;
 @using FisherTournament.Application.Tournaments.Queries.GetTournamentInscriptions;
 @using Microsoft.Fast.Components.FluentUI;
@@ -134,8 +135,18 @@
         );
         var result = await dialog.Result;
         if (!result.Cancelled){
-            // TODO
-            _toastService.ShowSuccess($"Eliminada inscripción {inc.Number}");            
+            var command = new RemoveInscriptionCommand(TournamentId, inc.FisherId);
+            var res = await _sender.Send(command);
+
+            if (res.IsError)
+			{
+				_toastService.ShowErrors(res.Errors);
+				return;
+			}
+
+            _toastService.ShowSuccess($"Eliminada inscripción {inc.Number}");    
+            
+            await Search();
         }
     }
 

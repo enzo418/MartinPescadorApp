@@ -1,4 +1,3 @@
-using ErrorOr;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
@@ -14,6 +13,16 @@ public record TournamentCategoryLbCalculatedItem(
 // TODO: refactor into single repositories for tournaments and competitions
 public interface ILeaderBoardRepository
 {
+    /// <summary>
+    /// Removes the fisher from the tournament leaderboard and all the competitions leaderboards
+    /// for the tournament category.
+    /// </summary>
+    /// <param name="tournamentId"></param>
+    /// <param name="tournamentCompetitions"></param>
+    /// <param name="categoryId"></param>
+    /// <param name="fisherId"></param>
+    void RemoveFisherFromLeaderboardCategory(TournamentId tournamentId, IEnumerable<CompetitionId> tournamentCompetitions, CategoryId categoryId, FisherId fisherId);
+
     List<LeaderboardCompetitionCategoryItem> GetCompetitionCategoryLeaderBoard(CompetitionId competitionId,
                                                                                CategoryId categoryId);
 

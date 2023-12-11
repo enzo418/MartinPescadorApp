@@ -81,7 +81,11 @@
 
         if (!editContext.Validate() || !editContext.IsModified()) return;
 
+
         var mapped = _mapper.Map<CreateTournamentCommand>(Model);
+        
+        Model = new("", DateTimeOffset.Now.LocalDateTime, null);
+        
         var response = await _sender.Send(mapped);
 
         if (response.IsError)

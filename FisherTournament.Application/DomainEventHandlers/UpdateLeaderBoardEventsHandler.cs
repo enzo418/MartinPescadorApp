@@ -3,8 +3,10 @@ using FisherTournament.Application.LeaderBoard;
 using FisherTournament.Domain.CompetitionAggregate.DomainEvents;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.FisherAggregate.ValueObjects;
+using FisherTournament.Domain.TournamentAggregate;
 using FisherTournament.Domain.TournamentAggregate.DomainEvents;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
+using FisherTournament.ReadModels.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -19,20 +21,25 @@ public class UpdateLeaderBoardEventsHandler
  : INotificationHandler<ScoreAddedDomainEvent>,
     INotificationHandler<ParticipationAddedDomainEvent>,
     INotificationHandler<InscriptionAddedDomainEvent>,
-    INotificationHandler<CompetitionAddedDomainEvent>
+    INotificationHandler<InscriptionUpdatedDomainEvent>,
+    INotificationHandler<CompetitionAddedDomainEvent>,
+    INotificationHandler<InscriptionDeletedDomainEvent>
 {
     private readonly ILeaderBoardUpdateScheduler _leaderBoardUpdateScheduler;
     private readonly ITournamentFisherDbContext _context;
     private readonly ILogger<UpdateLeaderBoardEventsHandler> _logger;
+    private readonly IReadModelsUnitOfWork _readModelsUnitOfWork;
 
     public UpdateLeaderBoardEventsHandler(
         ILeaderBoardUpdateScheduler leaderBoardUpdateScheduler,
         ITournamentFisherDbContext context,
-        ILogger<UpdateLeaderBoardEventsHandler> logger)
+        ILogger<UpdateLeaderBoardEventsHandler> logger,
+        IReadModelsUnitOfWork readModelsUnitOfWork)
     {
         _leaderBoardUpdateScheduler = leaderBoardUpdateScheduler;
         _context = context;
         _logger = logger;
+        _readModelsUnitOfWork = readModelsUnitOfWork;
     }
 
     /// <summary>
@@ -124,6 +131,58 @@ public class UpdateLeaderBoardEventsHandler
         }
     }
 
+    /// <summary>
+    /// This event will trigger a leaderboar udpate, removing it from the old category and adding it to the new one.
+    /// </summary>
+    /// <param name="notification"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public async Task Handle(InscriptionUpdatedDomainEvent notification, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Handling InscriptionUpdatedDomainEvent");
+
+        var competitionsId = await GetTournamentCompetitionIds(notification.TournamentId, cancellationToken);
+
+        // Remove
+        _readModelsUnitOfWork.LeaderBoardRepository.RemoveFisherFromLeaderboardCategory(notification.TournamentId,
+                                                                                        competitionsId,
+                                                                                        notification.PreviousCategoryId,
+                                                                                        notification.FisherId);
+
+        _readModelsUnitOfWork.Commit();
+
+        _leaderBoardUpdateScheduler.ScheduleLeaderBoardUpdate(notification.TournamentId, notification.NewCategoryId);
+
+        await Task.CompletedTask;
+    }
+
+    public async Task Handle(InscriptionDeletedDomainEvent notification, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Handling InscriptionDeletedDomainEvent");
+
+        var competitionsId = await GetTournamentCompetitionIds(notification.TournamentId, cancellationToken);
+        var generalCategoryId = await GetGeneralCategory(notification.TournamentId, cancellationToken);
+
+        _readModelsUnitOfWork.LeaderBoardRepository.RemoveFisherFromLeaderboardCategory(notification.TournamentId,
+                                                                                        competitionsId,
+                                                                                        notification.CategoryId,
+                                                                                        notification.FisherId);
+        if (generalCategoryId is not null)
+        {
+            _readModelsUnitOfWork.LeaderBoardRepository.RemoveFisherFromLeaderboardCategory(notification.TournamentId,
+                                                                                            competitionsId,
+                                                                                            generalCategoryId,
+                                                                                            notification.FisherId);
+        }
+
+        _readModelsUnitOfWork.Commit();
+
+        _leaderBoardUpdateScheduler.ScheduleLeaderBoardUpdate(notification.TournamentId, notification.CategoryId);
+
+        await Task.CompletedTask;
+    }
+
     private async Task<(TournamentId?, CategoryId?)> GetTournamentAndCategoryIds(CompetitionId competitionId,
                                                                                  FisherId fisherId,
                                                                                  CancellationToken cancellationToken)
@@ -145,5 +204,20 @@ public class UpdateLeaderBoardEventsHandler
          _context.Tournaments
             .Where(t => t.Id == tournamentId)
             .SelectMany(t => t.Categories.Select(c => c.Id))
+            .ToListAsync(cancellationToken);
+
+    private Task<CategoryId?> GetGeneralCategory(TournamentId tournamentId, CancellationToken cancellationToken) =>
+         _context.Tournaments
+            .Where(t => t.Id == tournamentId)
+            .SelectMany(i => i.Categories)
+            .Where(c => c.Name == Tournament.GeneralCategoryName)
+            .Select(c => c.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+    private Task<List<CompetitionId>> GetTournamentCompetitionIds(TournamentId tournamentId, CancellationToken cancellationToken) =>
+        _context.Tournaments
+            .Where(t => t.Id == tournamentId)
+            .SelectMany(t => t.CompetitionsIds)
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 }

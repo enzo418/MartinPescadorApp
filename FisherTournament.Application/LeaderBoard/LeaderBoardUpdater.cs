@@ -98,14 +98,22 @@ public class LeaderBoardUpdater : ILeaderBoardUpdater
         await Task.WhenAll(tasks);
     }
 
-    private async Task UpdateCompetitionLeaderBoard(CompetitionId competitionId, CategoryId categoryId, CategoryId generalCategory, int fishersInTournament, CancellationToken cancellationToken = default)
+    private async Task UpdateCompetitionLeaderBoard(CompetitionId competitionId,
+                                                    CategoryId categoryId,
+                                                    CategoryId generalCategory,
+                                                    int fishersInTournament,
+                                                    CancellationToken cancellationToken = default)
     {
         await UpdateCompetitionLeaderBoard(competitionId, categoryId, false, fishersInTournament, cancellationToken);
 
         await UpdateCompetitionLeaderBoard(competitionId, generalCategory, true, fishersInTournament, cancellationToken);
     }
 
-    private async Task UpdateCompetitionLeaderBoard(CompetitionId competitionId, CategoryId categoryId, bool isGeneralCategory, int fishersInTournament, CancellationToken cancellationToken = default)
+    private async Task UpdateCompetitionLeaderBoard(CompetitionId competitionId,
+                                                    CategoryId categoryId,
+                                                    bool isGeneralCategory,
+                                                    int fishersInTournament,
+                                                    CancellationToken cancellationToken = default)
     {
         using var _ = ApplicationMetrics.LeaderboardMetrics.LeaderboardUpdate.Time(new Tag("function", "competition-update"));
         using var ___ = _instrumentation.ActivitySource.StartActivity("UpdateCompetitionLeaderBoard");

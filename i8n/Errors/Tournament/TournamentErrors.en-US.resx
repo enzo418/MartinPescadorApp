@@ -147,4 +147,7 @@
   <data name="CannotAddInscriptionToGeneralCategory" xml:space="preserve">
     <value>Cannot enroll in the 'General' category. It's reserved.</value>
   </data>
+  <data name="CannotDeleteCategoryWithEnrolledFishers" xml:space="preserve">
+    <value>Cannot delete a category with enrolled fishers.</value>
+  </data>
 </root>

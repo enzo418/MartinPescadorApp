@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FisherTournament.IntegrationTests.Competitions.Queries
 {
+    // TODO: Split this file in multiple files, e.g. related to inscriptions
+
     // Fluent Assertion for the leaderboard tests, this makes it easier to write/read but difficult to pinpoint the exact error
     // just form the console without debugging.
     public static class LeaderBoardAssert

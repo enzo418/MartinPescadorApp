@@ -1,0 +1,51 @@
+﻿@using FisherTournament.Application.Competitions.Queries.GetTournamentCompetitions;
+@using FisherTournament.WebServer.Common.Errors;
+@using MediatR;
+@using Microsoft.Fast.Components.FluentUI;
+
+@inject IToastService _toastService
+@inject ISender _sender
+@inject NavigationManager _nav
+
+<div class=@ClassValue>
+    @if (competitions.Count > 0) {
+        <FluentLabel Typo="Typography.H6" Class="pr-3 pb-2">Ir a la competencia</FluentLabel>
+        <FluentHorizontalScroll Style="width: 400px;" Speed="600" Easing=ScrollEasing.EaseInOut>
+			@foreach (var competition in competitions)
+			{
+				<FluentButton OnClick="@(() => GoToCompetition(competition))">N° @competition.N</FluentButton>
+			}
+        </FluentHorizontalScroll>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string TournamentId { get; set; } = null!;
+
+    [Parameter]
+    public virtual string? Class { get; set; } = string.Empty;
+
+    private string ClassValue => $"flex items-end {Class}";
+
+    List<GetTournamentCompetitionsQueryResult> competitions = new();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var query = new GetTournamentCompetitionsQuery(TournamentId);
+        var result = await _sender.Send(query);
+
+        if (result.IsError)
+        {
+            _toastService.ShowErrors(result.Errors);
+            return;
+        }
+
+        competitions = result.Value;
+    }
+
+    void GoToCompetition(GetTournamentCompetitionsQueryResult competition)
+    {
+        _nav.NavigateTo($"/tournament/{TournamentId}/leaderboard/{competition.Id}");
+    }
+}

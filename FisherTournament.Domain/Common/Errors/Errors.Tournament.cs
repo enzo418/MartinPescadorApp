@@ -46,5 +46,9 @@ public static partial class Errors
         public static Error CannotAddInscriptionToGeneralCategory => Error.Conflict(
             code: "Tournament.CannotAddInscriptionToGeneralCategory",
             description: TournamentErrors.CannotAddInscriptionToGeneralCategory);
+
+        public static Error CannotDeleteCategoryWithEnrolledFishers => Error.Conflict(
+            code: "Tournament.CannotDeleteCategoryWithEnrolledFishers",
+            description: TournamentErrors.CannotDeleteCategoryWithEnrolledFishers);
     }
 }

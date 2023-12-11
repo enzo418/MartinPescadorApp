@@ -118,7 +118,11 @@ public class Tournament : AggregateRoot<TournamentId>
                 return Errors.Tournaments.CannotAddInscriptionToGeneralCategory;
             }
 
+            var previousCategoryId = inscription.CategoryId;
+
             inscription.UpdateCategory(categoryId);
+
+            AddDomainEvent(new InscriptionUpdatedDomainEvent(Id, fisherId, previousCategoryId, categoryId));
         }
 
         if (number.HasValue)
@@ -131,10 +135,30 @@ public class Tournament : AggregateRoot<TournamentId>
             inscription.UpdateNumber(number.Value);
         }
 
-        // TODO: Update leadeboard ???
-        //AddDomainEvent(new InscriptionUpdatedDomainEvent(fisherId, categoryId, Id));
-
         return Result.Updated;
+    }
+
+    public ErrorOr<Deleted> RemoveInscription(FisherId fisherId, IDateTimeProvider dateTimeProvider)
+    {
+        if (EndDate < dateTimeProvider.Now)
+        {
+            return Errors.Tournaments.IsOver;
+        }
+
+        var inscription = _inscriptions.Find(i => i.FisherId == fisherId);
+
+        if (inscription == null)
+        {
+            return Errors.Tournaments.InscriptionNotFound;
+        }
+
+        var inscriptionCategory = inscription.CategoryId;
+
+        _inscriptions.Remove(inscription);
+
+        AddDomainEvent(new InscriptionDeletedDomainEvent(Id, fisherId, inscriptionCategory));
+
+        return Result.Deleted;
     }
 
     public bool IsFisherEnrolled(FisherId fisherId)
@@ -170,6 +194,13 @@ public class Tournament : AggregateRoot<TournamentId>
 
     public ErrorOr<Success> DeleteCategory(CategoryId categoryId)
     {
+        bool hasEnrolledFishers = Inscriptions.Any(i => i.CategoryId == categoryId);
+
+        if (hasEnrolledFishers)
+        {
+            return Errors.Tournaments.CannotDeleteCategoryWithEnrolledFishers;
+        }
+
         var category = _categories.Find(c => c.Id == categoryId);
 
         if (category == null)
@@ -215,18 +246,6 @@ public class Tournament : AggregateRoot<TournamentId>
         }
     }
 
-    public static Tournament Create(string name,
-                                    DateTime startDate,
-                                    DateTime? endDate,
-                                    List<Category>? categories = null)
-    {
-        return new Tournament(Guid.NewGuid(),
-                              name,
-                              startDate,
-                              endDate,
-                              categories ?? new List<Category>());
-    }
-
     public ErrorOr<Success> SetName(string name)
     {
         Name = name;
@@ -263,6 +282,18 @@ public class Tournament : AggregateRoot<TournamentId>
         EndDate = null;
 
         return Result.Success;
+    }
+
+    public static Tournament Create(string name,
+                                    DateTime startDate,
+                                    DateTime? endDate,
+                                    List<Category>? categories = null)
+    {
+        return new Tournament(Guid.NewGuid(),
+                              name,
+                              startDate,
+                              endDate,
+                              categories ?? new List<Category>());
     }
 
 #pragma warning disable CS8618

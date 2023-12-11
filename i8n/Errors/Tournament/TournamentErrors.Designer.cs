@@ -79,6 +79,15 @@ namespace i8n.Errors.Tournament {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No se puede eliminar una categoría que con pescadores inscriptions en ella..
+        /// </summary>
+        public static string CannotDeleteCategoryWithEnrolledFishers {
+            get {
+                return ResourceManager.GetString("CannotDeleteCategoryWithEnrolledFishers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a La competencia tiene una fecha de inicio anterior..
         /// </summary>
         public static string CompetitionHasEarlierStartDate {

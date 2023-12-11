@@ -93,6 +93,16 @@ public sealed class Competition : AggregateRoot<CompetitionId>
         AddDomainEvent(new ParticipationAddedDomainEvent(fisherId, this.Id));
     }
 
+    public void RemoveParticipation(FisherId fisherId)
+    {
+        var participation = _participations.FirstOrDefault(x => x.FisherId == fisherId);
+
+        if (participation is null)
+            return;
+
+        _participations.Remove(participation);
+    }
+
     public void EditStartDate(DateTime startDateTime)
     {
         if (startDateTime.Kind != DateTimeKind.Utc)
