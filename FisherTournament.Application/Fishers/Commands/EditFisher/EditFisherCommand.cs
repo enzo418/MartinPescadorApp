@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FisherTournament.Application.Fishers.Commands.EditFisher;
 
-public record struct EditFisherCommand(FisherId FisherId, string NewFirstName, string NewLastName, string NewDNI)
+public record struct EditFisherCommand(string FisherId, string NewFirstName, string NewLastName, string NewDNI)
     : IRequest<ErrorOr<EditFisherCommandResponse>>;
 
 public class EditFisherCommandHandler
@@ -25,18 +25,25 @@ public class EditFisherCommandHandler
     public async Task<ErrorOr<EditFisherCommandResponse>> Handle(EditFisherCommand request,
                                                                    CancellationToken cancellationToken)
     {
-        Fisher? fisher = await _context.Fishers.FindAsync(request.FisherId, cancellationToken);
+        var fisherId = FisherId.Create(request.FisherId);
+
+        if (fisherId.IsError)
+        {
+            return fisherId.Errors;
+        }
+
+        Fisher? fisher = await _context.Fishers.FindAsync(fisherId.Value, cancellationToken);
 
         if (fisher is null)
         {
             return Errors.Fishers.NotFound;
         }
 
-        User? user = await _context.Users.FirstOrDefaultAsync(u => u.FisherId == request.FisherId,
+        User? user = await _context.Users.FirstOrDefaultAsync(u => u.FisherId == fisherId.Value,
                                                                           cancellationToken);
 
         bool dniExists = await _context.Users.AnyAsync(u => u.DNI == request.NewDNI
-                                                            && u.FisherId != request.FisherId,
+                                                            && u.FisherId != fisherId.Value,
                                                        cancellationToken);
         if (dniExists)
         {

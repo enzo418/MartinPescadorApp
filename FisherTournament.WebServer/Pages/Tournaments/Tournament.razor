@@ -64,6 +64,9 @@
     [Parameter]
     public string TournamentId { get; set; } = null!;
 
+    [CascadingParameter]
+    public Action<string>? ChangedTournamentName { get; set; }
+
     private string StartDate
     {
         get
@@ -120,6 +123,8 @@
 
         var tournament = res.Value;
 
+        ChangedTournamentName?.Invoke(tournament.Name);
+
         _endDate = tournament.EndDate;
 
         Model = new EditTournamentContract(TournamentId, tournament.Name, tournament.StartDate, false);
@@ -153,6 +158,8 @@
         } else
         {
             _toastService.ShowSuccess($"Editado correctamente");
+
+            ChangedTournamentName?.Invoke(Model.Name);
         }
 
         StateHasChanged();

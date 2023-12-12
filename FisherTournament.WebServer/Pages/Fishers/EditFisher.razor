@@ -11,62 +11,63 @@
 @inject IToastService _toastService
 @inject IJSRuntime JSRuntime
 
-<h1 class="page-title">Editar Pescador</h1>
+<div class="px-4" style="height: 80%">
+    <h1 class="page-title">Editar Pescador</h1>
 
-<EditForm EditContext="@editContext" OnSubmit="@Submit" class="relative h-full">
-    <div class="flex justify-center gap-20 pt-7">
-        <div class="flex flex-col gap-10 justify-normal">
-            <div>
-                <span class="text-sm">Información Personal</span>
-                <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
+    <EditForm EditContext="@editContext" OnSubmit="@Submit" class="relative h-full">
+        <div class="flex justify-center gap-20 pt-7">
+            <div class="flex flex-col gap-10 justify-normal">
+                <div>
+                    <span class="text-sm">Información Personal</span>
+                    <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
+                </div>
+
+                <p>
+                    <FluentTextField AutoComplete="off" @bind-Value="@Model.FirstName" Required="true">
+                        Nombre <span class="red">*</span>
+                    </FluentTextField>
+                    <ValidationMessage For="() => Model!.FirstName" />
+                </p>
+
+                <p>
+                    <FluentTextField AutoComplete="off" @bind-Value="@Model.LastName" Required="true">
+                        Apellido <span class="red">*</span>
+                    </FluentTextField>
+                    <ValidationMessage For="() => Model!.LastName" />
+                </p>
+
+                <p>
+                    <FluentTextField AutoComplete="off" @bind-Value="@(Model.DNI)" Required="true">
+                        DNI <span class="red">*</span>
+                    </FluentTextField>
+                    <ValidationMessage For="() => Model!.DNI" />
+                </p>
             </div>
 
-            <p>
-                <FluentTextField AutoComplete="off" @bind-Value="@Model.FirstName" Required="true">
-                    Nombre <span class="red">*</span>
-                </FluentTextField>
-                <ValidationMessage For="() => Model!.FirstName" />
-            </p>
+            <div class="flex flex-col gap-10 justify-normal">
+                <div>
+                    <span class="text-sm">Opcional</span>
+                    <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
+                </div>
 
-            <p>
-                <FluentTextField AutoComplete="off" @bind-Value="@Model.LastName" Required="true">
-                    Apellido <span class="red">*</span>
-                </FluentTextField>
-                <ValidationMessage For="() => Model!.LastName" />
-            </p>
-
-            <p>
-                <FluentTextField AutoComplete="off" @bind-Value="@(Model.DNI)" Required="true">
-                    DNI <span class="red">*</span>
-                </FluentTextField>
-                <ValidationMessage For="() => Model!.DNI" />
-            </p>
-        </div>
-
-        <div class="flex flex-col gap-10 justify-normal">
-            <div>
-                <span class="text-sm">Opcional</span>
-                <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
+                <p>
+                    <FluentTextField AutoComplete="off" @bind-Value=date Required="false" Placeholder="01/12/1997"
+                                     Pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$">
+                        @* <FluentIcon Name="@FluentIcons.Calendar" Slot="start" Size="@IconSize.Size20"
+                        Variant=IconVariant.Regular Color="Color.Neutral" /> *@
+                        Fecha nacimiento
+                    </FluentTextField>
+                    <p class="error @dateValidationClasses">@dateValidationError</p>
+                </p>
             </div>
-
-            <p>
-                <FluentTextField AutoComplete="off" @bind-Value=date Required="false" Placeholder="01/12/1997"
-                                 Pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$">
-                    @* <FluentIcon Name="@FluentIcons.Calendar" Slot="start" Size="@IconSize.Size20"
-                    Variant=IconVariant.Regular Color="Color.Neutral" /> *@
-                    Fecha nacimiento
-                </FluentTextField>
-                <p class="error @dateValidationClasses">@dateValidationError</p>
-            </p>
         </div>
-    </div>
 
-    <div class="absolute bottom-0 m-auto flex columns-2 gap-28 w-full place-content-center">
-        <FluentButton Appearance="Appearance.Stealth" @onclick=OnCancel>Cancelar</FluentButton>
-        <FluentButton Type=ButtonType.Submit Appearance="Appearance.Accent" Disabled=!editContext!.IsModified()>Guardar</FluentButton>
-    </div>
-</EditForm>
-
+        <div class="absolute bottom-0 m-auto flex columns-2 gap-28 w-full place-content-center">
+            <FluentButton Appearance="Appearance.Stealth" @onclick=OnCancel>Cancelar</FluentButton>
+            <FluentButton Type=ButtonType.Submit Appearance="Appearance.Accent" Disabled=!editContext!.IsModified()>Guardar</FluentButton>
+        </div>
+    </EditForm>
+</div>
 
 @code {
     [Parameter]
