@@ -10,53 +10,55 @@
 
 @page "/fishers"
 
-<div class="flex flex-row w-full items-center justify-between">
-    <h1 class="page-title">Buscar Pescador</h1>
+<div  class="h-full px-4">
+    <div class="flex flex-row w-full items-center justify-between">
+        <h1 class="page-title">Buscar Pescador</h1>
     
-    <FluentButton OnClick="@(() => _nav.NavigateTo("/fishers/add"))" IconStart="@(new Icons.Regular.Size16.AddCircle())" Appearance="Appearance.Accent">
-		Agregar Pescador
-    </FluentButton>
+        <FluentButton OnClick="@(() => _nav.NavigateTo("/fishers/add"))" IconStart="@(new Icons.Regular.Size16.AddCircle())" Appearance="Appearance.Accent">
+		    Agregar Pescador
+        </FluentButton>
+    </div>
+
+
+    <div class="flex justify-center gap-20 pt-7 mb-6 items-end">
+                <FluentTextField Autofocus="true" tabindex="6" @bind-Value=Name Placeholder="Nombre o Apellido" @oninput="SearchByNameAsync">
+                Buscar por nombre
+                </FluentTextField>
+
+                <FluentTextField tabindex="7" Placeholder="DNI sin guiones" @oninput="SearchByDNIAsync">
+                Buscar por DNI
+                </FluentTextField>
+
+                @* <FluentButton OnClick="Search" IconStart="@(new Icons.Regular.Size16.Search())" Appearance="Appearance.Accent">
+                    Buscar
+                </FluentButton> *@
+     </div>
+
+    <FluentDataGrid 
+            @ref="fluentDataGrid" 
+            ItemsProvider="itemsProviderCall" 
+            TGridItem="FisherItem" 
+            Pagination="@pagination"
+            GridTemplateColumns="0.4fr 0.5fr 0.5fr 0.2fr">
+        <ChildContent>
+            <PropertyColumn Property="@(p => p.DNI)" Sortable="false" Title="DNI" />
+            <PropertyColumn Property="@(p => p.FirstName)" Sortable="false" Title="Nombre" />
+            <PropertyColumn Property="@(p => p.LastName)" Sortable="false" Title="Apellido" />
+            <TemplateColumn Title="Acciones" Align="@Align.End">
+                <FluentButton IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => Edit(context))" />
+            </TemplateColumn>
+        </ChildContent>
+
+        <EmptyContent>
+            <div Style="min-height: 300px;" class="empty-content">
+                <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
+                &nbsp; No se encontraron pescadores.
+            </div>
+        </EmptyContent>
+    </FluentDataGrid>
+
+    <FluentPaginator State="@pagination" />
 </div>
-
-
-<div class="flex justify-center gap-20 pt-7 mb-6 items-end">
-            <FluentTextField Autofocus="true" tabindex="6" @bind-Value=Name Placeholder="Nombre o Apellido" @oninput="SearchByNameAsync">
-            Buscar por nombre
-            </FluentTextField>
-
-            <FluentTextField tabindex="7" Placeholder="DNI sin guiones" @oninput="SearchByDNIAsync">
-            Buscar por DNI
-            </FluentTextField>
-
-            @* <FluentButton OnClick="Search" IconStart="@(new Icons.Regular.Size16.Search())" Appearance="Appearance.Accent">
-                Buscar
-            </FluentButton> *@
- </div>
-
-<FluentDataGrid 
-        @ref="fluentDataGrid" 
-        ItemsProvider="itemsProviderCall" 
-        TGridItem="FisherItem" 
-        Pagination="@pagination"
-        GridTemplateColumns="0.4fr 0.5fr 0.5fr 0.2fr">
-    <ChildContent>
-        <PropertyColumn Property="@(p => p.DNI)" Sortable="false" Title="DNI" />
-        <PropertyColumn Property="@(p => p.FirstName)" Sortable="false" Title="Nombre" />
-        <PropertyColumn Property="@(p => p.LastName)" Sortable="false" Title="Apellido" />
-        <TemplateColumn Title="Acciones" Align="@Align.End">
-            <FluentButton IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => Edit(context))" />
-        </TemplateColumn>
-    </ChildContent>
-
-    <EmptyContent>
-        <div Style="min-height: 300px;" class="empty-content">
-            <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
-            &nbsp; No se encontraron pescadores.
-        </div>
-    </EmptyContent>
-</FluentDataGrid>
-
-<FluentPaginator State="@pagination" />
 
 @code {
     string _searchedName = "";

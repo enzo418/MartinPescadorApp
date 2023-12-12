@@ -1,22 +1,17 @@
 ﻿@namespace FisherTournament.WebServer.Shared
 @inject NavigationManager _nav
 
-<FluentToolbar style="width:100%" class="shadow gap-x-3 flex justify-between">
-    <FluentButton @onclick=NavigateToHome tabindex="0" autofocus>
-        <FluentIcon Icon="@Icons.Regular.Size20.Home" Slot="start" Color="Color.Neutral" /> Inicio
+<FluentToolbar style="height: 55px;width:100%;background-color: var(--neutral-layer-3)" class="shadow gap-x-3 flex justify-between">
+
+    <FluentButton Appearance="Appearance.Outline" @onclick=NavigateToTournaments tabindex="2">
+        <FluentIcon Icon="@Icons.Regular.Size20.Trophy" Slot="start" Color="Color.Neutral" /> Fechas y Torneos
     </FluentButton>
 
     @DividerTemplate
 
-    <FluentButton @onclick=NavigateToFishers tabindex="1">
+    <FluentButton Appearance="Appearance.Outline" @onclick=NavigateToFishers tabindex="1">
         <FluentIcon Icon="@Icons.Regular.Size20.People" Slot="start" Color="Color.Neutral" />
         Pescadores
-    </FluentButton>
-
-    @DividerTemplate
-
-    <FluentButton @onclick=NavigateToTournaments tabindex="2">
-        <FluentIcon Icon="@Icons.Regular.Size20.Trophy" Slot="start" Color="Color.Neutral" /> Fechas y Torneos
     </FluentButton>
 
     @if (false)

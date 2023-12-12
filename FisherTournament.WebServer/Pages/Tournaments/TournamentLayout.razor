@@ -1,14 +1,17 @@
 ﻿@inherits LayoutComponentBase
 @using Microsoft.Fast.Components.FluentUI;
+@using Microsoft.Fast.Components.FluentUI.DesignTokens
 
 @inject NavigationManager Navigation
+@inject GlobalState GlobalState
+@inject BaseLayerLuminance BaseLayerLuminance
 
 @layout MainLayout
 
-<FluentLayout Class="pt-6">
-    <FluentStack Orientation="Orientation.Horizontal" Width="100%" Class="h-full">
-        <div style="color: var(--neutral-foreground-rest);">
-            <FluentNavMenu Width="300">
+<FluentLayout Class="h-full">
+    <FluentStack Orientation="Orientation.Horizontal" Width="100%" Class="h-full" Style="padding-right: 15px; background-color: var(--neutral-layer-1);">
+        <div style="color: var(--neutral-foreground-rest);background-color: var(--neutral-layer-2)" class="h-full pt-6 pl-3 pr-3">
+            <FluentNavMenu @ref="@_navMenu" id="nav-tournament" Width="300">
                 <FluentNavLink Match=NavLinkMatch.All Icon="@(new Icons.Regular.Size24.Home())" Href=@($"/tournament/{TournamentId}")>Información General</FluentNavLink>
                 <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleList())" Href=@($"/tournament/{TournamentId}/categories")>Categorías</FluentNavLink>
                 <FluentNavGroup Title="Inscripciones" Icon="@(new Icons.Regular.Size24.People())" Expanded=true>
@@ -24,9 +27,9 @@
             </FluentNavMenu>
         </div>
 
-        <FluentDivider Orientation="Orientation.Vertical" Role="DividerRole.Separator" />
+        @* <FluentDivider Orientation="Orientation.Vertical" Role="DividerRole.Separator" /> *@
 
-        <FluentBodyContent Class="pl-7" Style="overflow: visible !important;">
+        <FluentBodyContent Class="pl-7 h-full pt-6" Style="overflow: visible !important; background-color: var(--neutral-layer-1)">
             @Body
         </FluentBodyContent>
     </FluentStack>
@@ -35,18 +38,36 @@
 @code {
     private string TournamentId = null!;
 
+    private FluentNavMenu? _navMenu;
+
+    private float _lastLuminanceValue = -418;
+
+    private string Style = "background-color: transparent !important;";
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
         var uri = new Uri(Navigation.Uri);
         var segments = uri.Segments;
-        
+
         if (segments.Length >= 3)
         {
             TournamentId = segments[2].TrimEnd('/');
         }else{
             TournamentId = string.Empty;
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        /*if (_lastLuminanceValue != GlobalState.Luminance.GetLuminanceValue()) {
+            float luminance = GlobalState.Luminance.GetLuminanceValue();
+            double newLuminance = luminance > 0.5 ? luminance - 0.05 : luminance + 0.05;
+            
+            await BaseLayerLuminance.SetValueFor(_navMenu!.Element, (float)newLuminance);
+
+            _lastLuminanceValue = luminance;
+        }*/
     }
 }

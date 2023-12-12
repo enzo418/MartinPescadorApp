@@ -16,61 +16,63 @@
 @inject IJSRuntime _js
 @inject IMapper _mapper
 
-<h1 class="page-title-no-pt">Editar Inscripción</h1>
+<div class="h-full relative">
+	<h1 class="page-title-no-pt">Editar Inscripción</h1>
 
-<p class="m-0 color-fg">Pescador</p>
-<FluentDivider class="mt-1 mb-4" />
+	<p class="m-0 color-fg">Pescador</p>
+	<FluentDivider class="mt-1 mb-4" />
 
-<div class="flex flex-col items-center">
-	<FluentCard class="mt-4" style="height:100px;width:500px">
-		<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
-			<div class="flex flex-col gap-2">
-				<div>
-					<span class="color-fg font-bold">Nombre</span>
-					<span class="color-fg">@(persona.Name)</span>
+	<div class="flex flex-col items-center">
+		<FluentCard class="mt-4" style="height:100px;width:500px">
+			<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+				<div class="flex flex-col gap-2">
+					<div>
+						<span class="color-fg font-bold">Nombre</span>
+						<span class="color-fg">@(persona.Name)</span>
+					</div>
+
+					<div>
+						<span class="color-fg font-bold">DNI</span>
+						<span class="color-fg">@persona.DNI</span>
+					</div>
 				</div>
 
-				<div>
-					<span class="color-fg font-bold">DNI</span>
-					<span class="color-fg">@persona.DNI</span>
-				</div>
+				<p style="color: var(--accent-fill-rest);">
+					@* <FluentIcon Value="@(new Icons.Regular.Size24.Checkmark())" /> *@
+					Seleccionado
+				</p>
 			</div>
-
-			<p style="color: var(--accent-fill-rest);">
-				@* <FluentIcon Value="@(new Icons.Regular.Size24.Checkmark())" /> *@
-				Seleccionado
-			</p>
-		</div>
-	</FluentCard>
-</div>
-
-<p class="m-0 mt-16 color-fg">Selecciona la categoría e ingresa el número</p>
-<FluentDivider class="mt-1 mb-4" />
-
-<div class="flex flex-row justify-evenly w-full">
-	<div>
-		<FluentSelect	Items=_categories
-						OptionText="@(i => i.Name)"
-						OptionValue="@(i => i.Id)"
-						@bind-Value="@SelectedCategoryId">
-			<LabelTemplate>
-				Categoría <span class="red">*</span>
-			</LabelTemplate>
-		</FluentSelect>
+		</FluentCard>
 	</div>
 
-	<FluentNumberField @bind-Value=SelectedNumber Required="true">
-		Número <span class="red">*</span>
-	</FluentNumberField>
-</div>
+	<p class="m-0 mt-16 color-fg">Selecciona la categoría e ingresa el número</p>
+	<FluentDivider class="mt-1 mb-4" />
+
+	<div class="flex flex-row justify-evenly w-full">
+		<div>
+			<FluentSelect	Items=_categories
+							OptionText="@(i => i.Name)"
+							OptionValue="@(i => i.Id)"
+							@bind-Value="@SelectedCategoryId">
+				<LabelTemplate>
+					Categoría <span class="red">*</span>
+				</LabelTemplate>
+			</FluentSelect>
+		</div>
+
+		<FluentNumberField @bind-Value=SelectedNumber Required="true">
+			Número <span class="red">*</span>
+		</FluentNumberField>
+	</div>
 
 
-<div class="mt-6 flex flex-row w-full justify-center gap-24">
-	<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
-	<FluentButton Disabled=CanSend()
-			OnClick="@Save"
-			IconStart="@(new Icons.Regular.Size16.Checkmark())" 
-			Appearance="Appearance.Accent">Guardar</FluentButton>
+	<div class="absolute bottom-0 mb-6 mt-6 flex flex-row w-full justify-center gap-24">
+		<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
+		<FluentButton Disabled=CanSend()
+				OnClick="@Save"
+				IconStart="@(new Icons.Regular.Size16.Checkmark())" 
+				Appearance="Appearance.Accent">Guardar</FluentButton>
+	</div>
 </div>
 
 

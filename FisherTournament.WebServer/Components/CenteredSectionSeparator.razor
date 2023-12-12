@@ -1,0 +1,19 @@
+﻿<p class="@ClassValue">
+	<span class="section-separator-content">
+		@ChildContent
+		@CustomChild
+	</span>
+</p>
+
+@code {
+	[Parameter]
+	public RenderFragment? ChildContent { get; set; }
+
+	[Parameter]
+	public RenderFragment? CustomChild { get; set; }
+
+	[Parameter]
+	public string? Class { get; set; }
+
+	public string ClassValue => $"section-separator {Class}";
+}

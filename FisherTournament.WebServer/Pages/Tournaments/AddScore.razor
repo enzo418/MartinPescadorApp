@@ -12,146 +12,151 @@
 @inject IJSRuntime _js
 @inject IMapper _mapper
 
-<h1 class="page-title">Agregar puntaje</h1>
+<div class="h-full relative">
+	<h1 class="page-title-no-pt">Agregar puntaje</h1>
 
-@if (_competitions.Count == 0)
-{
-	<div Style="min-height: 300px;" class="flex items-center pt-2">
-		<FluentIcon Icon="Icons.Regular.Size32.Warning" Color="@Color.Accent" />
-		&nbsp; No se puede registrar un puntaje ya que todavía no hay competiciones.
-	</div>
-} else {
-	<EditForm EditContext="_editContext" OnValidSubmit="Save">
-	<p class="m-0 color-fg">Selecciona la competencia</p>
-	<FluentDivider class="mt-1 mb-4" />
-
-	<div class="flex flex-col items-center">
-		<div>
-				<FluentSelect Items=_competitions
-							OptionText="@(i => $"N° {i.N}")"
-							OptionValue="@(i => i.Id)"
-							@bind-Value="@_selectedCompetitionId">
-				<LabelTemplate>
-					Competencia <span class="red">*</span>
-				</LabelTemplate>
-			</FluentSelect>
+	@if (_competitions.Count == 0)
+	{
+		<div Style="min-height: 300px;" class="flex items-center pt-2">
+			<FluentIcon Icon="Icons.Regular.Size32.Warning" Color="@Color.Accent" />
+			&nbsp; No se puede registrar un puntaje ya que todavía no hay competiciones.
 		</div>
-	</div>
+	} else {
+		<EditForm EditContext="_editContext" OnValidSubmit="Save">
+		@* <p class="m-0 color-fg">Selecciona la competencia</p>
+		<FluentDivider class="mt-1 mb-4" /> *@
+		<CenteredSectionSeparator Class="mt-10 mb-7">Competencia</CenteredSectionSeparator>
 
-	<p class="m-0 color-fg pt-14">Selecciona el Pescador</p>
-	<FluentDivider class="mt-1 mb-4" />
-
-	<div class="flex flex-col items-center">
-		<div class="flex flex-row gap-4 items-end">
+		<div class="flex flex-col items-center">
 			<div>
-				<FluentTextField @bind-Value="_searchByNameValue"
-					Placeholder="Nombre"
-					AutoComplete="off"
-					Label="Buscar por nombre"
-					@oninput="@SearchFisherByName"
-					Disabled="@(_selectedFisher is not null)">
-					<FluentIcon Value="@(new Icons.Regular.Size16.Person())" Slot="start" Color="Color.Neutral" />
-				</FluentTextField>
-			</div>
-			
-			<div>
-				<FluentNumberField @bind-Value="_searchByNumberValue"
-					Placeholder="Número"
-					AutoComplete="off"
-					Label="Buscar por Número de pescador"
-					@bind-Value:after="@SearchFisherByFisherNumber"
-					Disabled="@(_selectedFisher is not null)">
-					<FluentIcon Value="@(new Icons.Regular.Size16.Person())" Slot="start" Color="Color.Neutral" />
-				</FluentNumberField>
+					<FluentSelect Items=_competitions
+								OptionText="@(i => $"N° {i.N}")"
+								OptionValue="@(i => i.Id)"
+								@bind-Value="@_selectedCompetitionId">
+					<LabelTemplate>
+						Competencia <span class="red">*</span>
+					</LabelTemplate>
+				</FluentSelect>
 			</div>
 		</div>
 
+		@* <p class="m-0 color-fg pt-14">Selecciona el Pescador</p>
+		<FluentDivider class="mt-1 mb-4" /> *@
+		<CenteredSectionSeparator Class="mt-16 mb-7">Pescador</CenteredSectionSeparator>
 
-		@if (_selectedFisher is not null)
-		{
-			<FluentCard class="mt-4" style="height:100px;width:500px">
-				<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
-					<div class="flex flex-col gap-2">
-						<div>
-							<span class="color-fg font-bold">Nombre</span>
-							<span class="color-fg">@(_selectedFisher?.Name)</span>
-						</div>
-
-						<div>
-							<span class="color-fg font-bold">DNI</span>
-							<span class="color-fg">@_selectedFisher?.DNI</span>
-						</div>
-					</div>
-
-					<div>
-						<p style="color: var(--accent-fill-rest);">
-							@* <FluentIcon Value="@(new Icons.Regular.Size24.Checkmark())" /> *@
-							Seleccionado
-						</p>
-
-						<FluentButton IconStart="@(new Icons.Regular.Size16.ArrowUndo())"
-									  @onclick=Deselect
-									  Appearance="Appearance.Outline">
-							Deseleccionar
-						</FluentButton>
-
-					</div>
+		<div class="flex flex-col items-center">
+			<div class="flex flex-row gap-4 items-end">
+				<div>
+					<FluentTextField @bind-Value="_searchByNameValue"
+						Placeholder="Nombre"
+						AutoComplete="off"
+						Label="Buscar por nombre"
+						@oninput="@SearchFisherByName"
+						Disabled="@(_selectedFisher is not null)">
+						<FluentIcon Value="@(new Icons.Regular.Size16.Person())" Slot="start" Color="Color.Neutral" />
+					</FluentTextField>
 				</div>
-			</FluentCard>
-			<ValidationMessage For="@(() => Request.FisherId)" />
-		} else
-		{
-			@foreach (var persona in _searchByNameResult)
+			
+				<div>
+					<FluentNumberField @bind-Value="_searchByNumberValue"
+						Placeholder="Número"
+						AutoComplete="off"
+						Label="Buscar por Número de pescador"
+						@bind-Value:after="@SearchFisherByFisherNumber"
+						Disabled="@(_selectedFisher is not null)">
+						<FluentIcon Value="@(new Icons.Regular.Size16.Person())" Slot="start" Color="Color.Neutral" />
+					</FluentNumberField>
+				</div>
+			</div>
+
+
+			@if (_selectedFisher is not null)
 			{
 				<FluentCard class="mt-4" style="height:100px;width:500px">
 					<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
 						<div class="flex flex-col gap-2">
 							<div>
 								<span class="color-fg font-bold">Nombre</span>
-								<span class="color-fg">@persona.Name</span>
+								<span class="color-fg">@(_selectedFisher?.Name)</span>
 							</div>
 
 							<div>
 								<span class="color-fg font-bold">DNI</span>
-								<span class="color-fg">@persona.DNI</span>
+								<span class="color-fg">@_selectedFisher?.DNI</span>
 							</div>
 						</div>
 
-						<FluentButton IconStart="@(new Icons.Regular.Size16.Checkmark())"
-						@onclick="@(() => Select(persona))"
-									  Appearance="Appearance.Accent">
-							Seleccionar
-						</FluentButton>
+						<div>
+							<p style="color: var(--accent-fill-rest);">
+								@* <FluentIcon Value="@(new Icons.Regular.Size24.Checkmark())" /> *@
+								Seleccionado
+							</p>
+
+							<FluentButton IconStart="@(new Icons.Regular.Size16.ArrowUndo())"
+										  @onclick=Deselect
+										  Appearance="Appearance.Outline">
+								Deseleccionar
+							</FluentButton>
+
+						</div>
 					</div>
 				</FluentCard>
+				<ValidationMessage For="@(() => Request.FisherId)" />
+			} else
+			{
+				@foreach (var persona in _searchByNameResult)
+				{
+					<FluentCard class="mt-4" style="height:100px;width:500px">
+						<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+							<div class="flex flex-col gap-2">
+								<div>
+									<span class="color-fg font-bold">Nombre</span>
+									<span class="color-fg">@persona.Name</span>
+								</div>
+
+								<div>
+									<span class="color-fg font-bold">DNI</span>
+									<span class="color-fg">@persona.DNI</span>
+								</div>
+							</div>
+
+							<FluentButton IconStart="@(new Icons.Regular.Size16.Checkmark())"
+							@onclick="@(() => Select(persona))"
+										  Appearance="Appearance.Accent">
+								Seleccionar
+							</FluentButton>
+						</div>
+					</FluentCard>
+				}
 			}
-		}
-	</div>
-
-	@if (_selectedFisher is not null)
-	{
-		<p class="m-0 color-fg pt-14">Ingresa el puntaje</p>
-		<FluentDivider class="mt-1 mb-4" />
-
-		<div class="flex flex-row justify-evenly w-full">
-			<FluentNumberField @bind-Value=Score Min="0" Required="true">
-				Puntaje <span class="red">*</span>
-			</FluentNumberField>
-			<ValidationMessage For="@(() => Request.Score)" />
 		</div>
 
-		<div class="mt-10 flex flex-row w-full justify-center gap-24">
-			<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
-			<FluentButton Disabled=!CanSave()
-						  IconStart="@(new Icons.Regular.Size16.Checkmark())"
-						  Appearance="Appearance.Accent"
-						  Type="ButtonType.Submit">Guardar</FluentButton>
-		</div>
+		@if (_selectedFisher is not null)
+		{
+			@* <p class="m-0 color-fg pt-14">Ingresa el puntaje</p>
+			<FluentDivider class="mt-1 mb-4" /> *@
+			<CenteredSectionSeparator Class="mt-16 mb-7">Puntaje</CenteredSectionSeparator>
+
+			<div class="flex flex-row justify-evenly w-full">
+				<FluentNumberField @bind-Value=Score Min="0" Required="true">
+					Puntaje <span class="red">*</span>
+				</FluentNumberField>
+				<ValidationMessage For="@(() => Request.Score)" />
+			</div>
+
+			<div class="absolute mb-6 bottom-0 mt-10 flex flex-row w-full justify-center gap-24">
+				<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
+				<FluentButton Disabled=!CanSave()
+							  IconStart="@(new Icons.Regular.Size16.Checkmark())"
+							  Appearance="Appearance.Accent"
+							  Type="ButtonType.Submit">Guardar</FluentButton>
+			</div>
 		
-		<ValidationSummary />
+			<ValidationSummary />
+		}
+		</EditForm>
 	}
-	</EditForm>
-}
+</div>
 
 @code {
 	[Parameter]

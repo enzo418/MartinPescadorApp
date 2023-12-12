@@ -43,30 +43,32 @@
 </div>
 @* <FluentDivider class="mt-4 mb-4" />  *@
 
-<FluentDataGrid Items="@positions" Virtualize="true" ItemSize="50" GridTemplateColumns="0.1fr 0.6fr 0.3fr 0.5fr">
-    <ChildContent>
-        <PropertyColumn Title="Posición" Property="@(c => c.Position)" />
+<div style="height: calc(100% - 200px); overflow-y: scroll;">
+    <FluentDataGrid Items="@positions" Virtualize="true" ItemSize="50" GridTemplateColumns="0.1fr 0.6fr 0.3fr 0.5fr">
+        <ChildContent>
+            <PropertyColumn Title="Posición" Property="@(c => c.Position)" />
 
-        <PropertyColumn Title="Nombre" Property="@(c => c.Name)" />
+            <PropertyColumn Title="Nombre" Property="@(c => c.Name)" />
 
-        <PropertyColumn Title="Suma de posiciones" Property="@(c => c.CompetitionPositions.Sum())" />
+            <PropertyColumn Title="Suma de posiciones" Property="@(c => c.CompetitionPositions.Sum())" />
 
-        <TemplateColumn Title="Acciones" Align="@Align.End">
-            <FluentButton IconStart="@(new Icons.Regular.Size24.Info())"
-                          Appearance="Appearance.Stealth"
-                          OnClick="@(() => OpenDetails(context))"> 
-                          Detalles
-            </FluentButton>
-        </TemplateColumn>
-    </ChildContent>
+            <TemplateColumn Title="Acciones" Align="@Align.End">
+                <FluentButton IconStart="@(new Icons.Regular.Size24.Info())"
+                              Appearance="Appearance.Stealth"
+                              OnClick="@(() => OpenDetails(context))"> 
+                              Detalles
+                </FluentButton>
+            </TemplateColumn>
+        </ChildContent>
 
-    <EmptyContent>
-        <div Style="min-height: 300px;" class="flex items-center empty-content pt-2">
-            <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
-            &nbsp; No hay posiciones registradas en el torneo
-        </div>
-    </EmptyContent>
-</FluentDataGrid>
+        <EmptyContent>
+            <div Style="min-height: 300px;" class="flex items-center empty-content pt-2">
+                <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
+                &nbsp; No hay posiciones registradas en el torneo
+            </div>
+        </EmptyContent>
+    </FluentDataGrid>
+</div>
 
 @code {
     [Parameter]

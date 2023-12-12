@@ -10,11 +10,12 @@ using System.Text.RegularExpressions;
 
 namespace FisherTournament.WebServer.Services.ExportLeaderboard
 {
-    public class ExportLeaderboardService
+    public partial class ExportLeaderboardService
     {
         private readonly ISender _sender;
 
-        private Regex _asciiRegex = new(@"[^a-zA-Z0-9\s]", (RegexOptions)0);
+        [GeneratedRegex("[^\\p{L}\\p{N}\\s\\p{M}]", RegexOptions.None)]
+        private static partial Regex SanitizeRegex();
 
         public ExportLeaderboardService(ISender sender)
         {
@@ -32,13 +33,13 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
             var categoryLeaderboardReq = await _sender.Send(new GetTournamentLeaderBoardQuery(TournamentId));
             if (categoryLeaderboardReq.IsError) return categoryLeaderboardReq.Errors;
 
-            var sanitizedTournamentName = _asciiRegex.Replace(tournamentDataRequest.Value.Name, "");
+            var sanitizedTournamentName = SanitizeRegex().Replace(tournamentDataRequest.Value.Name, "");
 
             var wb = new XLWorkbook();
 
             foreach (var cat in categoryLeaderboardReq.Value)
             {
-                var sanitizedCatName = _asciiRegex.Replace(cat.Name, "");
+                var sanitizedCatName = SanitizeRegex().Replace(cat.Name, "");
 
                 var ws = wb.Worksheets.Add($"{sanitizedCatName}");
 
@@ -80,6 +81,9 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
                 ApplyCategoryHeaderStyle(ws.Range(1, 1, 1, ws.Worksheet.ColumnsUsed().Count()));
                 ApplyCategoryColumsHeaderStyle(ws.Range(2, 1, 2, ws.Worksheet.ColumnsUsed().Count()));
                 ApplyPositionsRowStyle(ws.Range(2, 1, ws.Worksheet.RowsUsed().Count(), 1));
+
+                CenterHorizontally(ws.Range(2, 1, ws.Worksheet.RowsUsed().Count(), 1)); // Positions
+                CenterHorizontally(ws.Range(2, 3, ws.Worksheet.RowsUsed().Count(), ws.Worksheet.ColumnsUsed().Count())); // All except names
             }
 
             ApplyDefaultStyle(wb);
@@ -101,13 +105,13 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
             var competitionLeaderboardReq = await _sender.Send(new GetCompetitionLeaderBoardQuery(CompetitionId));
             if (competitionLeaderboardReq.IsError) return competitionLeaderboardReq.Errors;
 
-            var sanitizedTournamentName = _asciiRegex.Replace(tournamentDataRequest.Value.Name, "");
+            var sanitizedTournamentName = SanitizeRegex().Replace(tournamentDataRequest.Value.Name, "");
 
             var wb = new XLWorkbook();
 
             foreach (var cat in competitionLeaderboardReq.Value)
             {
-                var sanitizedCatName = _asciiRegex.Replace(cat.Name, "");
+                var sanitizedCatName = SanitizeRegex().Replace(cat.Name, "");
 
                 var ws = wb.Worksheets.Add($"{sanitizedCatName}");
 
@@ -138,9 +142,13 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
                 });
 
                 ApplyPositionsRowStyle(ws.Range(2, 1, ws.Worksheet.RowsUsed().Count(), 1));
+
+                CenterHorizontally(ws.Range(2, 1, ws.Worksheet.RowsUsed().Count(), 1)); // Positions
+                CenterHorizontally(ws.Range(2, 3, ws.Worksheet.RowsUsed().Count(), ws.Worksheet.ColumnsUsed().Count())); // All except names
             }
 
             ApplyDefaultStyle(wb);
+
 
             var fileName = $"Torneo {sanitizedTournamentName} - {competitionDataRequest.Value.N}° Fecha.xlsx";
 
@@ -184,9 +192,14 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
             wb.Worksheets.ToList().ForEach(ws =>
             {
                 ApplyDefaultStyle(ws.RangeUsed());
-                ws.Columns().AdjustToContents(10, Double.MaxValue);
-                ws.Rows().AdjustToContents(10, Double.MaxValue);
+                ws.Columns().AdjustToContents(10, double.MaxValue);
+                ws.Rows().AdjustToContents(10, double.MaxValue);
             });
+        }
+
+        internal static void CenterHorizontally(IXLRange range)
+        {
+            range.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
         }
     }
 

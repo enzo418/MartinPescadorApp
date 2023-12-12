@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Shared\CenteredSectionSeparator.razor" />
     <Content Remove="Shared\ScrollerGoToCompetition.razor" />
   </ItemGroup>
 
@@ -45,10 +46,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <_ContentIncludedByDefault Remove="Shared\CenteredSectionSeparator.razor" />
     <_ContentIncludedByDefault Remove="Shared\ScrollerGoToCompetition.razor" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="Pages\Tournaments\Components\ScrollerGoToCompetition.razor" />
+    <None Include="Components\CenteredSectionSeparator.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Shared\CenteredSectionSeparator.razor" />
   </ItemGroup>
 </Project>

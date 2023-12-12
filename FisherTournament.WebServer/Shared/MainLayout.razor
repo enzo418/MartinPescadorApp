@@ -1,4 +1,5 @@
-﻿@using FisherTournament.WebServer.Services.LeaderboardNotification;
+﻿@using FisherTournament.WebServer.Common;
+@using FisherTournament.WebServer.Services.LeaderboardNotification;
 @using Microsoft.Fast.Components.FluentUI.DesignTokens
 
 @namespace FisherTournament.WebServer.Shared
@@ -18,28 +19,46 @@
         <NavMenu OnToggleTheme="@SwitchTheme" IsInDarkMode="@IsInDarkMode" />
     </div>
 
-    <main>
-        <article class="content px-4">
+    <main style="height: calc(100% - 55px);">
+        <article class="content h-full">
             @Body
         </article>
-        <FluentToastContainer MaxToastCount="10" Timeout="5" RemoveToastsOnNavigation="false" />
+        <FluentToastContainer MaxToastCount="10" Timeout=@ToastTimeout RemoveToastsOnNavigation="false" />
         <FluentDialogProvider />
         <FluentTooltipProvider />
     </main>
 </div>
 
 @code {
+    private const int ToastTimeout = 5;
+
     StandardLuminance _baseLayerLuminance = StandardLuminance.LightMode;
 
     private bool IsInDarkMode = false;
 
+    private ThrottleCall _showLeaderBoardUpdateDelted = new(ToastTimeout);
+
     protected override void OnInitialized()
     {
-        IsInDarkMode = _baseLayerLuminance == StandardLuminance.DarkMode;
-
-        _leaderboardNotificationService.OnLeaderboardWasUpdated += OnLeaderboardUpdated;
+        _showLeaderBoardUpdateDelted.CallBack += async () =>
+        {
+            _toast.ShowInfo("Se actualizó la tabla de posiciones");
+            await InvokeAsync(StateHasChanged);
+        };
 
         base.OnInitialized();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            IsInDarkMode = _baseLayerLuminance == StandardLuminance.DarkMode;
+
+            _leaderboardNotificationService.OnLeaderboardWasUpdated += OnLeaderboardUpdated;
+        }
+        
+        base.OnAfterRender(firstRender);
     }
 
     public async void SwitchTheme()
@@ -60,7 +79,9 @@
 
     Task OnLeaderboardUpdated(LeaderboardUpdatedEventArgs e)
     {
-        _toast.CloseToast("leaderboard-update");
+        _showLeaderBoardUpdateDelted.Call();
+
+        /*_toast.CloseToast("leaderboard-update");
 
         _toast.ShowConfirmationToast(new ToastParameters<ConfirmationToastContent>()
             {
@@ -72,7 +93,7 @@
                 TopAction = null,
                 OnTopAction = null,
                 Icon = (new Icons.Regular.Size20.Info(), Color.Accent)
-            });
+            });*/
         
          return Task.CompletedTask;
     }

@@ -11,65 +11,68 @@
 
 @page "/fishers/add"
 
-<div class="flex flex-row w-full items-center justify-between">
-    <h1 class="page-title">Agregar Pescador</h1>
+<div class="px-4" style="height: 80%">
+    <div class="flex flex-row w-full items-center justify-between">
+        <h1 class="page-title">Agregar Pescador</h1>
 
-    <FluentCheckbox @bind-Value="@_exitOnSave" Label="Volver al guardar" />
+        <FluentSwitch @bind-Value="@_exitOnSave" Label="Volver al guardar" />
+    </div>
+
+    <EditForm EditContext="@editContext" OnSubmit="@Submit" class="relative h-full">
+        <div class="flex justify-center gap-20 pt-7">
+            <div class="flex flex-col gap-10 justify-normal">
+                <div>
+                    <span class="text-sm">Información Personal</span>
+                    <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
+                </div>
+
+                <p>
+                    <FluentTextField AutoComplete="off" Autofocus="true" @bind-Value="@Model.FirstName" @ref=_txtNameRef Required="true">
+                        Nombre <span class="red">*</span>
+                    </FluentTextField>
+                    <ValidationMessage For="() => Model!.FirstName" />
+                </p>
+
+                <p>
+                    <FluentTextField AutoComplete="off" @bind-Value="@Model.LastName" Required="true">Apellido <span class="red">*</span>
+                    </FluentTextField>
+                    <ValidationMessage For="() => Model!.LastName" />
+                </p>
+
+                <p>
+                    <FluentTextField AutoComplete="off" @bind-Value="@(Model.DNI)" Required="true">
+                        DNI <span class="red">*</span>
+                    </FluentTextField>
+                    <ValidationMessage For="() => Model!.DNI" />
+                </p>
+            </div>
+
+            <div class="flex flex-col gap-10 justify-normal">
+                <div>
+                    <span class="text-sm">Opcional</span>
+                    <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
+                </div>
+
+                <p>
+                    <FluentTextField AutoComplete="off" @bind-Value=date Required="false" Placeholder="01/12/1997"
+                        Pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$">
+                        Fecha nacimiento
+                    </FluentTextField>
+                <p class="error @dateValidationClasses">@dateValidationError</p>
+                </p>
+            </div>
+        </div>
+
+        <div class="absolute bottom-0 m-auto flex columns-2 gap-28 w-full place-content-center">
+            <FluentButton Appearance="Appearance.Stealth" @onclick=OnCancel>@(editContext.IsModified() ? "Cancelar" : "Volver")</FluentButton>
+            <FluentButton Type=ButtonType.Submit Appearance="Appearance.Accent">Guardar</FluentButton>
+        </div>
+    </EditForm>
 </div>
 
-<EditForm EditContext="@editContext" OnSubmit="@Submit" class="relative h-full">
-    <div class="flex justify-center gap-20 pt-7">
-        <div class="flex flex-col gap-10 justify-normal">
-            <div>
-                <span class="text-sm">Información Personal</span>
-                <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
-            </div>
-
-            <p>
-                <FluentTextField AutoComplete="off" Autofocus="true" @bind-Value="@Model.FirstName" @ref=_txtNameRef Required="true">
-                    Nombre <span class="red">*</span>
-                </FluentTextField>
-                <ValidationMessage For="() => Model!.FirstName" />
-            </p>
-
-            <p>
-                <FluentTextField AutoComplete="off" @bind-Value="@Model.LastName" Required="true">Apellido <span class="red">*</span>
-                </FluentTextField>
-                <ValidationMessage For="() => Model!.LastName" />
-            </p>
-
-            <p>
-                <FluentTextField AutoComplete="off" @bind-Value="@(Model.DNI)" Required="true">
-                    DNI <span class="red">*</span>
-                </FluentTextField>
-                <ValidationMessage For="() => Model!.DNI" />
-            </p>
-        </div>
-
-        <div class="flex flex-col gap-10 justify-normal">
-            <div>
-                <span class="text-sm">Opcional</span>
-                <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
-            </div>
-
-            <p>
-                <FluentTextField AutoComplete="off" @bind-Value=date Required="false" Placeholder="01/12/1997"
-                    Pattern="^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$">
-                    Fecha nacimiento
-                </FluentTextField>
-            <p class="error @dateValidationClasses">@dateValidationError</p>
-            </p>
-        </div>
-    </div>
-
-    <div class="absolute bottom-0 m-auto flex columns-2 gap-28 w-full place-content-center">
-        <FluentButton Appearance="Appearance.Stealth" @onclick=OnCancel>@(editContext.IsModified() ? "Cancelar" : "Volver")</FluentButton>
-        <FluentButton Type=ButtonType.Submit Appearance="Appearance.Accent">Guardar</FluentButton>
-    </div>
-</EditForm>
 
 
-    @code {
+@code {
     string? date = "";
     private EditContext editContext = default!;
     private ValidationMessageStore? messageStore;
