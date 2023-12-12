@@ -1,44 +1,45 @@
 ﻿@namespace FisherTournament.WebServer.Shared
 @inject NavigationManager _nav
 
-<FluentToolbar style="height: 55px;width:100%;background-color: var(--neutral-layer-3)" class="shadow gap-x-3 flex justify-between">
+<div>
+    <FluentToolbar style="height: 55px;width:100%;background-color: var(--neutral-layer-3)" class="shadow gap-x-5 flex justify-between">
+            <FluentSkeleton Width="175px" Height="30px" Shimmer="true"></FluentSkeleton>
 
-    <FluentButton Appearance="Appearance.Outline" @onclick=NavigateToTournaments tabindex="2">
-        <FluentIcon Icon="@Icons.Regular.Size20.Trophy" Slot="start" Color="Color.Neutral" /> Fechas y Torneos
-    </FluentButton>
+            @DividerTemplate
 
-    @DividerTemplate
+        <FluentNavMenu Style="width: fit-content !important; flex-direction: row;align-items: center !important;" Id="nav-page" Class="gap-x-1 w-fit flex items-center flex-row">
+                <FluentNavLink Href="/tournaments" Icon="@(new Icons.Regular.Size20.Trophy())">Fechas y Torneos</FluentNavLink>
 
-    <FluentButton Appearance="Appearance.Outline" @onclick=NavigateToFishers tabindex="1">
-        <FluentIcon Icon="@Icons.Regular.Size20.People" Slot="start" Color="Color.Neutral" />
-        Pescadores
-    </FluentButton>
+                @DividerTemplate
 
-    @if (false)
-    {
-        @DividerTemplate
+                <FluentNavLink Href="/fishers" Icon="@(new Icons.Regular.Size20.People())">Pescadores</FluentNavLink>
 
-        <FluentButton tabindex="3" @onclick=NavigateToEvents>
-            <FluentIcon Icon="@(Icons.Regular.Size20.Info)" Slot="start" Color="Color.Neutral" /> Eventos
-        </FluentButton>
-    }
+                @if (false)
+                {
+                    @DividerTemplate
 
-    <span slot="end">
-        <FluentSwitch Value="@IsInDarkMode" @onchange=OnToggleTheme title="Tema">
-            <span class="label">Tema</span>
-            <span slot="unchecked-message">
-                <FluentIcon class="align-middle" Icon="Icons.Regular.Size20.WeatherSunny" Color="Color.Neutral" />
+                    <FluentButton tabindex="3" @onclick=NavigateToEvents>
+                        <FluentIcon Icon="@(Icons.Regular.Size20.Info)" Slot="start" Color="Color.Neutral" /> Eventos
+                    </FluentButton>
+                }
+            </FluentNavMenu>
+
+            <span slot="end">
+                <FluentSwitch Value="@IsInDarkMode" @onchange=OnToggleTheme title="Tema">
+                    <span class="label">Tema</span>
+                    <span slot="unchecked-message">
+                        <FluentIcon class="align-middle" Icon="Icons.Regular.Size20.WeatherSunny" Color="Color.Neutral" />
+                    </span>
+                    <span slot="checked-message">
+                        <FluentIcon class="align-middle" Icon="Icons.Regular.Size20.WeatherMoon" Color="Color.Neutral" />
+                    </span>
+                </FluentSwitch>
             </span>
-            <span slot="checked-message">
-                <FluentIcon class="align-middle" Icon="Icons.Regular.Size20.WeatherMoon" Color="Color.Neutral" />
-            </span>
-        </FluentSwitch>
-    </span>
-
-</FluentToolbar>
+    </FluentToolbar>
+</div>
 
 @code {
-    private RenderFragment DividerTemplate = @<FluentDivider Style="height: 20px;" Role="DividerRole.Separator"
+    private RenderFragment DividerTemplate = @<FluentDivider Style="height: 20px;" Class="mx-2" Role="DividerRole.Separator"
         Orientation="Orientation.Vertical">
     </FluentDivider>;
 

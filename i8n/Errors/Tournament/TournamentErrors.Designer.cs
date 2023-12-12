@@ -79,6 +79,15 @@ namespace i8n.Errors.Tournament {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a No es posible eliminar un torneo sin finalizar con inscripciones o competencias registradas..
+        /// </summary>
+        public static string CannotBeDeleted {
+            get {
+                return ResourceManager.GetString("CannotBeDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a No se puede eliminar una categoría que con pescadores inscriptions en ella..
         /// </summary>
         public static string CannotDeleteCategoryWithEnrolledFishers {

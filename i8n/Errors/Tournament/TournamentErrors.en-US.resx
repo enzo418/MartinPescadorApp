@@ -150,4 +150,7 @@
   <data name="CannotDeleteCategoryWithEnrolledFishers" xml:space="preserve">
     <value>Cannot delete a category with enrolled fishers.</value>
   </data>
+  <data name="CannotBeDeleted" xml:space="preserve">
+    <value>Tournament cannot be deleted because it's not ended or has enrolled fishers or has competitions.</value>
+  </data>
 </root>

@@ -50,5 +50,9 @@ public static partial class Errors
         public static Error CannotDeleteCategoryWithEnrolledFishers => Error.Conflict(
             code: "Tournament.CannotDeleteCategoryWithEnrolledFishers",
             description: TournamentErrors.CannotDeleteCategoryWithEnrolledFishers);
+
+        public static Error CannotBeDeleted => Error.Conflict(
+            code: "Tournament.CannotBeDeleted",
+            description: TournamentErrors.CannotBeDeleted);
     }
 }

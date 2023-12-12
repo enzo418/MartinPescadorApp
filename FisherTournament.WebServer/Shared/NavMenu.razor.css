@@ -1,0 +1,38 @@
+﻿#nav-page {
+    background-color: #fafa;
+}
+
+::deep #nav-page .fluent-nav-item .positioning-region {
+    color: var(--neutral-foreground-rest);
+    border-color: var(--neutral-stroke-hover);
+}
+
+::deep #nav-page .fluent-nav-item .positioning-region:not(:hover) {
+    background-color: transparent;
+}
+
+::deep #nav-page .fluent-nav-item .active .positioning-region:not(:hover) {
+    background-color: var(--neutral-layer-1);
+}
+
+::deep #nav-page .fluent-nav-item .active .positioning-region::before {
+    display: none;
+}
+
+::deep #nav-page .fluent-nav-item .active .positioning-region .fluent-nav-icon {
+    fill: var(--accent-fill-rest) !important;
+}
+
+::deep #nav-page .fluent-nav-item .positioning-region .fluent-nav-icon {
+    fill: var(--neutral-foreground-hint) !important;
+}
+
+/* fix text */
+::deep #nav-page .fluent-nav-item .positioning-region .content-region {
+    padding-right: 10px;
+}
+
+::deep #nav-page .fluent-nav-item .positioning-region .fluent-nav-text {
+    text-overflow: initial;
+    width: 100%;
+}

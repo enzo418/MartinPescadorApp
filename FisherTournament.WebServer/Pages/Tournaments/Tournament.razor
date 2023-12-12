@@ -3,6 +3,7 @@
 
 @using ErrorOr;
 @using FisherTournament.Application.Tournaments.Commands.EditTournament;
+@using FisherTournament.Application.Tournaments.Commands.RemoveTournament;
 @using FisherTournament.Application.Tournaments.Queries.GetTournament;
 @using FisherTournament.Contracts.Tournaments;
 @using Microsoft.Fast.Components.FluentUI;
@@ -11,13 +12,18 @@
 @inject ISender _sender;
 @inject IToastService _toastService;
 @inject IMapper _mapper;
+@inject NavigationManager _nav;
 
 <EditForm EditContext="@editContext" class="flex flex-col justify-between h-full" >
     <div>
-        <h1 class="page-title-no-pt">Información general</h1>
+        <h1 class="page-title-no-pt">Torneo</h1>
 
         <FluentStack Orientation="Orientation.Vertical" Class="pt-4" VerticalGap="25">
             <FluentGrid Spacing="3">
+                <FluentGridItem sm="12">
+                    <FluentLabel Typo="Typography.Subject" Color="Color.Disabled" >Información general</FluentLabel>
+                </FluentGridItem>
+
                 <FluentGridItem sm="12" md="5">
                     <FluentTextField AutoComplete="off" Required="true" class="w-full" @bind-Value=@TournamentName>
                         Nombre del torneo
@@ -31,6 +37,10 @@
                         Fecha inicio
                     </FluentTextField>
                     <ValidationMessage For="() => Model!.StartDate" />
+                </FluentGridItem>
+
+                <FluentGridItem sm="12">
+                    <FluentLabel Typo="Typography.Subject" Color="Color.Disabled">Estado</FluentLabel>
                 </FluentGridItem>
 
                 <FluentGridItem sm="12" md="5">
@@ -54,9 +64,9 @@
         </FluentStack>
     </div>
 
-    @* <div class="flex justify-between">
-        <FluentButton IconStart="@(new Icons.Regular.Size16.Delete())">Eliminar</FluentButton>
-    </div> *@
+    <div class="flex justify-between mb-6">
+        <FluentButton IconStart="@(new Icons.Regular.Size16.Delete())" OnClick="DeleteTournament">Eliminar</FluentButton>
+    </div>
 </EditForm>
 
 
@@ -165,5 +175,21 @@
         StateHasChanged();
 
         return res;
+    }
+
+    private async Task DeleteTournament()
+    {
+        var command = new RemoveTournamentCommand(TournamentId);
+        var res = await _sender.Send(command);
+
+        if (res.IsError)
+        {
+            _toastService.ShowErrors(res.Errors);
+        } else
+        {
+            _toastService.ShowSuccess($"Torneo eliminado.");
+
+            _nav.NavigateTo("/");
+        }
     }
 }

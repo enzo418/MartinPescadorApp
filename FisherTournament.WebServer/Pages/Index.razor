@@ -1,1 +1,10 @@
-﻿@page "/index"
+﻿@page "/"
+
+@inject NavigationManager NavManager
+
+@code {
+    protected override void OnAfterRender(bool firstRender)
+    {
+        NavManager.NavigateTo("/tournaments");
+    }
+}

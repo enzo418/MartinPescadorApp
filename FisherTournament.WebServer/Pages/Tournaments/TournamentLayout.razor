@@ -13,7 +13,7 @@
 <FluentLayout Class="h-full">
     <FluentStack Orientation="Orientation.Horizontal" Width="100%" Class="h-full" Style="padding-right: 15px; background-color: var(--neutral-layer-1);">
         <div style="color: var(--neutral-foreground-rest);background-color: var(--neutral-layer-2)" class="h-full pt-6 pl-3 pr-3">
-            <FluentLabel Typo="Typography.H3" Class="text-center" Style="color: var(--neutral-stroke-strong-active);text-wrap: wrap; max-width: 300px;">@_tournamentName</FluentLabel>
+            <FluentLabel Typo="Typography.H3" Class="text-center pb-2" Style="color: var(--neutral-stroke-strong-active);text-wrap: wrap; max-width: 300px;">@_tournamentName</FluentLabel>
             <FluentNavMenu @ref="@_navMenu" id="nav-tournament" Width="300">
                 <FluentNavLink Match=NavLinkMatch.All Icon="@(new Icons.Regular.Size24.Home())" Href=@($"/tournament/{TournamentId}")>Información General</FluentNavLink>
                 <FluentNavLink Icon="@(new Icons.Regular.Size24.PeopleList())" Href=@($"/tournament/{TournamentId}/categories")>Categorías</FluentNavLink>

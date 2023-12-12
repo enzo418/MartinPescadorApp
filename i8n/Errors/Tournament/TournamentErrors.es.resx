@@ -123,6 +123,9 @@
   <data name="CannotAddInscriptionToGeneralCategory" xml:space="preserve">
     <value>No se puede inscribir en la categoría "General". Es reservada.</value>
   </data>
+  <data name="CannotBeDeleted" xml:space="preserve">
+    <value>No es posible eliminar un torneo sin finalizar con inscripciones o competencias registradas.</value>
+  </data>
   <data name="CannotDeleteCategoryWithEnrolledFishers" xml:space="preserve">
     <value>No se puede eliminar una categoría que con pescadores inscriptions en ella.</value>
   </data>

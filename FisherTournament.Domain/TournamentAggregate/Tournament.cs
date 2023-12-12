@@ -284,6 +284,28 @@ public class Tournament : AggregateRoot<TournamentId>
         return Result.Success;
     }
 
+    public ErrorOr<Success> SetForDeletion()
+    {
+        if (EndDate == null)
+        {
+            return Errors.Tournaments.CannotBeDeleted;
+        }
+
+        if (_inscriptions.Any())
+        {
+            return Errors.Tournaments.CannotBeDeleted;
+        }
+
+        if (_competitionsIds.Any())
+        {
+            return Errors.Tournaments.CannotBeDeleted;
+        }
+
+        _categories.Clear();
+
+        return Result.Success;
+    }
+
     public static Tournament Create(string name,
                                     DateTime startDate,
                                     DateTime? endDate,
