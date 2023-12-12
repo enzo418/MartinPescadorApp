@@ -1,10 +1,12 @@
 ﻿@inherits LayoutComponentBase
+@using FisherTournament.Application.Tournaments.Queries.GetTournament;
 @using Microsoft.Fast.Components.FluentUI;
 @using Microsoft.Fast.Components.FluentUI.DesignTokens
 
 @inject NavigationManager Navigation
 @inject GlobalState GlobalState
 @inject BaseLayerLuminance BaseLayerLuminance
+@inject ISender _sender
 
 @layout MainLayout
 
@@ -73,13 +75,17 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        /*if (_lastLuminanceValue != GlobalState.Luminance.GetLuminanceValue()) {
-            float luminance = GlobalState.Luminance.GetLuminanceValue();
-            double newLuminance = luminance > 0.5 ? luminance - 0.05 : luminance + 0.05;
-            
-            await BaseLayerLuminance.SetValueFor(_navMenu!.Element, (float)newLuminance);
+        if (_tournamentName == "Torneo")
+        {
+            var res = await _sender.Send(new GetTournamentQuery(TournamentId));
 
-            _lastLuminanceValue = luminance;
-        }*/
+            if (!res.IsError)
+            {
+                var tournament = res.Value;
+                _tournamentName = tournament.Name;
+
+                await InvokeAsync(StateHasChanged);
+            }
+        }
     }
 }
