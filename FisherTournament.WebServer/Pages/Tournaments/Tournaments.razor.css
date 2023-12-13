@@ -5,3 +5,18 @@
 table, th, td {
     /*border: 1px solid;*/
 }
+
+/*::deep fluent-data-grid-cell {
+    text-align: center;
+}
+
+::deep .col-title-text {
+    text-align: center;
+    width: 100%;
+}
+
+::deep .col-title {
+    text-align: center;
+    width: 100%;
+}
+*/

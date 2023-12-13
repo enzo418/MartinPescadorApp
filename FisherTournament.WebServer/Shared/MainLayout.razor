@@ -11,6 +11,7 @@
 @inject GlobalState GlobalState
 @inject LeaderboardNotificationService _leaderboardNotificationService
 @inject IToastService _toast
+@inject IJSRuntime _js
 
 <PageTitle>FisherTournament.WebServer</PageTitle>
 
@@ -30,6 +31,11 @@
 </div>
 
 @code {
+    [Inject]
+    private BodyFont BodyFont { get; set; } = default!;
+
+    ElementReference container;
+
     private const int ToastTimeout = 5;
 
     StandardLuminance _baseLayerLuminance = StandardLuminance.LightMode;
@@ -37,6 +43,8 @@
     private bool IsInDarkMode = false;
 
     private ThrottleCall _showLeaderBoardUpdateDelted = new(ToastTimeout);
+
+    private IJSObjectReference? _jsModule;
 
     protected override void OnInitialized()
     {
@@ -49,23 +57,32 @@
         base.OnInitialized();
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        base.OnAfterRenderAsync(firstRender);
+
         if (firstRender)
         {
+            await BodyFont.SetValueFor(container, "\"Montserrat\", \"Segoe UI Variable\", \"Segoe UI\", sans-serif");
+
+            _jsModule = await _js.InvokeAsync<IJSObjectReference>("import", "./Shared/MainLayout.razor.js");
+
+            bool prefeersDarkMode = await _jsModule!.InvokeAsync<bool>("prefeersDarkMode");
+
             IsInDarkMode = _baseLayerLuminance == StandardLuminance.DarkMode;
 
+            if (!IsInDarkMode && prefeersDarkMode) {
+                SwitchTheme();
+                StateHasChanged();
+            }
+            
             _leaderboardNotificationService.OnLeaderboardWasUpdated += OnLeaderboardUpdated;
         }
-        
-        base.OnAfterRender(firstRender);
     }
 
     public async void SwitchTheme()
     {
         IsInDarkMode = !IsInDarkMode;
-
-        await Task.Delay(50);
 
         if (_baseLayerLuminance == StandardLuminance.LightMode)
             _baseLayerLuminance = StandardLuminance.DarkMode;

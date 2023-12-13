@@ -1,0 +1,144 @@
+﻿@using FisherTournament.Application.Competitions.Queries.GetLeaderBoard;
+@using FisherTournament.WebServer.Pages.Tournaments.Dialog;
+@using FisherTournament.WebServer.Services.LeaderboardNotification;
+
+@inject IToastService _toastService
+@inject NavigationManager _nav
+@inject ISender _sender
+@inject LeaderboardNotificationService _leaderboardNotificationService
+@inject ILogger<CompetitionLeaderboardList> _logger
+@inject IDialogService _dialogService
+
+@implements IDisposable
+
+<div style="height: calc(100% - 200px); overflow-y: scroll;">
+    <FluentDataGrid Items="@positions" Virtualize="true" ItemSize="50" GridTemplateColumns="0.2fr 0.6fr 0.3fr 0.4fr 0.5fr">
+        <ChildContent>
+            <PropertyColumn Title="Posición" Property="@(c => c.Position)" />
+
+            <PropertyColumn Title="Nombre" Property="@(c => c.Name)" />
+
+            <PropertyColumn Title="Suma de Puntos" Property="@(c => c.TotalScore)" />
+
+            @* <PropertyColumn Title="Desempate" Property="@(c => c.TieBreakingReason)" /> *@
+       
+            <TemplateColumn Title="Desempate">
+                @if (context.TieBreakingReason is not null)
+                {
+                    <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
+                        <span>@context.TieBreakingReason</span>                
+                        <FluentIcon Id="@context.FisherId" Icon="Icons.Regular.Size16.Info" />
+
+                        <FluentTooltip Anchor="@context.FisherId">
+                            M/P = Por mayor pieza
+                            <br />
+                            M/P N = Por la mayor N-ésima pieza
+                            <br />
+                            D = Aleatorio
+                        </FluentTooltip>
+                    </FluentStack>
+                }
+            </TemplateColumn>
+
+            <TemplateColumn Title="Acciones" Align="@Align.End">
+                <FluentButton IconStart="@(new Icons.Regular.Size24.Info())"
+                              Appearance="Appearance.Stealth"
+                              OnClick="@(() => OpenDetails(context))"> 
+                              Detalles
+                </FluentButton>
+            </TemplateColumn>
+        </ChildContent>
+
+        <EmptyContent>
+            <div Style="min-height: 300px;" class="flex items-center empty-content pt-2">
+                <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
+                &nbsp; No hay posiciones registradas para esta competición
+            </div>
+        </EmptyContent>
+    </FluentDataGrid>
+</div>
+
+@code {
+    private string? _lastCompetitionId = "";
+
+    [Parameter]
+    public string CompetitionId { get; set; } = null!;
+
+    [Parameter]
+    public Action<List<(string Id, string Name)>>? OnCategoriesChanged { get; set; }
+
+    [Parameter]
+    public string CategoryId { get; set; } = null!;
+
+    private string _lastCategoryId = "";
+
+    IQueryable<LeaderBoardItem> positions = new List<LeaderBoardItem>().AsQueryable();
+
+    protected override void OnInitialized()
+    {
+        _leaderboardNotificationService.OnLeaderboardWasUpdated += OnLeaderboardUpdated;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await SearchAsync();
+    }
+
+    async Task OnLeaderboardUpdated(LeaderboardUpdatedEventArgs e)
+    {
+        await InvokeAsync(async () =>
+        {
+            await SearchAsync(true);
+
+            StateHasChanged();
+        });
+    }
+
+    async Task SearchAsync(bool force = false)
+    {
+        bool search = !positions.Any() || force || _lastCategoryId != CategoryId || _lastCompetitionId != CompetitionId;
+
+        if (search)
+        {
+            var query = new GetCompetitionLeaderBoardQuery(CompetitionId);
+            var res = await _sender.Send(query);
+
+            if (res.IsError)
+            {
+                _toastService.ShowErrors(res.Errors);
+            }
+            else
+            {
+                _lastCompetitionId = CompetitionId;
+
+                var categories = res.Value.OrderBy(c => c.Id).Select(c => (c.Id, c.Name)).ToList();
+                OnCategoriesChanged?.Invoke(categories);
+
+                if (res.Value.Any(p => p.Id == CategoryId))
+                {
+                    positions = res.Value.First(p => p.Id == CategoryId).LeaderBoard.AsQueryable();
+                    _lastCategoryId = CategoryId;
+                } else
+                {
+                    positions = new List<LeaderBoardItem>().AsQueryable();
+                }
+            }
+        }
+    }
+
+    async Task OpenDetails(LeaderBoardItem position)
+    {
+        var dialogData = (CompetitionId, position);
+        var dialog = await _dialogService.ShowDialogAsync<CompetitionLeaderboardItemDetails>(dialogData, new DialogParameters()
+            {
+                Width = "90%",
+                PrimaryAction = null,
+                SecondaryAction = null
+            });
+    }
+
+    void IDisposable.Dispose()
+    {
+        _leaderboardNotificationService.OnLeaderboardWasUpdated -= OnLeaderboardUpdated;
+    }
+}

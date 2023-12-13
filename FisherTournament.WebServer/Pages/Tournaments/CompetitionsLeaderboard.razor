@@ -8,15 +8,11 @@
 @using FisherTournament.WebServer.Services.LeaderboardNotification;
 @using FisherTournament.WebServer.Pages.Tournaments.Dialog;
 
-@implements IDisposable
-
 @inject IToastService _toastService
 @inject NavigationManager _nav
 @inject ISender _sender
 @inject IJSRuntime _js
-@inject IDialogService _dialogService
 @inject ExportLeaderboardService _exportService
-@inject LeaderboardNotificationService _leaderboardNotificationService
 @inject ILogger<CompetitionsLeaderboard> _logger
 
 <h1 class="page-title-no-pt">Tabla de posiciones de la <span style="color: var(--accent-fill-rest);">fecha N° @competition.N</span></h1>
@@ -24,11 +20,10 @@
 <div class="mt-7 mb-7 flex flex-row w-full justify-between items-end">
     <div class="flex flex-row gap-x-2">
         <div>
-            <FluentSelect Items=_categories
-                          OptionText="@(i => i.Name)"
-                          OptionValue="@(i => i.Id)"
-            @bind-Value="@_selectedCategoryId"
-            @bind-Value:after=SearchAsync>
+            <FluentSelect   Items=_categories
+                            OptionText="@(i => i.Name)"
+                            OptionValue="@(i => i.Id)"
+                            @bind-Value="@_selectedCategoryId">
                 <LabelTemplate>
                     Categoría
                 </LabelTemplate>
@@ -44,52 +39,8 @@
     <FluentButton IconStart="@(new Icons.Regular.Size16.Share())" OnClick="ExportLeaderboard" Appearance="Appearance.Outline">Exportar</FluentButton>
 </div>
 
-<div style="height: calc(100% - 200px); overflow-y: scroll;">
-    <FluentDataGrid Items="@positions" Virtualize="true" ItemSize="50" GridTemplateColumns="0.2fr 0.6fr 0.3fr 0.4fr 0.5fr">
-        <ChildContent>
-            <PropertyColumn Title="Posición" Property="@(c => c.Position)" />
+<CompetitionLeaderboardList CategoryId="@_selectedCategoryId" OnCategoriesChanged=@OnCategoriesChanged CompetitionId=@CompetitionId />
 
-            <PropertyColumn Title="Nombre" Property="@(c => c.Name)" />
-
-            <PropertyColumn Title="Suma de Puntos" Property="@(c => c.TotalScore)" />
-
-            @* <PropertyColumn Title="Desempate" Property="@(c => c.TieBreakingReason)" /> *@
-       
-            <TemplateColumn Title="Desempate">
-                @if (context.TieBreakingReason is not null)
-                {
-                    <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center">
-                        <span>@context.TieBreakingReason</span>                
-                        <FluentIcon Id="@context.FisherId" Icon="Icons.Regular.Size16.Info" />
-
-                        <FluentTooltip Anchor="@context.FisherId">
-                            M/P = Por mayor pieza
-                            <br />
-                            M/NP = Por la mayor N-ésima pieza
-                            <br />
-                            D = Aleatorio
-                        </FluentTooltip>
-                    </FluentStack>
-                }
-            </TemplateColumn>
-
-            <TemplateColumn Title="Acciones" Align="@Align.End">
-                <FluentButton IconStart="@(new Icons.Regular.Size24.Info())"
-                              Appearance="Appearance.Stealth"
-                              OnClick="@(() => OpenDetails(context))"> 
-                              Detalles
-                </FluentButton>
-            </TemplateColumn>
-        </ChildContent>
-
-        <EmptyContent>
-            <div Style="min-height: 300px;" class="flex items-center empty-content pt-2">
-                <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
-                &nbsp; No hay posiciones registradas para esta competición
-            </div>
-        </EmptyContent>
-    </FluentDataGrid>
-</div>
 
 @code {
     [Parameter]
@@ -100,12 +51,7 @@
 
     private bool _openExport = false;
 
-    public record struct Category(string Id, string Name);
-    List<Category> _categories = new();
-
-    IQueryable<LeaderBoardItem> positions = new List<LeaderBoardItem>().AsQueryable();
-
-    private List<LeaderBoardCategory> lastQuery = new();
+    List<(string Id, string Name)> _categories = new();
 
     string _selectedCategoryId = "";
 
@@ -116,9 +62,6 @@
     protected async override Task OnInitializedAsync()
     {
         await GetCompetition();
-        await SearchAsync();
-
-        _leaderboardNotificationService.OnLeaderboardWasUpdated += OnLeaderboardUpdated;
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -129,7 +72,24 @@
     protected override async Task OnParametersSetAsync()
     {
         await GetCompetition();
-        await SearchAsync();
+    }
+
+    public void  OnCategoriesChanged(List<(string Id, string Name)> cats)
+    {
+        _categories = cats;
+
+        if (string.IsNullOrEmpty(_selectedCategoryId))
+        {
+            if (cats.Any(c => c.Name == "General"))
+            {
+                _selectedCategoryId = cats.First(c => c.Name == "General").Id;
+            } else _selectedCategoryId = cats.First().Id;
+        } else if (!cats.Any(c => c.Id == _selectedCategoryId))
+        {
+            _selectedCategoryId = cats.First().Id;
+        }
+
+        StateHasChanged();
     }
 
     async Task GetCompetition()
@@ -147,49 +107,6 @@
         }
     }
 
-    async Task SearchAsync()
-    {
-        var query = new GetCompetitionLeaderBoardQuery(CompetitionId);
-        var res = await _sender.Send(query);
-
-        if (res.IsError)
-        {
-            _toastService.ShowErrors(res.Errors);
-        } else
-        {
-            _categories = res.Value.OrderBy(c => c.Id).Select(c => new Category(c.Id, c.Name)).ToList();
-
-            lastQuery = res.Value.ToList();
-
-            if (string.IsNullOrEmpty(_selectedCategoryId))
-            {
-                if (_categories.Any(c => c.Name == "General"))
-                {
-                    _selectedCategoryId = _categories.First(c => c.Name == "General").Id;
-                } else _selectedCategoryId = _categories.First().Id;                
-            } else if (!_categories.Any(c => c.Id == _selectedCategoryId))
-            {
-                _selectedCategoryId = _categories.First().Id;
-            }
-
-            if (res.Value.Any(p => p.Id == _selectedCategoryId))
-            {
-                positions = res.Value.First(p => p.Id == _selectedCategoryId).LeaderBoard.AsQueryable();
-            }
-        }
-    }
-
-    async Task OpenDetails(LeaderBoardItem position)
-    {
-        var dialogData = (CompetitionId, position);
-        var dialog = await _dialogService.ShowDialogAsync<CompetitionLeaderboardItemDetails>(dialogData, new DialogParameters()
-        {
-            Width = "90%",
-            PrimaryAction = null,
-            SecondaryAction = null
-        });
-    }
-
     string? GetCurrentCategoryName()
     {
         if (_categories.Any(p => p.Id == _selectedCategoryId))
@@ -198,15 +115,6 @@
         }
 
         return null;
-    }
-
-    void ExportCategory()
-    {
-
-    }
-
-    void ExportAllCategories() {
-
     }
 
     async Task ExportLeaderboard()
@@ -228,21 +136,4 @@
             _toastService.ShowError("Ocurrió un error al exportar la tabla de posiciones");
         }
     }
-
-    async Task OnLeaderboardUpdated(LeaderboardUpdatedEventArgs e)
-    {
-        await InvokeAsync(async () =>
-        {
-            await SearchAsync();
-
-            StateHasChanged();
-        });
-    }
-
-    void IDisposable.Dispose()
-    {
-        _leaderboardNotificationService.OnLeaderboardWasUpdated -= OnLeaderboardUpdated;
-    }
-
-
 }

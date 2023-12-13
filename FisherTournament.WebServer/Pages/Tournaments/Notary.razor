@@ -1,0 +1,94 @@
+﻿@layout MainLayout
+
+@page "/tournament/{TournamentId}/competition/{CompetitionId}/notary"
+
+@using FisherTournament.Application.Competitions.Queries.GetCompetition;
+
+@inject ISender _sender
+@inject IToastService _toastService
+
+
+<div class="px-4 pt-7 h-full">
+    
+    <h1 class="page-title-no-pt w-full text-center">Notario <span style="color: var(--accent-fill-rest);">Fecha N° @competition.N</span></h1>
+
+    <FluentGrid class="h-full" Style="height: calc(100% - 51px);" Spacing="2">
+        <FluentGridItem xs="6">
+            <FluentCard Class="h-full w-full px-4">
+                <div class="flex flex-row gap-x-2 justify-between pb-2 px-4">
+                    <FluentLabel Typo="Typography.H5" Class="pt-4 mb-4 pr-3">Tabla de posiciones</FluentLabel>
+
+                    <div>
+                        <FluentSelect Items=_categories
+                                        OptionText="@(i => i.Name)"
+                                        OptionValue="@(i => i.Id)"
+                        @bind-Value="@_selectedCategoryId">
+                            <LabelTemplate>
+                                Categoría
+                            </LabelTemplate>
+                        </FluentSelect>
+                    </div>
+                </div>
+                <CompetitionLeaderboardList CategoryId="@_selectedCategoryId" OnCategoriesChanged=@OnCategoriesChanged CompetitionId=@CompetitionId />
+            </FluentCard>
+        </FluentGridItem>
+
+        <FluentGridItem xs="6">
+            <FluentCard Class="relative h-full w-full px-4">
+                <FluentLabel Typo="Typography.H5" Class="pt-4 mb-4">Agregar puntaje</FluentLabel>
+                <AddScoreForm TournamentId="@TournamentId" CompetitionId="@CompetitionId" />
+            </FluentCard>
+        </FluentGridItem>
+    </FluentGrid>
+</div>
+
+@code {
+    [Parameter]
+    public string TournamentId { get; set; } = null!;
+
+    [Parameter]
+    public string CompetitionId { get; set; } = null!;
+
+    GetCompetitionQueryResponse competition = default!;
+
+    List<(string Id, string Name)> _categories = new();
+
+    string _selectedCategoryId = "";
+
+    protected override Task OnParametersSetAsync()
+    {
+        return GetCompetition();
+    }
+
+    public void OnCategoriesChanged(List<(string Id, string Name)> cats)
+    {
+        _categories = cats;
+
+        if (string.IsNullOrEmpty(_selectedCategoryId))
+        {
+            if (cats.Any(c => c.Name == "General"))
+            {
+                _selectedCategoryId = cats.First(c => c.Name == "General").Id;
+            } else _selectedCategoryId = cats.First().Id;
+        } else if (!cats.Any(c => c.Id == _selectedCategoryId))
+        {
+            _selectedCategoryId = cats.First().Id;
+        }
+
+        StateHasChanged();
+    }
+
+    async Task GetCompetition()
+    {
+        var competitionQuery = new GetCompetitionQuery(CompetitionId);
+        var competitionRes = await _sender.Send(competitionQuery);
+
+        if (competitionRes.IsError)
+        {
+            _toastService.ShowErrors(competitionRes.Errors);
+        } else
+        {
+            competition = competitionRes.Value;
+        }
+    }
+}

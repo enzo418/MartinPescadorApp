@@ -14,18 +14,16 @@
 
                 <FluentNavLink Href="/fishers" Icon="@(new Icons.Regular.Size20.People())">Pescadores</FluentNavLink>
 
-                @if (false)
+                @if (_nav.Uri.Contains("/notary"))
                 {
                     @DividerTemplate
 
-                    <FluentButton tabindex="3" @onclick=NavigateToEvents>
-                        <FluentIcon Icon="@(Icons.Regular.Size20.Info)" Slot="start" Color="Color.Neutral" /> Eventos
-                    </FluentButton>
+                    <FluentNavLink Href=@_nav.Uri Icon="@(new Icons.Regular.Size20.NotepadPerson())">Notario</FluentNavLink>
                 }
             </FluentNavMenu>
 
             <span slot="end">
-                <FluentSwitch Value="@IsInDarkMode" @onchange=OnToggleTheme title="Tema">
+            <FluentSwitch @bind-Value="@IsInDarkMode" @bind-Value:after=OnToggleTheme title="Tema">
                     <span class="label">Tema</span>
                     <span slot="unchecked-message">
                         <FluentIcon class="align-middle" Icon="Icons.Regular.Size20.WeatherSunny" Color="Color.Neutral" />
@@ -41,10 +39,11 @@
 @code {
     private RenderFragment DividerTemplate = @<FluentDivider Style="height: 20px;" Class="mx-2" Role="DividerRole.Separator"
         Orientation="Orientation.Vertical">
-    </FluentDivider>;
+        </FluentDivider>
+    ;
 
     [Parameter]
-    public EventCallback OnToggleTheme { get; set; } = EventCallback.Empty;
+    public Action OnToggleTheme { get; set; }
 
     [Parameter]
     public bool IsInDarkMode { get; set; } = false;

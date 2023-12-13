@@ -33,7 +33,7 @@
 	<div class="flex gap-4">
 		@foreach (var tournament in OngoingTournaments)
 		{
-			<FluentCard class="flex flex-col w-fit mt-4 h-fit pt-2.5 pb-2.5 px-4">
+			<FluentCard class="flex flex-col w-fit mt-4 h-fit pt-2.5 pb-2.5 px-4" Style="min-width: 620px;">
 				<div class="flex flex-row">
 					@* <FluentLabel Class="pt-2.5" Typo="Typography.H6" Color="Color.Disabled">Torneo: </FluentLabel> *@
 
@@ -76,31 +76,40 @@
 				} else {
 					<FluentLabel Class="pt-2.5" Typo="Typography.H6" Color="Color.Accent">Fechas proximas o en curso del torneo</FluentLabel>
 
-					<div class="flex flex-row w-full gap-4">
-						<table class="w-full mt-1">
-							<tr class="mb-2 h-8">
-								<th class="w-1/3">N°</th>
-								<th class="w-1/3">Fecha Inicio</th>
-								<th class="w-1/3">Ranking</th>
-							</tr>
-							<tbody>
-							@foreach (var competition in tournament.Competitions.Where(c => c.EndDate is null || (c.EndDate.HasValue && c.EndDate.Value >= DateTime.UtcNow)))
-							{
-								<tr>
-									<td>@competition.N</td>
-									<td>@competition.StartDate.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern)</td>
-									<td>
-										<FluentNavLink Class="flex gap-x-2 underline w-full justify-center whitespace-nowrap center-fluent-nav-icon"
-													   Href="@("/tournament/"+tournament.tournament.Id+"/leaderboard/"+competition.Id)"
-											Style="color: var(--accent-fill-rest);">
-											<FluentIcon Value="@(new Icons.Regular.Size16.Trophy())" Class="align-middle" />
-										</FluentNavLink>
-									</td>
-								</tr>
-							}
-							</tbody>
-						</table>
-					</div>
+					<FluentDataGrid 
+						Class="mt-1" 
+						TGridItem="GetTournamentCompetitionsQueryResult" 
+						Items="@(tournament.Competitions.Where(c => c.EndDate is null || (c.EndDate.HasValue && c.EndDate.Value >= DateTime.UtcNow)).AsQueryable())" 
+						GridTemplateColumns="0.18fr 0.8fr 0.3fr 0.5fr">
+						<ChildContent>
+							<PropertyColumn Title="N°" Align="Align.Center" Property="@(c => c.N)" />
+
+							<TemplateColumn Title="Fecha Inicio" Align="Align.Center">
+								@context.StartDate.ToLocalTime().ToString(CultureInfo.CurrentCulture.DateTimeFormat.FullDateTimePattern)
+							</TemplateColumn>
+
+							<TemplateColumn Title="Ranking" Align="Align.Center">
+								<FluentNavLink Class="flex gap-x-2 underline w-full justify-center whitespace-nowrap center-fluent-nav-icon"
+											   Href="@("/tournament/"+tournament.tournament.Id+"/leaderboard/"+@context.Id)"
+											   Style="color: var(--accent-fill-rest);">
+									<FluentIcon Value="@(new Icons.Regular.Size16.Trophy())" Class="align-middle" />
+								</FluentNavLink>
+							</TemplateColumn>
+
+							<TemplateColumn Title="Ir a modo notario" Align="Align.Center">
+								<FluentNavLink Class="flex gap-x-2 underline w-full justify-center whitespace-nowrap center-fluent-nav-icon"
+											   Href="@("/tournament/"+tournament.tournament.Id+"/competition/"+@context.Id+"/notary")"
+											   Style="color: var(--accent-fill-rest);">
+									<FluentIcon Value="@(new Icons.Regular.Size16.NotepadPerson())" Class="align-middle" />
+								</FluentNavLink>
+							</TemplateColumn>
+						</ChildContent>
+						<EmptyContent>
+							<div Style="min-height: 100px;" class="flex items-center empty-content pt-2">
+								&nbsp; Todavía no hay competiciones.
+							</div>
+						</EmptyContent>
+					</FluentDataGrid>
 				}
 			</FluentCard>
 		}
