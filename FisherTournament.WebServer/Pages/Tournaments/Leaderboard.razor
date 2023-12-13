@@ -6,6 +6,7 @@
 @using FisherTournament.WebServer.Services.ExportLeaderboard;
 @using FisherTournament.WebServer.Services.LeaderboardNotification;
 @using FisherTournament.WebServer.Pages.Tournaments.Dialog;
+@using System.Diagnostics;
 
 @implements IDisposable
 
@@ -207,21 +208,44 @@
 
     async Task ExportLeaderboard()
     {
-        try{
+        try
+        {
             var exportReq = await _exportService.ExportTournamentLeaderboard(TournamentId);
 
             if (exportReq.IsError)
             {
                 _toastService.ShowErrors(exportReq.Errors);
-            }
-            else
+            } else
             {
-                _toastService.ShowSuccess($"Tabla de posiciones exportada correctamente. Puede encontrar el archivo en la carpeta de descargas de su navegador con el nombre {exportReq.Value}");
+                var directory = System.IO.Directory.GetCurrentDirectory();
+                _toastService.ShowSuccess(
+                    $"Tabla de posiciones exportada correctamente al archivo '{exportReq.Value}' en {directory}",
+                    null,
+                    "Abrir",
+                    EventCallback.Factory.Create<ToastResult>(this, t => HandleTopActionAsync(t, exportReq.Value))
+                );
             }
-        }catch(Exception e)
-		{
+        } catch (System.IO.IOException e)
+        {
             _logger.LogError(e, "Error exporting leaderboard");
-			_toastService.ShowError("Ocurrió un error al exportar la tabla de posiciones");
-		}
+            _toastService.ShowError("No se puede expotar, el archivo esta siendo usado por otro programa.");
+        } catch (Exception e)
+        {
+            _logger.LogError(e, "Error exporting leaderboard");
+            _toastService.ShowError("Error inesperado al exportar la tabla de posiciones.");
+        }
+    }
+
+    private async Task HandleTopActionAsync(ToastResult result, string filePath)
+    {
+        ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = filePath,
+                UseShellExecute = true
+            };
+
+        Process.Start(startInfo);
+
+        await Task.CompletedTask;
     }
 }

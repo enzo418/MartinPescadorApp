@@ -84,6 +84,8 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
 
                 CenterHorizontally(ws.Range(2, 1, ws.Worksheet.RowsUsed().Count(), 1)); // Positions
                 CenterHorizontally(ws.Range(2, 3, ws.Worksheet.RowsUsed().Count(), ws.Worksheet.ColumnsUsed().Count())); // All except names
+
+                ApplyDataStyle(ws.Range(3, 2, ws.Worksheet.RowsUsed().Count(), ws.Worksheet.ColumnsUsed().Count()));
             }
 
             ApplyDefaultStyle(wb);
@@ -145,6 +147,8 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
 
                 CenterHorizontally(ws.Range(2, 1, ws.Worksheet.RowsUsed().Count(), 1)); // Positions
                 CenterHorizontally(ws.Range(2, 3, ws.Worksheet.RowsUsed().Count(), ws.Worksheet.ColumnsUsed().Count())); // All except names
+
+                ApplyDataStyle(ws.Range(3, 2, ws.Worksheet.RowsUsed().Count(), ws.Worksheet.ColumnsUsed().Count()));
             }
 
             ApplyDefaultStyle(wb);
@@ -157,23 +161,28 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
             return fileName;
         }
 
+        internal readonly static XLColor Color1 = XLColor.FromArgb(139, 174, 182);
+        internal readonly static XLColor Color2 = XLColor.FromArgb(98, 167, 183);
+        internal readonly static XLColor Color3 = XLColor.FromArgb(252, 215, 173);
+
         internal static void ApplyCategoryHeaderStyle(IXLRange range)
         {
             range.Merge();
+            range.Style.Fill.SetBackgroundColor(Color1);
             range.Style.Font.Bold = true;
             range.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
         }
 
         internal static void ApplyCategoryColumsHeaderStyle(IXLRange range)
         {
-            range.Style.Fill.SetBackgroundColor(XLColor.FromArgb(139, 174, 182))
+            range.Style.Fill.SetBackgroundColor(Color2)
                             .Font.SetBold(true)
                             .Font.SetItalic(true);
         }
 
         internal static void ApplyPositionsRowStyle(IXLRange range)
         {
-            range.Style.Fill.SetBackgroundColor(XLColor.FromArgb(139, 174, 182))
+            range.Style.Fill.SetBackgroundColor(Color2)
                        .Font.SetBold(true);
         }
 
@@ -185,6 +194,11 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
                             .Border.SetRightBorder(XLBorderStyleValues.Thin)
                             .Border.SetBottomBorder(XLBorderStyleValues.Thin)
                             .Border.SetLeftBorder(XLBorderStyleValues.Thin);
+        }
+
+        internal static void ApplyDataStyle(IXLRange range)
+        {
+            range.Style.Fill.SetBackgroundColor(Color3);
         }
 
         internal static void ApplyDefaultStyle(XLWorkbook wb)
