@@ -13,7 +13,7 @@
 
 @if (CompetitionId is null && _competitions.Count == 0)
 {
-	<div Style="min-height: 300px;" class="flex items-center pt-2">
+	<div Style="min-height: 300px;" class="flex items-center justify-center pt-2">
 		<FluentIcon Icon="Icons.Regular.Size32.Warning" Color="@Color.Accent" />
 		&nbsp; No se puede registrar un puntaje ya que todavía no hay competiciones.
 	</div>
@@ -322,6 +322,8 @@
 			_toastService.ShowSuccess("Puntaje agregado");
 
 			OnSavedSuccessfully?.Invoke();
+
+			Deselect();
 		}
 
 		_sending = false;

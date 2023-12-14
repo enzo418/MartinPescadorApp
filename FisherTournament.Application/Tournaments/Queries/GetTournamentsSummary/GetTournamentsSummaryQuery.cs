@@ -53,7 +53,7 @@ namespace FisherTournament.Application.Tournaments.Queries.GetTournamentsSummary
 		public async Task<ErrorOr<PagedList<GetTournamentsSummaryQueryResult>>>
 			Handle(GetTournamentsSummaryQuery request, CancellationToken cancellationToken)
 		{
-			var query = _context.Tournaments.AsQueryable();
+			var query = _context.Tournaments.OrderByDescending(t => t.StartDate).AsQueryable();
 
 			if (request.Ended.HasValue)
 			{

@@ -270,7 +270,7 @@
 			return;
 		}
 
-		searchResult = result.Value.Items.Select(i => new Persona(i.Id, $"{i.FirstName} {i.LastName}", i.DNI)).ToList();
+		searchResult = result.Value.Items.Select(i => new Persona(i.Id, $"{i.LastName} {i.FirstName}", i.DNI)).ToList();
 		
 		string uriWithoutQuery = _nav.Uri.Split('?')[0];
 		string newUriWithSearch = $"{uriWithoutQuery}?search={_searchName}";

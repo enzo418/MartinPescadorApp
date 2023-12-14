@@ -5,16 +5,40 @@
 @inject NavigationManager _nav
 @inject ISender _sender
 @inject IMapper _mapper
+@inject IToastService _toast
 
+@using FisherTournament.Application.Tournaments.Commands.CloneTournament;
 @using FisherTournament.Application.Tournaments.Commands.CreateTournament;
+@using FisherTournament.Application.Tournaments.Queries.GetTournamentsSummary;
 @using FisherTournament.Contracts.Tournaments;
 @using Microsoft.Fast.Components.FluentUI;
 
-<div class="px-4" style="width: 98%">
+<div class="px-4 h-full" style="width: 98%">
     <h1 class="page-title">Crear torneo</h1>
 
-    <EditForm EditContext="@editContext" OnSubmit="@Submit" class="flex flex-col items-center justify-between h-full w-full mt-4">
+    <EditForm EditContext="@editContext" OnSubmit="@Submit" class="flex flex-col items-center justify-between w-full mt-4">
         <FluentGrid Spacing="3" Justify="JustifyContent.Center">
+            <FluentGridItem sm="12">
+                <div class="flex w-full justify-center flex-col pl-7 items-center">
+                    <FluentSwitch   Disabled=@(!tournaments.Any()) @bind-Value=@cloneTournament Label=" Copiar torneo anterior" />
+
+                    <FluentLabel Class="pt-7 pl-7 pr-3 pb-2" Typo="Typography.Body" Disabled=@(!cloneTournament)>Selecciona el torneo a copiar</FluentLabel>
+                    <FluentSelect   Items="@tournaments"
+                                    OptionValue="@(i => i.Id)"
+                                    @bind-SelectedOption=@cloneSourceTournamentSelected
+                                    Disabled=@(!cloneTournament)
+                                  TOption="GetTournamentsSummaryQueryResult">
+                    <OptionTemplate Context="ctxTournament">
+                        @ctxTournament.Name
+                    </OptionTemplate>
+                    </FluentSelect>
+                </div>
+            </FluentGridItem>
+
+            <FluentGridItem sm="12">
+                <FluentLabel Typo="Typography.Subject" Color="Color.Disabled">Datos del torneo nuevo</FluentLabel>
+            </FluentGridItem>
+
             <FluentGridItem sm="12" md="5">
                 <p>
                     <FluentTextField Required="true" AutoComplete="off" Autofocus="true" @bind-Value="@Model.Name" class="w-full">
@@ -31,7 +55,7 @@
             </FluentGridItem>
         </FluentGrid>
 
-        <div class="m-auto flex mt-7 columns-2 gap-28 w-full place-content-center">
+        <div class="absolute bottom-0 mb-4 m-auto flex mt-7 columns-2 gap-28 w-full place-content-center">
             <FluentButton Appearance="Appearance.Stealth" @onclick=CancelAsync>@(editContext.IsModified() ? "Cancelar" : "Volver")</FluentButton>
             <FluentButton Type=ButtonType.Submit Appearance="Appearance.Accent" Disabled=!editContext.IsModified()>Continuar</FluentButton>
         </div>
@@ -39,7 +63,7 @@
 </div>
 
 
-@code {
+    @code {
     private bool Finished = false;
 
     private CreateTournamentRequest Model { get; set; } = default!;
@@ -50,11 +74,29 @@
 
     private bool _sending = false;
 
-    protected override void OnInitialized()
+    private bool cloneTournament = false;
+
+    private List<GetTournamentsSummaryQueryResult> tournaments = new();
+    private GetTournamentsSummaryQueryResult cloneSourceTournamentSelected = default!;
+
+    protected override async Task OnInitializedAsync()
     {
         Model = new("", DateTimeOffset.Now.LocalDateTime, null);
         editContext = new(Model);
         messageStore = new(editContext);
+
+        var query = new GetTournamentsSummaryQuery(
+                Ended: null,
+                TournamentYear: null,
+                1,
+                5);
+
+        var result = await _sender.Send(query);
+
+        if (!result.IsError)
+        {
+            tournaments = result.Value.Items;
+        }
     }
 
     private async Task CancelAsync()
@@ -83,20 +125,50 @@
 
         if (!editContext.Validate() || !editContext.IsModified()) return;
 
-
-        var mapped = _mapper.Map<CreateTournamentCommand>(Model);
-        
-        Model = new("", DateTimeOffset.Now.LocalDateTime, null);
-        
-        var response = await _sender.Send(mapped);
-
-        if (response.IsError)
+        if (cloneTournament)
         {
-            editContext.AddValidationErrors(response.Errors, messageStore, Model);
-        } else
-        {
-            _nav.NavigateTo("/tournament/"+response.Value.Id);
+            var command = new CloneTournamentCommand(cloneSourceTournamentSelected.Id, Model.Name, Model.StartDate);
+
+            Model = new("", DateTimeOffset.Now.LocalDateTime, null);
+
+            var response = await _sender.Send(command);
+
+            if (response.IsError)
+            {
+                editContext.AddValidationErrors(response.Errors, messageStore, Model);
+            } else
+            {
+                _nav.NavigateTo("/tournament/" + response.Value.TournamentId);
+
+                bool createdWithWarnings = response.Value.Warnings is not null && response.Value.Warnings.Any();
+                if (createdWithWarnings)
+                {
+                    _toast.ShowInfo("El torneo no pudo ser copiado en su totalidad.");
+                    _toast.ShowErrors(response.Value.Warnings!);
+                }
+                else
+                {
+                    _toast.ShowInfo("El torneo fue copiado correctamente.");
+                }
+            }
         }
+        else
+        {
+            var mapped = _mapper.Map<CreateTournamentCommand>(Model);
+
+            Model = new("", DateTimeOffset.Now.LocalDateTime, null);
+
+            var response = await _sender.Send(mapped);
+
+            if (response.IsError)
+            {
+                editContext.AddValidationErrors(response.Errors, messageStore, Model);
+            } else
+            {
+                _nav.NavigateTo("/tournament/"+response.Value.Id);
+            }
+        }
+
 
         _sending = false;
     }

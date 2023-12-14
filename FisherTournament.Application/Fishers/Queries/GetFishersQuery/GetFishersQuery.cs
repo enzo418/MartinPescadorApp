@@ -38,7 +38,8 @@ namespace FisherTournament.Application.Fishers.Queries
 
 				if (!string.IsNullOrWhiteSpace(request.Name))
 				{
-					tmpQuery = tmpQuery.Where(r => EF.Functions.Like(r.f.Name, $"%{request.Name}%"));
+					var reversed = string.Join(" ", request.Name.Split(' ').Reverse());
+					tmpQuery = tmpQuery.Where(r => EF.Functions.Like(r.f.Name, $"%{request.Name}%") || EF.Functions.Like(r.f.Name, $"%{reversed}%"));
 				}
 
 				if (!string.IsNullOrWhiteSpace(request.DNI))
