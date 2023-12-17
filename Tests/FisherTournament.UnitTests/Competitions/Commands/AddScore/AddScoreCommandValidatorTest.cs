@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FisherTournament.Application.Competitions.Commands.AddScore;
 using FluentValidation.TestHelper;
 
-namespace FisherTournament.UnitTests.Competitions.Commands
+namespace FisherTournament.UnitTests.Competitions.Commands.AddScore
 {
     public class AddScoreCommandValidatorTest
     {

@@ -2,14 +2,9 @@ using FisherTournament.Application.LeaderBoard;
 using FisherTournament.Domain.Common.Provider;
 using FisherTournament.Domain.CompetitionAggregate.ValueObjects;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Moq;
-using System;
-using System.Linq;
-using Xunit;
 
-namespace FisherTournament.UnitTests.Tournaments.Commands.AddCategory
+namespace FisherTournament.UnitTests.LeaderBoard
 {
     public class BatchLeaderBoardUpdateSchedulerTests
     {
@@ -172,10 +167,11 @@ namespace FisherTournament.UnitTests.Tournaments.Commands.AddCategory
             // Arrange
             _scheduler.ScheduleLeaderBoardUpdate(tournamentId1, competitionId1, categoryId1);
 
-            // Since it was the first schedule, it will be ready to run now, so we need
-            // to move the clock before now, so it won't be ready.
+            // Since it was the first schedule, it will be ready to run now.
+            // To avoid making the scheduler return it, we need to move the clock backwards.
+            DateTime nDate = _dateTimeProviderMock.Object.Now.Add(BatchLeaderBoardUpdateScheduler.MaxUpdateInterval * -2);
             _dateTimeProviderMock.Setup(x => x.Now)
-                .Returns(_dateTimeProviderMock.Object.Now.Add(BatchLeaderBoardUpdateScheduler.MaxUpdateInterval * -2));
+                .Returns(nDate);
 
             // Act
             var job = _scheduler.GetNextJob();

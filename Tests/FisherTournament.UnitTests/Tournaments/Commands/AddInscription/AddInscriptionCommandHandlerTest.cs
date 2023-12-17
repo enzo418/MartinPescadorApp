@@ -2,7 +2,7 @@ using FisherTournament.Application.Tournaments.Commands.AddInscription;
 using FisherTournament.Domain.TournamentAggregate.Entities;
 using FisherTournament.Domain.TournamentAggregate.ValueObjects;
 
-namespace FisherTournament.UnitTests.Tournaments.Commands
+namespace FisherTournament.UnitTests.Tournaments.Commands.AddInscription
 {
     public class AddInscriptionCommandHandlerTest : BaseHandlerTest
     {
