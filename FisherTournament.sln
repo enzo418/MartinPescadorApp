@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FisherTournament.Domain", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FisherTournament.Application", "FisherTournament.Application\FisherTournament.Application.csproj", "{0C2163BD-AE90-4AEC-A0DE-E77517874132}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FisherTournament.Infrastracture", "FisherTournament.Infrastracture\FisherTournament.Infrastracture.csproj", "{7A444D93-8023-4736-B6D3-8D50B79F1C13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FisherTournament.Infrastructure", "FisherTournament.Infrastracture\FisherTournament.Infrastructure.csproj", "{7A444D93-8023-4736-B6D3-8D50B79F1C13}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FisherTournament.API", "FisherTournament.API\FisherTournament.API.csproj", "{CE9CF417-2A62-4EB1-ACB6-1AFD42A10213}"
 EndProject
