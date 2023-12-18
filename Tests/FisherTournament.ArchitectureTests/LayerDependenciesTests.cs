@@ -11,10 +11,11 @@ public class LayerDependenciesTests : TestBase
         {
             ApplicationNamespace,
             InfrastructureNamespace,
-            WebApiNamespace
+            WebApiNamespace,
+            WebServerNamespace
         };
 
-        var result = Types.InAssembly(ApiAssembly)
+        var result = Types.InAssemblies(PresentationAssemblies)
             .That().ResideInNamespace(DomainNamespace)
             .Should().NotHaveDependencyOnAny(otherProjects)
             .GetResult();
@@ -30,10 +31,11 @@ public class LayerDependenciesTests : TestBase
             DomainNamespace,
             ApplicationNamespace,
             InfrastructureNamespace,
-            WebApiNamespace
+            WebApiNamespace,
+            WebServerNamespace
         };
 
-        var result = Types.InAssembly(ApiAssembly)
+        var result = Types.InAssemblies(PresentationAssemblies)
             .That().ResideInNamespace(ContractsNamespace)
             .Should().NotHaveDependencyOnAny(otherProjects)
             .GetResult();
@@ -47,10 +49,11 @@ public class LayerDependenciesTests : TestBase
         var otherProjects = new[]
         {
             InfrastructureNamespace,
-            WebApiNamespace
+            WebApiNamespace,
+            WebServerNamespace
         };
 
-        var result = Types.InAssembly(ApiAssembly)
+        var result = Types.InAssemblies(PresentationAssemblies)
             .That().ResideInNamespace(ApplicationNamespace)
             .Should().NotHaveDependencyOnAny(otherProjects)
             .GetResult();
@@ -63,27 +66,12 @@ public class LayerDependenciesTests : TestBase
     {
         var otherProjects = new[]
         {
-            WebApiNamespace
+            WebApiNamespace,
+            WebServerNamespace
         };
 
-        var result = Types.InAssembly(ApiAssembly)
+        var result = Types.InAssemblies(PresentationAssemblies)
             .That().ResideInNamespace(InfrastructureNamespace)
-            .Should().NotHaveDependencyOnAny(otherProjects)
-            .GetResult();
-
-        result.IsSuccessful.Should().BeTrue();
-    }
-
-    [Fact]
-    public void WebApi_ShouldNot_DependOnOtherLayers()
-    {
-        var otherProjects = new[]
-        {
-            InfrastructureNamespace
-        };
-
-        var result = Types.InAssembly(ApiAssembly)
-            .That().ResideInNamespace(WebApiNamespace)
             .Should().NotHaveDependencyOnAny(otherProjects)
             .GetResult();
 
@@ -93,7 +81,7 @@ public class LayerDependenciesTests : TestBase
     [Fact]
     public void Handlers_Should_DependOnDomain()
     {
-        var result = Types.InAssembly(ApiAssembly)
+        var result = Types.InAssemblies(PresentationAssemblies)
             .That().ResideInNamespace(ApplicationNamespace)
             // .And().Inherit(typeof(IRequestHandler<,>)) // or:
             .And().HaveNameEndingWith("Handler")

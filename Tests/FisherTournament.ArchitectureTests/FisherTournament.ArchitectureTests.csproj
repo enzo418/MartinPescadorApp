@@ -26,10 +26,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\FisherTournament.API\FisherTournament.API.csproj" />
-    <ProjectReference Include="..\..\FisherTournament.Infrastracture\FisherTournament.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\FisherTournament.Infrastructure\FisherTournament.Infrastructure.csproj" />
     <ProjectReference Include="..\..\FisherTournament.Domain\FisherTournament.Domain.csproj" />
     <ProjectReference Include="..\..\FisherTournament.Contracts\FisherTournament.Contracts.csproj" />
     <ProjectReference Include="..\..\FisherTournament.Application\FisherTournament.Application.csproj" />
+    <ProjectReference Include="..\..\FisherTournament.WebServer\FisherTournament.WebServer.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
 using FisherTournament.Application.LeaderBoard;
-using FisherTournament.Infrastracture.Common.Mapping;
+using FisherTournament.Infrastructure.Common.Mapping;
 using FisherTournament.WebServer.Services.ExportLeaderboard;
 using FisherTournament.WebServer.Services.LeaderboardNotification;
 using Mapster;

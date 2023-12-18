@@ -1,6 +1,6 @@
 using FisherTournament.API;
 using FisherTournament.Application;
-using FisherTournament.Infrastracture;
+using FisherTournament.Infrastructure;
 using MinimalApi.Endpoint.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);

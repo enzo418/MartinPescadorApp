@@ -125,7 +125,7 @@ Now the request look way cleaner:
     }
 
 ```
-*Implemented at [LeaderBoardUpdateScheduler.cs](/FisherTournament.Infrastracture/LeaderBoard/LeaderBoardUpdateScheduler.cs)*
+*Implemented at [LeaderBoardUpdateScheduler.cs](/FisherTournament.Infrastructure/LeaderBoard/LeaderBoardUpdateScheduler.cs)*
 
 # Comparing stress test
 

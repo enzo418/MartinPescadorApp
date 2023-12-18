@@ -87,7 +87,7 @@ public class GetTournamentLeaderBoardQueryHandler
             .GroupBy(r => r.CategoryId)
             .Select(category => new TournamentLeaderBoardCategory(
                     category.Key,
-                    tournamentCategories.First(c => c.Id == category.Key)?.Name ?? category.Key,
+                    tournamentCategories.FirstOrDefault(c => c.Id == category.Key)?.Name ?? category.Key,
                     category.Select(r =>
                     {
                         var fisher = fishersNames.FirstOrDefault(f => f.Id == r.FisherId);

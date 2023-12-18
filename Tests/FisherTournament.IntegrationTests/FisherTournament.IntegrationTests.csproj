@@ -31,7 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\FisherTournament.Application\FisherTournament.Application.csproj" />
-    <ProjectReference Include="..\..\FisherTournament.Infrastracture\FisherTournament.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\FisherTournament.Infrastructure\FisherTournament.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

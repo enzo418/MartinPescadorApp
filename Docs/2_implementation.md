@@ -22,7 +22,7 @@ The project is divided in 3 main parts:
   2. Sends commands and query to the application layer trough the Mediator pattern.
        - Done with the MediatR library.
   3. Converts the Q/C response to the user.
-  - First implemented with MVC controllers but now it uses [Minimal Api](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-7.0).
+  - At First, it was implemented with MVC controllers but now it uses [Minimal Api](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-7.0).
 - The Application: Handles the validation and execution of commands and queries.
   1. Validation is done with the FluentValidation library.
   2. Then some business validation is done to prevent invalid states.
@@ -42,29 +42,29 @@ The system publish and handles the following domain events:
 - AddedScore:
   - Order: After save changes
   - Handlers:
-    1. Update leaderboards
+    1. Update leader boards
 - AddedParticipation:
   - Order: After save changes
   - Handlers:
-    1. Update leaderboards
+    1. Update leader boards
 - AddedInscription:
   - Order: After save changes
   - Handlers:
-    1. Update leaderboards
+    1. Update leader boards
 
 > Discussion about domain events below.
 
 # Rules
-## Tournament leaderboard
-- The tournament leaderboards are calculated on the fly.
-- Add score triggers an domain event that is handled and updates the leaderboard.
+## Tournament leader board
+- The tournament leader boards are calculated on the fly.
+- Add score triggers an domain event that is handled and updates the leader board.
 
 > Why domain event? See [Tournament positions](private/3_learning.md##tournament-positions)
 
 # Tests
-## Leaderboard
+## Leader board
 - The scheduler is unit tested
-- The leaderboard updater, which contains the leaderboard logic, is not unit tested, instead it's testing in the use cases.
+- The leader board updater, which contains the leader board logic, is not unit tested, instead it's tested in the use cases.
 
 # Discussions
 ## 1. Domain events
@@ -81,21 +81,21 @@ The second and third options are the most appealing to me, definitely the third 
 > TL;DR; There is no practical alternative to use MediatR in the Domain Layer.
 The most common way I have seen domain events implemented is using the MediatR library. The problem with this is that if you want to handle the domain events in the domain layer you need to add a reference to MediatR to the domain layer, violating Clean Architecture rules. Still if you implement the handlers in the App layer, your domain events need to implement `INotificator` which comes from the same library. In this case you can define all the interfaces and implement meditoR by yourself, but I think that the trade off of having MediatR in the Domain layer is worth it.
 
-## Tournament positions/leaderboard
-From the system analisis the following items are of importance for this requeriment
+## Tournament positions/leader board
+From the system analisis the following items are of importance for this requirement
 - There will be only one notary at the competition. That means no concurrency problems on add score.
 - Each tournament might have up to a few hundred competitors per category.
 
 ### Where to store it
-First, we need to store it beause if we don't it will need to be calculate it on the fly each time, while making sure to apply that rule correctly. 
+First, we need to store it because if we don't it will need to be calculate it on the fly each time, while making sure to apply that rule correctly. 
 
 > "When a fisher is registered in a tournament but does not present to a competition, the system should consider the fisher position to be N + 1. Where N is the position of the fishers that did not fish anything in this competition and N - 1 is the position of the fisher with the lower score in the competition but that did fish something."
 
-**OPT 1: Competition participantion with a position**
+**OPT 1: Competition participation with a position**
 - The position is stored in the competition participation.
-- "Update leaderboards" will update this field to update the competition leaderboard.
-- Get competition leaderboard will do a query to the participations with a ascending position order.
-- To query the tournament leaderboard, it will do the same but with the sum of the positions of the competitions.
+- "Update leader boards" will update this field to update the competition leader board.
+- Get competition leader board will do a query to get all the participation with a ascending position order.
+- To query the tournament leader board, it will do the same but with the sum of the positions of the competitions.
 
 *Pros*:
 - Easy to implement and integrate.
@@ -107,16 +107,16 @@ First, we need to store it beause if we don't it will need to be calculate it on
 But the main problem is that participation in a competition may never exist for a given fisher. This means that registered fishers who have not participated in a competition will not have a position that meets the system rules for that competition.
 
 **OPT 2: Read Models**
-- Create a read model for the competition leaderboard.
-- Create a read model for the tournament leaderboard.
-- "Update leaderboards" will update the read models positions.
-- Get competition leaderboard will do a query to the read model.
-- Get tournament leaderboard will do a query to the read model.
+- Create a read model for the competition leader board.
+- Create a read model for the tournament leader board.
+- "Update leader boards" will update the read models positions.
+- Get competition leader board will do a query to the read model.
+- Get tournament leader board will do a query to the read model.
 
 *Pros*
 - Read optimized.
 - No changes in the domain entities.
-- Can use a separated database just for the leaderboards (or read models).
+- Can use a separated database just for the leader boards (or read models).
 
 *Cons*
 - More complex to implement, requires more configuration and classes.
@@ -124,10 +124,10 @@ But the main problem is that participation in a competition may never exist for 
 
 Possible implementations of read models:
 1. Integrate it in the current projects:
-   - Define the domain models in the App or Domain layer in a ReadModels folders under Leaderboard.
+   - Define the domain models in the App or Domain layer in a ReadModels folders under Leader board.
    - Add the read models to the DbContext
    - Configure the read models in the infrastructure layer.
-   - "Update leaderboards" uses the existing db context to update the read models.
+   - "Update leader boards" uses the existing db context to update the read models.
    - Queries can easily join the read models with the domain entities, for example to get the fiser id.
 2. Create a new project of ReadModels:
    - Define the domain models in this new project

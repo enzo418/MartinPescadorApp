@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FisherTournament.Infrastracture\FisherTournament.Infrastructure.csproj" />
+    <ProjectReference Include="..\FisherTournament.Infrastructure\FisherTournament.Infrastructure.csproj" />
     <ProjectReference Include="..\FisherTournament.Contracts\FisherTournament.Contracts.csproj" />
   </ItemGroup>
 

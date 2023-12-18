@@ -1,7 +1,7 @@
 using FisherTournament.Application;
-using FisherTournament.Infrastracture;
-using FisherTournament.Infrastracture.Persistence.ReadModels.EntityFramework;
-using FisherTournament.Infrastracture.Persistence.Tournaments;
+using FisherTournament.Infrastructure;
+using FisherTournament.Infrastructure.Persistence.ReadModels.EntityFramework;
+using FisherTournament.Infrastructure.Persistence.Tournaments;
 using FisherTournament.WebServer;
 using FisherTournament.WebServer.Common.Validation;
 using FluentValidation;

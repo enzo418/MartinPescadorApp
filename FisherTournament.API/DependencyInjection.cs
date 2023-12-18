@@ -1,20 +1,17 @@
-using System.Diagnostics;
-using System.Reflection;
 using FisherTournament.API.Common.Errors;
-using FisherTournament.Infrastracture.Common.Mapping;
 using FisherTournament.Application.Common.Instrumentation;
 using FisherTournament.Application.Common.Metrics;
-using FisherTournament.Infrastracture.Persistence.Common.Diagnostics;
-using FisherTournament.Infrastracture.Persistence.Common.Interceptors;
-using FisherTournament.Infrastracture.Settings;
-using Mapster;
-using MapsterMapper;
+using FisherTournament.Infrastructure.Common.Mapping;
+using FisherTournament.Infrastructure.Persistence.Common.Diagnostics;
+using FisherTournament.Infrastructure.Persistence.Common.Interceptors;
+using FisherTournament.Infrastructure.Settings;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using MinimalApi.Endpoint.Extensions;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using System.Diagnostics;
 
 namespace FisherTournament.API;
 

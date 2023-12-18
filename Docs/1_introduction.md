@@ -1,7 +1,7 @@
-# Fisher Tournaments
+# Fishing Tournaments
 ---
 
-- [Fisher Tournaments](#fisher-tournaments)
+- [Fishing Tournaments](#fishing-tournaments)
   - [Overview](#overview)
     - [Project description](#project-description)
     - [Use cases](#use-cases)

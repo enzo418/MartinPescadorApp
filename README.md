@@ -1,9 +1,11 @@
-# Project FisherTournament
+# Project Fishing Tournament
 
+## Docs
+1. [Introduction](Docs/1_introduction.md)
+2. [Implementation](Docs/2_implementation.md)
 
 ## Optimizations
-
-[**Leader board update**](Docs/optimizing_leaderboard.md)
+- [**Leader board update**](Docs/optimizing_leaderboard.md)
 
 ## Structure
     
@@ -144,9 +146,9 @@
 │   │   └── ValueObjects
 │   │       └── UserId.cs
 │   └── ValueObject.cs
-├── FisherTournament.Infrastracture
+├── FisherTournament.Infrastructure
 │   ├── DependencyInjection.cs
-│   ├── FisherTournament.Infrastracture.csproj
+│   ├── FisherTournament.Infrastructure.csproj
 │   ├── Persistence
 │   │   ├── Configurations
 │   │   │   ├── CompetitionConfiguration.cs
@@ -220,5 +222,3 @@
         │       └── CreateTournamentCommandValidatorTest.cs
         └── Usings.cs
 ```
-
-> **NOTE:** I know, there is a typo in infrastructure.

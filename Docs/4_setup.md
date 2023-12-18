@@ -14,21 +14,21 @@ $ sudo docker run -e "ACCEPT_EULA=Y" -e 'MSSQL_SA_PASSWORD=<password>' -p 1433:1
 $ docker start sql1
 
 # Add initial migration if missing
-$ dotnet ef migrations add InitialCreate --project FisherTournament.Infrastracture/ --startup-project FisherTournament.API  -v -o Persistence/Migrations
+$ dotnet ef migrations add InitialCreate --project FisherTournament.Infrastructure/ --startup-project FisherTournament.API  -v -o Persistence/Migrations
 
 # Update database
-$ dotnet ef database update -p FisherTournament.Infrastracture/ -s FisherTournament.API --connection "<connection-string>"
+$ dotnet ef database update -p FisherTournament.Infrastructure/ -s FisherTournament.API --connection "<connection-string>"
 ```
 
 ## SQLite
 ```bash
-# Ensure UseSqlite in infrastracture dependency injection
+# Ensure UseSqlite in Infrastructure dependency injection
 # Add initial migration if missing
-$ dotnet ef migrations add InitialMigration --project FisherTournament.Infrastracture/ --startup-project FisherTournament.API  -v -o Persistence/Migrations/Tournament --context "TournamentFisherDbContext"
-$ dotnet ef migrations add InitialMigration --project FisherTournament.Infrastracture/ --startup-project FisherTournament.API  -v -o Persistence/Migrations/ReadModels --context "ReadModelsDbContext"  
+$ dotnet ef migrations add InitialMigration --project FisherTournament.Infrastructure/ --startup-project FisherTournament.API  -v -o Persistence/Migrations/Tournament --context "TournamentFisherDbContext"
+$ dotnet ef migrations add InitialMigration --project FisherTournament.Infrastructure/ --startup-project FisherTournament.API  -v -o Persistence/Migrations/ReadModels --context "ReadModelsDbContext"  
 
 
 # Update database
-$ dotnet ef database update -p FisherTournament.Infrastracture -s FisherTournament.API --connection 'Data Source=Tournament.db' --context "TournamentFisherDbContext"
-$ dotnet ef database update -p FisherTournament.Infrastracture -s FisherTournament.API --connection 'Data Source=ReadModels.db' --context "ReadModelsDbContext"  
+$ dotnet ef database update -p FisherTournament.Infrastructure -s FisherTournament.API --connection 'Data Source=Tournament.db' --context "TournamentFisherDbContext"
+$ dotnet ef database update -p FisherTournament.Infrastructure -s FisherTournament.API --connection 'Data Source=ReadModels.db' --context "ReadModelsDbContext"  
 ```
