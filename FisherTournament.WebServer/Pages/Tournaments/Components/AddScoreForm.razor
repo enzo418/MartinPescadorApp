@@ -207,7 +207,6 @@
 											.Where(c => c.EndDate == null)
 											.OrderBy(c => (c.StartDate - DateTime.UtcNow).Days)
 											.First().Id;
-				// TODO: Store last selected in localstorage and use that one here
 
 				if (string.IsNullOrEmpty(_selectedCompetitionId)) _selectedCompetitionId = _competitions.First().Id;
 			}

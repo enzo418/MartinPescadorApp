@@ -12,7 +12,6 @@ public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot
 
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
-    // TODO: Protected
     public void AddDomainEvent(IDomainEvent domainEvent)
     {
         _domainEvents.Add(domainEvent);

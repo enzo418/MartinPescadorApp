@@ -10,7 +10,6 @@ public record TournamentCategoryLbCalculatedItem(
     int PositionsSum,
     int TotalScore);
 
-// TODO: refactor into single repositories for tournaments and competitions
 public interface ILeaderBoardRepository
 {
     /// <summary>

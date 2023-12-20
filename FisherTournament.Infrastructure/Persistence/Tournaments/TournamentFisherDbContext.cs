@@ -51,7 +51,7 @@ public class TournamentFisherDbContext : DbContext, ITournamentFisherDbContext
         base.OnModelCreating(modelBuilder);
     }
 
-    // TODO: public override int SaveChanges()
+    // No need to override SaveChanges(), since ITournamentFisherDbContext only defines SaveChangesAsync().
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
     {

@@ -8,52 +8,52 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FisherTournament.Application.Tournaments.Queries.GetTournamentInscriptions
 {
-	public record struct GetTournamentInscriptionsQuery(string TournamentId, string? CategoryId, int Page, int PageSize)
-		: IRequest<ErrorOr<PagedList<GetTournamentInscriptionsQueryResult>>>, IPagedListQuery;
+    public record struct GetTournamentInscriptionsQuery(string TournamentId, string? CategoryId, int Page, int PageSize)
+        : IRequest<ErrorOr<PagedList<GetTournamentInscriptionsQueryResult>>>, IPagedListQuery;
 
-	public record struct GetTournamentInscriptionsQueryResult(
-		int Number,
-		string FisherId,
-		string FisherName,
-		string FisherDNI,
-		string CategoryName,
-		string CategoryId
-	);
+    public record struct GetTournamentInscriptionsQueryResult(
+        int Number,
+        string FisherId,
+        string FisherName,
+        string FisherDNI,
+        string CategoryName,
+        string CategoryId
+    );
 
-	/// <summary>
-	/// Get all inscriptions for a tournament.
-	/// Order by inscription number.
-	/// </summary>
-	public class GetTournamentInscriptionsQueryHandler
-		: IRequestHandler<GetTournamentInscriptionsQuery, ErrorOr<PagedList<GetTournamentInscriptionsQueryResult>>>
-	{
-		private readonly ITournamentFisherDbContext _context;
+    /// <summary>
+    /// Get all inscriptions for a tournament.
+    /// Order by inscription number.
+    /// </summary>
+    public class GetTournamentInscriptionsQueryHandler
+        : IRequestHandler<GetTournamentInscriptionsQuery, ErrorOr<PagedList<GetTournamentInscriptionsQueryResult>>>
+    {
+        private readonly ITournamentFisherDbContext _context;
 
-		public GetTournamentInscriptionsQueryHandler(ITournamentFisherDbContext context)
-		{
-			_context = context;
-		}
+        public GetTournamentInscriptionsQueryHandler(ITournamentFisherDbContext context)
+        {
+            _context = context;
+        }
 
-		public async Task<ErrorOr<PagedList<GetTournamentInscriptionsQueryResult>>> Handle(
-			GetTournamentInscriptionsQuery request,
-			CancellationToken cancellationToken)
-		{
-			var tournamentId = TournamentId.Create(request.TournamentId);
+        public async Task<ErrorOr<PagedList<GetTournamentInscriptionsQueryResult>>> Handle(
+            GetTournamentInscriptionsQuery request,
+            CancellationToken cancellationToken)
+        {
+            var tournamentId = TournamentId.Create(request.TournamentId);
 
-			if (tournamentId.IsError)
-			{
-				return Errors.Id.NotValidWithProperty(nameof(request.TournamentId));
-			}
+            if (tournamentId.IsError)
+            {
+                return Errors.Id.NotValidWithProperty(nameof(request.TournamentId));
+            }
 
-			var tournamentExists = await _context.Tournaments
-					.AnyAsync(t => t.Id == tournamentId.Value, cancellationToken: cancellationToken);
+            var tournamentExists = await _context.Tournaments
+                    .AnyAsync(t => t.Id == tournamentId.Value, cancellationToken: cancellationToken);
 
-			if (!tournamentExists)
-			{
-				return Errors.Tournaments.NotFound;
-			}
+            if (!tournamentExists)
+            {
+                return Errors.Tournaments.NotFound;
+            }
 
-			/* SQL IDEA
+            /* SQL IDEA
 			 select f.Name, f.DNI, f.BirthDate, c.Name, c.Id
 			 from Tournament t
 				join Inscription i on t.Id = i.TournamentId
@@ -62,60 +62,61 @@ namespace FisherTournament.Application.Tournaments.Queries.GetTournamentInscript
 				where t.Id = @tournamentId
 			*/
 
-			IQueryable<GetTournamentInscriptionsQueryResult>? query;
+            IQueryable<GetTournamentInscriptionsQueryResult>? query;
 
-			if (string.IsNullOrEmpty(request.CategoryId))
-			{
-				query = (
-					from t in _context.Tournaments
-					from i in t.Inscriptions
-					join f in _context.Fishers on i.FisherId equals f.Id
-					join u in _context.Users on f.Id equals u.FisherId into mU
-					from maybeUser in mU.DefaultIfEmpty()
-					from c in t.Categories
-					where t.Id == tournamentId.Value && c.Id == i.CategoryId
-					orderby i.Number
-					select new GetTournamentInscriptionsQueryResult(
-							i.Number,
-							f.Id.ToString(),
-							f.Name,
-							maybeUser.DNI,
-							c.Name,
-							c.Id
-					)
-				);
-			} else
-			{
-				var categoryId = CategoryId.Create(request.CategoryId);
+            if (string.IsNullOrEmpty(request.CategoryId))
+            {
+                query = (
+                    from t in _context.Tournaments
+                    from i in t.Inscriptions
+                    join f in _context.Fishers on i.FisherId equals f.Id
+                    join u in _context.Users on f.Id equals u.FisherId into mU
+                    from maybeUser in mU.DefaultIfEmpty()
+                    from c in t.Categories
+                    where t.Id == tournamentId.Value && c.Id == i.CategoryId
+                    orderby i.Number
+                    select new GetTournamentInscriptionsQueryResult(
+                            i.Number,
+                            f.Id.ToString(),
+                            f.Name,
+                            maybeUser.DNI,
+                            c.Name,
+                            c.Id
+                    )
+                );
+            } else
+            {
+                var categoryId = CategoryId.Create(request.CategoryId);
 
-				if (categoryId.IsError)
-				{
-					return Errors.Id.NotValidWithProperty(nameof(request.CategoryId));
-				}
+                if (categoryId.IsError)
+                {
+                    return Errors.Id.NotValidWithProperty(nameof(request.CategoryId));
+                }
 
-				query = (
-					from t in _context.Tournaments
-					from i in t.Inscriptions
-					join f in _context.Fishers on i.FisherId equals f.Id
-					join u in _context.Users on f.Id equals u.FisherId
-					from c in t.Categories
-					where t.Id == tournamentId.Value
-						&& c.Id == categoryId.Value
-						&& c.Id == i.CategoryId
-					select new GetTournamentInscriptionsQueryResult(
-						i.Number,
-						f.Id.ToString(),
-						f.Name,
-						u.DNI,
-						c.Name,
-						c.Id
-					)
-				);
-			}
+                query = (
+                    from t in _context.Tournaments
+                    from i in t.Inscriptions
+                    join f in _context.Fishers on i.FisherId equals f.Id
+                    join u in _context.Users on f.Id equals u.FisherId
+                    from c in t.Categories
+                    where t.Id == tournamentId.Value
+                        && c.Id == categoryId.Value
+                        && c.Id == i.CategoryId
+                    orderby i.Number
+                    select new GetTournamentInscriptionsQueryResult(
+                        i.Number,
+                        f.Id.ToString(),
+                        f.Name,
+                        u.DNI,
+                        c.Name,
+                        c.Id
+                    )
+                );
+            }
 
-			var inscriptions = await PagedList<GetTournamentInscriptionsQueryResult>.CreateAsync(query, request.Page, request.PageSize);
+            var inscriptions = await PagedList<GetTournamentInscriptionsQueryResult>.CreateAsync(query, request.Page, request.PageSize);
 
-			return inscriptions;
-		}
-	}
+            return inscriptions;
+        }
+    }
 }
