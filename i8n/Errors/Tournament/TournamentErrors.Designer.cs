@@ -22,21 +22,21 @@ namespace i8n.Errors.Tournament {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class TournamentErrors {
+    internal class TournamentErrors {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public TournamentErrors() {
+        internal TournamentErrors() {
         }
         
         /// <summary>
         ///   Devuelve la instancia de ResourceManager almacenada en caché utilizada por esta clase.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Resources.ResourceManager ResourceManager {
+        internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("i8n.Errors.Tournament.TournamentErrors", typeof(TournamentErrors).Assembly);
@@ -51,7 +51,7 @@ namespace i8n.Errors.Tournament {
         ///   búsquedas de recursos mediante esta clase de recurso fuertemente tipado.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Globalization.CultureInfo Culture {
+        internal static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace i8n.Errors.Tournament {
         /// <summary>
         ///   Busca una cadena traducida similar a El torneo ya ha terminado..
         /// </summary>
-        public static string AlreadyEnded {
+        internal static string AlreadyEnded {
             get {
                 return ResourceManager.GetString("AlreadyEnded", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace i8n.Errors.Tournament {
         /// <summary>
         ///   Busca una cadena traducida similar a No se puede inscribir en la categoría &quot;General&quot;. Es reservada..
         /// </summary>
-        public static string CannotAddInscriptionToGeneralCategory {
+        internal static string CannotAddInscriptionToGeneralCategory {
             get {
                 return ResourceManager.GetString("CannotAddInscriptionToGeneralCategory", resourceCulture);
             }
@@ -81,16 +81,16 @@ namespace i8n.Errors.Tournament {
         /// <summary>
         ///   Busca una cadena traducida similar a No es posible eliminar un torneo sin finalizar con inscripciones o competencias registradas..
         /// </summary>
-        public static string CannotBeDeleted {
+        internal static string CannotBeDeleted {
             get {
                 return ResourceManager.GetString("CannotBeDeleted", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a No se puede eliminar una categoría que con pescadores inscriptions en ella..
+        ///   Busca una cadena traducida similar a No se puede eliminar una categoría con pescadores inscriptions en ella..
         /// </summary>
-        public static string CannotDeleteCategoryWithEnrolledFishers {
+        internal static string CannotDeleteCategoryWithEnrolledFishers {
             get {
                 return ResourceManager.GetString("CannotDeleteCategoryWithEnrolledFishers", resourceCulture);
             }
@@ -99,7 +99,7 @@ namespace i8n.Errors.Tournament {
         /// <summary>
         ///   Busca una cadena traducida similar a La competencia tiene una fecha de inicio anterior..
         /// </summary>
-        public static string CompetitionHasEarlierStartDate {
+        internal static string CompetitionHasEarlierStartDate {
             get {
                 return ResourceManager.GetString("CompetitionHasEarlierStartDate", resourceCulture);
             }
@@ -108,7 +108,7 @@ namespace i8n.Errors.Tournament {
         /// <summary>
         ///   Busca una cadena traducida similar a No se puede modificar la inscripción: El pescador ya ha puntuado en este torneo.
         /// </summary>
-        public static string FisherHasAlreadyScored {
+        internal static string FisherHasAlreadyScored {
             get {
                 return ResourceManager.GetString("FisherHasAlreadyScored", resourceCulture);
             }
@@ -117,7 +117,7 @@ namespace i8n.Errors.Tournament {
         /// <summary>
         ///   Busca una cadena traducida similar a El pescador ya está inscrito en el torneo.
         /// </summary>
-        public static string InscriptionAlreadyExists {
+        internal static string InscriptionAlreadyExists {
             get {
                 return ResourceManager.GetString("InscriptionAlreadyExists", resourceCulture);
             }
@@ -126,7 +126,7 @@ namespace i8n.Errors.Tournament {
         /// <summary>
         ///   Busca una cadena traducida similar a Inscripción no encontrada.
         /// </summary>
-        public static string InscriptionNotFound {
+        internal static string InscriptionNotFound {
             get {
                 return ResourceManager.GetString("InscriptionNotFound", resourceCulture);
             }
@@ -135,7 +135,7 @@ namespace i8n.Errors.Tournament {
         /// <summary>
         ///   Busca una cadena traducida similar a El número de inscripción ya existe.
         /// </summary>
-        public static string InscriptionNumberAlreadyExists {
+        internal static string InscriptionNumberAlreadyExists {
             get {
                 return ResourceManager.GetString("InscriptionNumberAlreadyExists", resourceCulture);
             }
@@ -144,7 +144,7 @@ namespace i8n.Errors.Tournament {
         /// <summary>
         ///   Busca una cadena traducida similar a El torneo ha terminado.
         /// </summary>
-        public static string IsOver {
+        internal static string IsOver {
             get {
                 return ResourceManager.GetString("IsOver", resourceCulture);
             }
@@ -153,7 +153,7 @@ namespace i8n.Errors.Tournament {
         /// <summary>
         ///   Busca una cadena traducida similar a El pescador no está inscrito en el torneo.
         /// </summary>
-        public static string NotEnrolled {
+        internal static string NotEnrolled {
             get {
                 return ResourceManager.GetString("NotEnrolled", resourceCulture);
             }
@@ -162,7 +162,7 @@ namespace i8n.Errors.Tournament {
         /// <summary>
         ///   Busca una cadena traducida similar a Torneo no encontrado..
         /// </summary>
-        public static string NotFound {
+        internal static string NotFound {
             get {
                 return ResourceManager.GetString("NotFound", resourceCulture);
             }

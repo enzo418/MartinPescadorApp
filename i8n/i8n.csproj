@@ -75,4 +75,13 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+	<InternalsVisibleTo Include="FisherTournament.WebServer" />
+	<InternalsVisibleTo Include="FisherTournament.UnitTests" />
+	<InternalsVisibleTo Include="FisherTournament.IntegrationTests" />
+	<InternalsVisibleTo Include="FisherTournament.ArchitectureTests" />
+	<InternalsVisibleTo Include="FisherTournament.API" />
+	<InternalsVisibleTo Include="FisherTournament.Application" />
+	<InternalsVisibleTo Include="FisherTournament.Domain" />
+  </ItemGroup>
 </Project>

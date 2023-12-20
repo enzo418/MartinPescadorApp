@@ -127,7 +127,7 @@
     <value>No es posible eliminar un torneo sin finalizar con inscripciones o competencias registradas.</value>
   </data>
   <data name="CannotDeleteCategoryWithEnrolledFishers" xml:space="preserve">
-    <value>No se puede eliminar una categoría que con pescadores inscriptions en ella.</value>
+    <value>No se puede eliminar una categoría con pescadores inscriptions en ella.</value>
   </data>
   <data name="CompetitionHasEarlierStartDate" xml:space="preserve">
     <value>La competencia tiene una fecha de inicio anterior.</value>

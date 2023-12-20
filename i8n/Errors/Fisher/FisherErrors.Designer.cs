@@ -22,21 +22,21 @@ namespace i8n.Errors.Fisher {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class FisherErrors {
+    internal class FisherErrors {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public FisherErrors() {
+        internal FisherErrors() {
         }
         
         /// <summary>
         ///   Devuelve la instancia de ResourceManager almacenada en caché utilizada por esta clase.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Resources.ResourceManager ResourceManager {
+        internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("i8n.Errors.Fisher.FisherErrors", typeof(FisherErrors).Assembly);
@@ -51,7 +51,7 @@ namespace i8n.Errors.Fisher {
         ///   búsquedas de recursos mediante esta clase de recurso fuertemente tipado.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Globalization.CultureInfo Culture {
+        internal static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace i8n.Errors.Fisher {
         /// <summary>
         ///   Busca una cadena traducida similar a El pescador no tiene participaciones registradas en esta competición..
         /// </summary>
-        public static string FisherHasNoParticipationRegistered {
+        internal static string FisherHasNoParticipationRegistered {
             get {
                 return ResourceManager.GetString("FisherHasNoParticipationRegistered", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace i8n.Errors.Fisher {
         /// <summary>
         ///   Busca una cadena traducida similar a No se encontró al pescador..
         /// </summary>
-        public static string NotFound {
+        internal static string NotFound {
             get {
                 return ResourceManager.GetString("NotFound", resourceCulture);
             }
