@@ -69,7 +69,7 @@
             if (cats.Any(c => c.Name == "General"))
             {
                 _selectedCategoryId = cats.First(c => c.Name == "General").Id;
-            } else _selectedCategoryId = cats.First().Id;
+            } else if (cats.Any()) _selectedCategoryId = cats.First().Id;
         } else if (!cats.Any(c => c.Id == _selectedCategoryId))
         {
             _selectedCategoryId = cats.First().Id;
