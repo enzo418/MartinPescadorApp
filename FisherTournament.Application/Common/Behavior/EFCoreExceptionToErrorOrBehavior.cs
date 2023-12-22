@@ -6,14 +6,14 @@ using System.Reflection;
 
 namespace FisherTournament.Application.Common.Behavior;
 
-public class EFCoreExceptionToErrorOr<TRequest, TResponse>
+public class EFCoreExceptionToErrorOrBehavior<TRequest, TResponse>
  : IPipelineBehavior<TRequest, TResponse>
     where TResponse : IErrorOr
     where TRequest : IRequest<TResponse>
 {
-    private readonly ILogger<EFCoreExceptionToErrorOr<TRequest, TResponse>> _logger;
+    private readonly ILogger<EFCoreExceptionToErrorOrBehavior<TRequest, TResponse>> _logger;
 
-    public EFCoreExceptionToErrorOr(ILogger<EFCoreExceptionToErrorOr<TRequest, TResponse>> logger)
+    public EFCoreExceptionToErrorOrBehavior(ILogger<EFCoreExceptionToErrorOrBehavior<TRequest, TResponse>> logger)
     {
         _logger = logger;
     }
