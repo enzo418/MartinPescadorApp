@@ -24,8 +24,9 @@ public static partial class DependencyInjection
 
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(TraceHandlerBehavior<,>));
 
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ErrorOrBasedValidationBehavior<,>));
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(EFCoreExceptionToErrorOr<,>));
 
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ErrorOrBasedValidationBehavior<,>));
 
         services.AddSingleton<ApplicationInstrumentation>();
 

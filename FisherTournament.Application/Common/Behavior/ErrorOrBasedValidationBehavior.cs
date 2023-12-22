@@ -27,7 +27,7 @@ public class ErrorOrBasedValidationBehavior<TRequest, TResponse>
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
-         var activity = _instrumentation.ActivitySource.StartActivity("ValidationBehavior");
+        var activity = _instrumentation.ActivitySource.StartActivity("ValidationBehavior");
 
         var validationFailures = _validators
             .Select(validator => validator.Validate(request))
