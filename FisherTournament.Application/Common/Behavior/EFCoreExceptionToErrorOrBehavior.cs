@@ -2,7 +2,6 @@ using ErrorOr;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
 
 namespace FisherTournament.Application.Common.Behavior;
 
@@ -30,24 +29,11 @@ public class EFCoreExceptionToErrorOrBehavior<TRequest, TResponse>
         {
             _logger.LogError(ex, "Error while executing request {Request}", request);
 
-            // Get the static From method using reflection
-            if (typeof(TResponse).IsGenericType && typeof(TResponse).GetGenericTypeDefinition() == typeof(ErrorOr<>))
+            var response = Error.Failure().ConvertToErrorOr<TResponse>();
+
+            if (response is not null)
             {
-                Type tErrorOr = typeof(ErrorOr<>).MakeGenericType(typeof(TResponse).GetGenericArguments());
-                MethodInfo? mFrom = tErrorOr.GetMethod("From", BindingFlags.Public | BindingFlags.Static);
-
-                if (mFrom != null)
-                {
-                    try
-                    {
-                        object? result = mFrom.Invoke(null, new object[] { new List<Error>() { Error.Failure() } });
-
-                        if (result is not null)
-                        {
-                            return (TResponse)result;
-                        }
-                    } catch { }
-                }
+                return (TResponse)response;
             }
 
             throw ex;
