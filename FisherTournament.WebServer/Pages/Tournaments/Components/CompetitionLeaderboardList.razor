@@ -74,9 +74,11 @@
 
     IQueryable<LeaderBoardItem> positions = new List<LeaderBoardItem>().AsQueryable();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _leaderboardNotificationService.OnLeaderboardWasUpdated += OnLeaderboardUpdated;
+        
+        await SearchAsync(true);
     }
 
     protected override async Task OnParametersSetAsync()
@@ -96,7 +98,12 @@
 
     async Task SearchAsync(bool force = false)
     {
-        bool search = !positions.Any() || force || _lastCategoryId != CategoryId || _lastCompetitionId != CompetitionId;
+        if (!force && string.IsNullOrEmpty(CategoryId)) return;
+
+        bool search = !positions.Any() 
+                        || force 
+                        || _lastCategoryId != CategoryId 
+                        || _lastCompetitionId != CompetitionId;
 
         if (search)
         {
