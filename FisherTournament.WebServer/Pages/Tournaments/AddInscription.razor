@@ -134,7 +134,8 @@
 				<FluentSelect Items=_categories
 				OptionText="@(i => i.Name)"
 				OptionValue="@(i => i.Id)"
-				@bind-Value="@_selectedCategoryId">
+				@bind-Value="@_selectedCategoryId"
+				OptionDisabled="@(t => _noCategories)">
 					<LabelTemplate>
 						Categoría <span class="red">*</span>
 					</LabelTemplate>
@@ -166,6 +167,7 @@
 
 	record struct Persona(string Id, string Name, string DNI);
 	List<GetTournamentCategoriesQueryResult> _categories = new();
+	bool _noCategories = false;
 
 	string _searchNameInput = string.Empty; // from @bind-Value value
 	string _searchName = string.Empty; // built from input event
@@ -203,8 +205,14 @@
 			_toastService.ShowErrors(categoriesRes.Errors);
 		} else
 		{
-			_categories = categoriesRes.Value.ToList();
+			_noCategories = false;
+
+			_categories = categoriesRes.Value.Where(c => c.Name != "General").ToList();
 			if (_categories.Count > 0) _selectedCategoryId = _categories[0].Id;
+			else if (_categories.Count == 0){
+				_noCategories = true;
+				_categories = new List<GetTournamentCategoriesQueryResult>() { new GetTournamentCategoriesQueryResult("_", "No hay categorías") };
+			}
 		}
 	}
 

@@ -2,18 +2,45 @@
     background-color: #fafa;
 }
 
+::deep #nav-page .fluent-nav-item a.active {
+    background: none !important;
+}
+
 ::deep #nav-page .fluent-nav-item .positioning-region {
+    position: relative;
     color: var(--neutral-foreground-rest);
     border-color: var(--neutral-stroke-hover);
+    transition: all 0.3s ease-in-out;
+    transition-property: background-color,border;
+}
+
+::deep #nav-page .fluent-nav-item .positioning-region::after {
+    content: "";
+    height: 3px;
+    width: 100%;
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    background-color: var(--accent-fill-rest);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+::deep #nav-page .fluent-nav-item .active .positioning-region::after {
+    opacity: 1;
 }
 
 ::deep #nav-page .fluent-nav-item .positioning-region:not(:hover) {
     background-color: transparent;
+    border: 1px solid transparent;
 }
 
 ::deep #nav-page .fluent-nav-item .active .positioning-region:not(:hover) {
+    /*background-color: var(--neutral-layer-1);*/
+}
+
+::deep #nav-page .fluent-nav-item .active .positioning-region {
     font-weight: 500;
-    background-color: var(--neutral-layer-1);
 }
 
 ::deep #nav-page .fluent-nav-item .active .positioning-region::before {

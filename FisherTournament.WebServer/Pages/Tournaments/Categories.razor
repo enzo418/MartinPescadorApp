@@ -16,8 +16,9 @@
         <h1 class="page-title-no-pt">Categorias</h1>
     </FluentGridItem>
 
-    <FluentGridItem sm="12" md="6" Class="flex justify-end">
-        <FluentSwitch Value="@_canEdit" @onchange=OnToggleCanEdit title="Editar">
+    <FluentGridItem sm="12" md="6" Class="flex justify-end items-center">
+        
+        <FluentSwitch @bind-Value="@_canEdit" title="Editar">
             <span class="label">Editar</span>
             <span slot="unchecked-message">
                 <FluentIcon class="align-middle" Icon="Icons.Regular.Size20.LockClosed" Color="Color.Neutral" />
@@ -26,6 +27,14 @@
                 <FluentIcon class="align-middle" Icon="Icons.Regular.Size20.Edit" Color="Color.Neutral" />
             </span>
         </FluentSwitch>
+        
+        <FluentDivider Style="height: 20px;" Class="mx-2" Role="DividerRole.Separator"
+                       Orientation="Orientation.Vertical">
+        </FluentDivider>
+
+        <FluentButton Appearance="Appearance.Accent"
+                      IconStart="@(new Icons.Regular.Size16.Add())"
+                      @onclick="@(v => OnNewCategoryClicked())"><b>Agregar categoría</b></FluentButton>
     </FluentGridItem>
 </FluentGrid>
 
@@ -33,11 +42,12 @@
 <FluentDataGrid Items="@cats">
     <ChildContent>
         <TemplateColumn Title="Categoría">
-            @if(_canEdit){
-		    <FluentTextField 
-                Value="@context.Name"
-                ValueChanged="@((v) => OnNameChanged(context.Name, context, v))"
-                tabindex="@(GetCatIndex(context)+1)" />
+            @if(_canEdit && context.Name != GeneralCategoryName)
+			{
+		        <FluentTextField 
+                    Value="@context.Name"
+                    ValueChanged="@((v) => OnNameChanged(context.Name, context, v))"
+                    tabindex="@(GetCatIndex(context)+1)" />
             } else
             {
                 <FluentLabel class="p-1">@context.Name</FluentLabel>
@@ -64,29 +74,22 @@
         *@
 
         <TemplateColumn Title="Acciones" Align="@Align.End">
-            <FluentButton IconEnd="@(new Icons.Regular.Size24.Delete().WithColor("red"))" Disabled=!_canEdit OnClick="@(() => Delete(context))" />
+            @if (context.Name != GeneralCategoryName) {
+                <FluentButton 
+                    IconEnd="@(new Icons.Regular.Size24.Delete().WithColor("red"))" 
+                    Disabled=!_canEdit 
+                    OnClick="@(() => Delete(context))" />
+            }
         </TemplateColumn>
     </ChildContent>
 
     <EmptyContent>
-        @if (!_canEdit)
-        {
-            <div Style="min-height: 300px;" class="flex items-center empty-content pt-4">
-                <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
-                &nbsp; No se encontraron categorías.
-            </div>
-        }
+        <div Style="min-height: 300px;" class="flex items-center empty-content pt-4">
+            <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
+            &nbsp; No se encontraron categorías.
+        </div>
     </EmptyContent>
 </FluentDataGrid>
-
-@if (_canEdit)
-{
-    <div class="dashed-rect cursor-pointer"
-    @onclick="@(v => OnNewCategoryClicked())">
-        <FluentIcon Icon="Icons.Regular.Size24.Add" Color="@Color.Accent" />
-        <span class="color-fg">Nueva categoría</span>
-    </div>
-}
 
 
 @code {
@@ -96,6 +99,8 @@
     private bool _canEdit = false;
 
     int _tabIndex = 0;
+
+    string GeneralCategoryName = "General";
 
     IQueryable<GetTournamentCategoriesQueryResult> cats = new List<GetTournamentCategoriesQueryResult>().AsQueryable();
 
@@ -193,7 +198,7 @@
             categoryRef.Name = prevName;
         } else
         {
-//            categoryRef.Name = newName;
+            //            categoryRef.Name = newName;
             await GetCategories();
             _toastService.ClearSuccessToasts();
             _toastService.ShowSuccess($"Cambio guardado", 1);
@@ -206,11 +211,12 @@
         var res = await _sender.Send(command);
 
         if (res.IsError)
-		{
-			_toastService.ShowErrors(res.Errors);
-		} else
-		{
-			await GetCategories();
+        {
+            _toastService.ShowErrors(res.Errors);
+        } else
+        {
+            _canEdit = true;
+            await GetCategories();
 		}
     }
 

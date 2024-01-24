@@ -131,3 +131,32 @@ tbody tr:nth-child(even) {
 .fluent-nav-item a.active {
     border-radius: 9px;
 }
+
+.left-marker {
+    position: relative;
+    display: flex;
+    width: 100%;
+    position: relative;
+    align-items: center;
+}
+
+.left-marker::before {
+    content: "";
+    display: block;
+    position: absolute;
+    right: unset;
+    width: 4px;
+    height: calc(((var(--base-height-multiplier) + var(--density)) * var(--design-unit) / 2) * 1px);
+    background: var(--accent-fill-rest);
+    border-radius: calc(var(--control-corner-radius) * 1px);
+    margin: calc(var(--design-unit) * 2px) 2px;
+    z-index: 5;
+}
+
+.left-marker-content {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    width: 100%;
+    margin-inline-start: calc(var(--design-unit) * 3px);
+}

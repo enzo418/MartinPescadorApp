@@ -94,7 +94,7 @@
         }
         else
         {
-            _categories = categoriesRes.Value.ToList();
+            _categories = categoriesRes.Value.Where(c => c.Name != "General").ToList();
         }
 
         _categories.Add(new GetTournamentCategoriesQueryResult { Id = "all", Name = "Todas" });
