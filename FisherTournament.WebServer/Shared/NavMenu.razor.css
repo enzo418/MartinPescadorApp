@@ -12,6 +12,7 @@
 }
 
 ::deep #nav-page .fluent-nav-item .active .positioning-region:not(:hover) {
+    font-weight: 500;
     background-color: var(--neutral-layer-1);
 }
 
