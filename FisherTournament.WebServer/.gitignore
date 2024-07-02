@@ -2,3 +2,5 @@ node_modules
 obj
 bin
 *.xlsx
+
+FisherTournament.WebServer.csproj.user

@@ -3,6 +3,13 @@
 **/bin
 **/obj
 
+**/*.rsuser
+**/*.suo
+**/*.user
+**/*.userosscache
+**/*.sln.docstates
+**/*.pubxml
+
 # SQlite db
 *.db*
 
