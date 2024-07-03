@@ -520,6 +520,13 @@ tbody tr:nth-child(even) {
   border-radius: 9px;
 }
 
+/* hacky fix to toast beign FIXED WIDTH TO 48PX !!! */
+
+.fluent-toast-action {
+  width: -moz-fit-content !important;
+  width: fit-content !important;
+}
+
 .left-marker {
   display: flex;
   width: 100%;

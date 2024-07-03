@@ -18,7 +18,7 @@
 
 <h1 class="page-title-no-pt">Tabla de posiciones de la <span style="color: var(--accent-fill-rest);">fecha N° @competition.N</span></h1>
 
-<div class="mt-7 mb-7 flex flex-row w-full justify-between items-end">
+<div class="mb-7 mt-7 flex w-full flex-row items-end justify-between">
     <div class="flex flex-row gap-x-2">
         <div>
             <FluentSelect   Items=_categories
@@ -132,12 +132,23 @@
                 _toastService.ShowErrors(exportReq.Errors);
             } else
             {
-                var directory = System.IO.Directory.GetCurrentDirectory();
+                /*var directory = System.IO.Directory.GetCurrentDirectory();
                 _toastService.ShowSuccess(
                     $"Tabla de posiciones exportada correctamente al archivo '{exportReq.Value}' en {directory}",
                     null,
                     "Abrir",
                     EventCallback.Factory.Create<ToastResult>(this, t => HandleTopActionAsync(t, exportReq.Value))
+                );*/
+
+                _toastService.ShowSuccess(
+                    $"Tabla generada '{exportReq.Value}'",
+                    null,
+                    "Descargar",
+                    EventCallback.Factory.Create<ToastResult>(this, async t =>
+                    {
+                        var fileURL = ExportLeaderboardService.PublicExportPath + "/" + exportReq.Value;
+                        await _js.InvokeVoidAsync("triggerFileDownload", exportReq.Value, fileURL);
+                    })
                 );
             }
         } catch (System.IO.IOException e)

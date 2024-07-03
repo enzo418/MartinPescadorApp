@@ -22,7 +22,7 @@
 
 <h1 class="page-title-no-pt">Tabla de posiciones del <span style="color: var(--accent-fill-rest);">torneo</span></h1>
 
-<div class="mt-7 mb-7 flex flex-row w-full justify-between items-end">
+<div class="mb-7 mt-7 flex w-full flex-row items-end justify-between">
     <div class="flex flex-row gap-x-2">
         <div>
             <FluentSelect Items=_categories
@@ -42,7 +42,7 @@
     </div>
     <FluentButton IconStart="@(new Icons.Regular.Size16.Share())" OnClick="ExportLeaderboard" Appearance="Appearance.Outline">Exportar</FluentButton>
 </div>
-@* <FluentDivider class="mt-4 mb-4" />  *@
+@* <FluentDivider class="mb-4 mt-4" />  *@
 
 <div style="height: calc(100% - 200px); overflow-y: scroll;">
     <FluentDataGrid Items="@positions" Virtualize="true" ItemSize="50" GridTemplateColumns="0.1fr 0.6fr 0.3fr 0.5fr">
@@ -63,7 +63,7 @@
         </ChildContent>
 
         <EmptyContent>
-            <div Style="min-height: 300px;" class="flex items-center empty-content pt-2">
+            <div Style="min-height: 300px;" class="empty-content flex items-center pt-2">
                 <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
                 &nbsp; No hay posiciones registradas en el torneo
             </div>
@@ -217,12 +217,23 @@
                 _toastService.ShowErrors(exportReq.Errors);
             } else
             {
-                var directory = System.IO.Directory.GetCurrentDirectory();
+                /*var directory = System.IO.Directory.GetCurrentDirectory();
                 _toastService.ShowSuccess(
                     $"Tabla de posiciones exportada correctamente al archivo '{exportReq.Value}' en {directory}",
                     null,
                     "Abrir",
                     EventCallback.Factory.Create<ToastResult>(this, t => HandleTopActionAsync(t, exportReq.Value))
+                );*/
+
+                _toastService.ShowSuccess(
+                    $"Tabla generada '{exportReq.Value}'",
+                    null,
+                    "Descargar",
+                    EventCallback.Factory.Create<ToastResult>(this, async t =>
+                    {
+                        var fileURL = ExportLeaderboardService.PublicExportPath + "/" + exportReq.Value;
+                        await _js.InvokeVoidAsync("triggerFileDownload", exportReq.Value, fileURL);
+                    })
                 );
             }
         } catch (System.IO.IOException e)

@@ -13,6 +13,9 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
     public partial class ExportLeaderboardService
     {
         private readonly ISender _sender;
+        private readonly string _basePath;
+
+        public static string PublicExportPath => "/exports";
 
         [GeneratedRegex("[^\\p{L}\\p{N}\\s\\p{M}]", RegexOptions.None)]
         private static partial Regex SanitizeRegex();
@@ -20,6 +23,12 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
         public ExportLeaderboardService(ISender sender)
         {
             _sender = sender;
+            _basePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "exports");
+
+            if (!Directory.Exists(_basePath))
+            {
+                Directory.CreateDirectory(_basePath);
+            }
         }
 
         public async Task<ErrorOr<string>> ExportTournamentLeaderboard(string TournamentId)
@@ -91,7 +100,9 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
             ApplyDefaultStyle(wb);
 
             var fileName = $"Torneo {sanitizedTournamentName} {tournamentDataRequest.Value.StartDate.Year} - categorias.xlsx";
-            wb.SaveAs(fileName);
+
+            var savePath = Path.Combine(_basePath, fileName);
+            wb.SaveAs(savePath);
 
             return fileName;
         }
@@ -156,7 +167,8 @@ namespace FisherTournament.WebServer.Services.ExportLeaderboard
 
             var fileName = $"Torneo {sanitizedTournamentName} - {competitionDataRequest.Value.N}° Fecha.xlsx";
 
-            wb.SaveAs(fileName);
+            var savePath = Path.Combine(_basePath, fileName);
+            wb.SaveAs(savePath);
 
             return fileName;
         }

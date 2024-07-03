@@ -31,6 +31,17 @@
     <component type="typeof(App)" render-mode="ServerPrerendered" />
 
     <script src="_framework/blazor.server.js"></script>
+
+    <!-- global function: Trigger File download from URL -->
+    <script>
+        window.triggerFileDownload = (fileName, url) => {
+            const anchorElement = document.createElement('a');
+            anchorElement.href = url;
+            anchorElement.download = fileName ?? '';
+            anchorElement.click();
+            anchorElement.remove();
+        }
+    </script>
 </body>
 
 </html>

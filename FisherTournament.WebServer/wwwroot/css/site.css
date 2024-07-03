@@ -1,4 +1,4 @@
-/* TODO: USE LOCAL */
+﻿/* TODO: USE LOCAL */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 /* @tailwind base; */
@@ -74,12 +74,12 @@ main > article {
 }
 
 h1.page-title {
-    @apply uppercase pt-7 font-normal;
+    @apply pt-7 font-normal uppercase;
     color: var(--neutral-foreground-hint) !important;
 }
 
 h1.page-title-no-pt {
-    @apply uppercase font-normal;
+    @apply font-normal uppercase;
     color: var(--neutral-foreground-hint) !important;
 }
 
@@ -92,7 +92,7 @@ fluent-data-grid-row.header {
 }
 
 .dashed-rect {
-    @apply mt-3 flex flex-row justify-center items-center gap-3 border-dashed border-2 rounded-md p-2;
+    @apply border-2 mt-3 flex flex-row items-center justify-center gap-3 rounded-md border-dashed p-2;
 }
 
 span.fluent-nav-icon {
@@ -130,6 +130,11 @@ tbody tr:nth-child(even) {
 
 .fluent-nav-item a.active {
     border-radius: 9px;
+}
+
+/* hacky fix to toast beign FIXED WIDTH TO 48PX !!! */
+.fluent-toast-action {
+    width: fit-content !important;
 }
 
 .left-marker {

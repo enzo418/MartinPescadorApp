@@ -4,3 +4,5 @@ bin
 *.xlsx
 
 FisherTournament.WebServer.csproj.user
+
+Properties/ServiceDependencies
