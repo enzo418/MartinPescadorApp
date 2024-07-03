@@ -1,0 +1,90 @@
+﻿@layout MainLayout
+
+@page "/notary/"
+
+@using FisherTournament.Application.Competitions.Queries.GetCompetition;
+@using FisherTournament.Application.Competitions.Queries.GetTournamentCompetitions;
+@using FisherTournament.Application.Tournaments.Queries.GetTournamentsSummary;
+
+@inject ISender _sender
+@inject IToastService _toast
+@inject NavigationManager _nav
+
+<div class="h-full px-4 pt-7">
+	<h1 class="page-title-no-pt w-full text-center">Seleccionar competicion</h1>
+
+
+	<FluentDataGrid Items="@competitions" Virtualize="true" ItemSize="54">
+		<ChildContent>
+
+			<PropertyColumn Property="@(p => p.Tournament.Name)" Title="Torneo" Sortable="true" />
+			<PropertyColumn Property="@(p => p.Competition.N)" Title="Fecha N°" Sortable="true" />
+			<PropertyColumn Property="@(p => p.Competition.StartDate)" Title="Fecha Inicio" />
+			<PropertyColumn Property="@(p => p.Competition.Location.Place)" Title="Fecha Lugar" />
+
+			<TemplateColumn Title="" Align="@Align.End">
+				<FluentButton Appearance="Appearance.Accent" OnClick="@(() => GoToNotary(@context))">
+					Seleccionar
+				</FluentButton>
+			</TemplateColumn>
+		</ChildContent>
+		<EmptyContent>
+			<div Style="min-height: 100px;" class="empty-content flex items-center pt-2">
+				&nbsp; Todavía no hay competiciones.
+			</div>
+		</EmptyContent>
+	</FluentDataGrid>
+</div>
+
+@code {
+	record struct CompetitionItemList(
+		GetTournamentsSummaryQueryResult Tournament,
+		GetTournamentCompetitionsQueryResult Competition);
+
+	bool ongoingTournamentFound = false;
+
+	IQueryable<CompetitionItemList> competitions = new List<CompetitionItemList>().AsQueryable();
+
+	protected override async Task OnInitializedAsync()
+	{
+		var query = new GetTournamentsSummaryQuery(
+				Ended: false,
+				TournamentYear: DateTime.Now.Year,
+				1,
+				4);
+
+		var result = await _sender.Send(query);
+
+		if (result.IsError)
+		{
+			_toast.ShowErrors(result.Errors);
+		}
+
+		if (result.Value.TotalCount > 0)
+		{
+			var tournamentSummariesTasks = result.Value.Items.Select(async t =>
+			{
+				var query = new GetTournamentCompetitionsQuery(t.Id);
+
+				var result = await _sender.Send(query);
+
+				if (result.IsError)
+				{
+					_toast.ShowErrors(result.Errors);
+					return new List<CompetitionItemList>();
+				}
+
+				return result.Value.Select(c => new CompetitionItemList(t, c));
+			});
+
+			var enumResult = await Task.WhenAll(tournamentSummariesTasks);
+
+			competitions = enumResult.SelectMany(c => c).AsQueryable();
+		}
+	}
+
+	private void GoToNotary(CompetitionItemList p)
+	{
+		_nav.NavigateTo($"/notary/tournament/{p.Tournament.Id}/competition/{p.Competition.Id}");
+	}
+}

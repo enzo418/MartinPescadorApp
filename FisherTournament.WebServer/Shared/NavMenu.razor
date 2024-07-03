@@ -23,12 +23,9 @@
 
                 <FluentNavLink Href="/fishers" Icon="@(new Icons.Regular.Size20.People())">Pescadores</FluentNavLink>
 
-                @if (_nav.Uri.Contains("/notary"))
-                {
-                    @DividerTemplate
+                @DividerTemplate
 
-                    <FluentNavLink Href=@_nav.Uri Icon="@(new Icons.Regular.Size20.NotepadPerson())">Notario</FluentNavLink>
-                }
+                <FluentNavLink Href="/notary" Icon="@(new Icons.Regular.Size20.NotepadPerson())">Notario</FluentNavLink>
             </FluentNavMenu>
 
             <span slot="end">

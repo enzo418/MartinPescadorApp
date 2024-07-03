@@ -10,7 +10,7 @@
 @inject ISender _sender
 
 <div class="px-4">
-	<div class="flex flex-row w-full items-center justify-between mb-4">
+	<div class="mb-4 flex w-full flex-row items-center justify-between">
 		<h1 class="page-title">Torneos/Fechas</h1>
 
 		<FluentButton OnClick="@(() => _nav.NavigateTo("/tournaments/add"))"
@@ -33,11 +33,11 @@
 	<div class="flex gap-4">
 		@foreach (var tournament in OngoingTournaments)
 		{
-			<FluentCard class="flex flex-col w-fit mt-4 h-fit pt-2.5 pb-2.5 px-4" Style="min-width: 620px;">
+			<FluentCard class="mt-4 flex h-fit w-fit flex-col px-4 pb-2.5 pt-2.5" Style="min-width: 620px;">
 				<div class="flex flex-row">
 					@* <FluentLabel Class="pt-2.5" Typo="Typography.H6" Color="Color.Disabled">Torneo: </FluentLabel> *@
 
-					<div class="flex flex-row w-full items-center gap-x-5">
+					<div class="flex w-full flex-row items-center gap-x-5">
 						<FluentLabel Typo="Typography.H4">@tournament.tournament.Name</FluentLabel>
 						<FluentNavLink Href="@("/tournament/"+tournament.tournament.Id)" Class="flex gap-x-2">
 							Ir al torneo
@@ -59,7 +59,7 @@
 				<div class="flex flex-row pt-2.5">
 					<FluentLabel Class="whitespace-nowrap pr-3" Typo="Typography.H6" Color="Color.Accent">Fecha Inicio del torneo </FluentLabel>
 
-					<div class="flex flex-row w-full items-center">
+					<div class="flex w-full flex-row items-center">
 						<FluentLabel Typo="Typography.Body">@tournament.tournament.StartDate.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern)</FluentLabel>
 					</div>
 				</div>
@@ -69,7 +69,7 @@
 					<div class="flex flex-row pt-2.5">
 						<FluentLabel Class="whitespace-nowrap pr-3" Typo="Typography.H6" Color="Color.Accent">Fechas del torneo proximas o en curso </FluentLabel>
 
-						<div class="flex flex-row w-full items-center">
+						<div class="flex w-full flex-row items-center">
 							<FluentLabel Typo="Typography.Body">El torneo todavía no tiene fechas</FluentLabel>
 						</div>
 					</div>
@@ -89,7 +89,7 @@
 							</TemplateColumn>
 
 							<TemplateColumn Title="Ranking" Align="Align.Center">
-								<FluentNavLink Class="flex gap-x-2 underline w-full justify-center whitespace-nowrap center-fluent-nav-icon"
+								<FluentNavLink Class="center-fluent-nav-icon flex w-full justify-center gap-x-2 whitespace-nowrap underline"
 											   Href="@("/tournament/"+tournament.tournament.Id+"/leaderboard/"+@context.Id)"
 											   Style="color: var(--accent-fill-rest);">
 									<FluentIcon Value="@(new Icons.Regular.Size16.Trophy())" Class="align-middle" />
@@ -97,15 +97,15 @@
 							</TemplateColumn>
 
 							<TemplateColumn Title="Ir a modo notario" Align="Align.Center">
-								<FluentNavLink Class="flex gap-x-2 underline w-full justify-center whitespace-nowrap center-fluent-nav-icon"
-											   Href="@("/tournament/"+tournament.tournament.Id+"/competition/"+@context.Id+"/notary")"
+								<FluentNavLink Class="center-fluent-nav-icon flex w-full justify-center gap-x-2 whitespace-nowrap underline"
+											   Href="@("/notary/tournament/"+tournament.tournament.Id+"/competition/"+@context.Id)"
 											   Style="color: var(--accent-fill-rest);">
 									<FluentIcon Value="@(new Icons.Regular.Size16.NotepadPerson())" Class="align-middle" />
 								</FluentNavLink>
 							</TemplateColumn>
 						</ChildContent>
 						<EmptyContent>
-							<div Style="min-height: 100px;" class="flex items-center empty-content pt-2">
+							<div Style="min-height: 100px;" class="empty-content flex items-center pt-2">
 								&nbsp; Todavía no hay competiciones.
 							</div>
 						</EmptyContent>
@@ -117,22 +117,22 @@
 
 	@if (OngoingTournaments.Count == 0)
 	{
-		<div Style="min-height: 100px;" class="flex flex-row w-full items-center justify-center">
+		<div Style="min-height: 100px;" class="flex w-full flex-row items-center justify-center">
 			<FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Disabled" />
 			&nbsp; No hay torneos en curso.
 		</div>
 	}
 
 
-	<FluentLabel Typo="Typography.H3" Class="pt-14 mb-10">Buscar fecha</FluentLabel>
+	<FluentLabel Typo="Typography.H3" Class="mb-10 pt-14">Buscar fecha</FluentLabel>
 	@* <FluentDivider class="mb-4" /> *@
-	@* <CenteredSectionSeparator Class="mt-16 mb-10">
+	@* <CenteredSectionSeparator Class="mb-10 mt-16">
 		<CustomChild>
 			<FluentLabel Typo="Typography.H3">Buscar fecha</FluentLabel>
 		</CustomChild>
 	</CenteredSectionSeparator> *@
 
-	<div class="flex flex-row w-full justify-center gap-10 mb-4">
+	<div class="mb-4 flex w-full flex-row justify-center gap-10">
 		<div>
 			<FluentSelect
 				Items="@(Enumerable.Range(DateTime.Now.Year-5, 6))"
@@ -185,15 +185,15 @@
 		<FluentPaginator State="@competitionSearchPagination" />
 
 
-	<FluentLabel Typo="Typography.H3" Class="pt-14 mb-10">Buscar torneo</FluentLabel>
+	<FluentLabel Typo="Typography.H3" Class="mb-10 pt-14">Buscar torneo</FluentLabel>
 	@* <FluentDivider class="mb-4" /> *@
-	@* <CenteredSectionSeparator Class="mt-16 mb-10">
+	@* <CenteredSectionSeparator Class="mb-10 mt-16">
 			<CustomChild>
 				<FluentLabel Typo="Typography.H3">Buscar torneo</FluentLabel>
 			</CustomChild>
 	</CenteredSectionSeparator> *@
 
-	<div class="flex flex-row w-full justify-center gap-10 mb-4">
+	<div class="mb-4 flex w-full flex-row justify-center gap-10">
 		<div>
 			<FluentSelect Items="@(Enumerable.Range(DateTime.Now.Year-5, 6))"
 			@bind-Value="SelectedYear"
