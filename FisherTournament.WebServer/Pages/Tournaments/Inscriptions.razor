@@ -24,7 +24,7 @@
     </FluentGridItem>
 </FluentGrid>
 
-<div class="flex flex-row w-full justify-center gap-10 mb-4">
+<div class="mb-4 flex w-full flex-row justify-center gap-10">
     <div>
         <FluentSelect Items="@_categories"
         @bind-Value="@_selectedCategoryId"
@@ -63,7 +63,7 @@
     </ChildContent>
 
     <EmptyContent>
-        <div Style="min-height: 300px;" class="flex items-center empty-content">
+        <div Style="min-height: 300px;" class="empty-content flex items-center">
             <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
             &nbsp; Todavía no hay inscripciones.
         </div>

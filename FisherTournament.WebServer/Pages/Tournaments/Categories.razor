@@ -16,7 +16,7 @@
         <h1 class="page-title-no-pt">Categorias</h1>
     </FluentGridItem>
 
-    <FluentGridItem sm="12" md="6" Class="flex justify-end items-center">
+    <FluentGridItem sm="12" md="6" Class="flex items-center justify-end">
         
         <FluentSwitch @bind-Value="@_canEdit" title="Editar">
             <span class="label">Editar</span>
@@ -62,7 +62,7 @@
                     @onchange="@(v => OnMinAgeChanged(context, v))"
                     tabindex="@(GetCatIndex(context)+2)" />
                 <span      
-                    class="flex flex-col justify-center mx-3 color-fg">
+                    class="color-fg mx-3 flex flex-col justify-center">
                     hasta
                 </span>
                 <FluentNumberField 
@@ -84,7 +84,7 @@
     </ChildContent>
 
     <EmptyContent>
-        <div Style="min-height: 300px;" class="flex items-center empty-content pt-4">
+        <div Style="min-height: 300px;" class="empty-content flex items-center pt-4">
             <FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
             &nbsp; No se encontraron categorías.
         </div>

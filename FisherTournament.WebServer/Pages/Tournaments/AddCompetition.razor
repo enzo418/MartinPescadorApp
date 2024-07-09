@@ -19,9 +19,9 @@
 
 	<h1 class="page-title-no-pt">Agregar Competición</h1>
 
-	@* <p class="m-0 color-fg"></p>
-	<FluentDivider class="mt-1 mb-4" /> *@
-	<CenteredSectionSeparator Class="mt-10 mb-7">Fechas</CenteredSectionSeparator>
+	@* <p class="color-fg m-0"></p>
+	<FluentDivider class="mb-4 mt-1" /> *@
+	<CenteredSectionSeparator Class="mb-7 mt-10">Fechas</CenteredSectionSeparator>
 
 	<div class="flex flex-col items-center">
 		<div>
@@ -37,11 +37,11 @@
 	</div>
 
 
-	@* <p class="m-0 mt-16 color-fg">Lugar de la competencia</p>
-	<FluentDivider class="mt-1 mb-4" /> *@
-	<CenteredSectionSeparator Class="mt-16 mb-7">Lugar de la competencia</CenteredSectionSeparator>
+	@* <p class="color-fg m-0 mt-16">Lugar de la competencia</p>
+	<FluentDivider class="mb-4 mt-1" /> *@
+	<CenteredSectionSeparator Class="mb-7 mt-16">Lugar de la competencia</CenteredSectionSeparator>
 
-	<div class="flex flex-row justify-evenly w-full">
+	<div class="flex w-full flex-row justify-evenly">
 		<div>
 			<FluentTextField @bind-Value="@Model.Location.Place" Required="false" AutoComplete="off">
 				Direccion/Nombre del lugar
@@ -53,7 +53,7 @@
 		</div>
 	</div>
 
-	<div class="absolute bottom-0 mb-6 mt-6 flex flex-row w-full justify-center gap-24">
+	<div class="absolute bottom-0 mb-6 mt-6 flex w-full flex-row justify-center gap-24">
 		<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
 		<FluentButton 
 				IconStart="@(new Icons.Regular.Size16.Checkmark())" 

@@ -16,15 +16,15 @@
 @inject IJSRuntime _js
 @inject IMapper _mapper
 
-<div class="h-full relative">
+<div class="relative h-full">
 	<h1 class="page-title-no-pt">Editar Inscripción</h1>
 
-	<p class="m-0 color-fg">Pescador</p>
-	<FluentDivider class="mt-1 mb-4" />
+	<p class="color-fg m-0">Pescador</p>
+	<FluentDivider class="mb-4 mt-1" />
 
 	<div class="flex flex-col items-center">
 		<FluentCard class="mt-4" style="height:100px;width:500px">
-			<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+			<div class="flex h-full w-full flex-row items-center justify-evenly gap-14">
 				<div class="flex flex-col gap-2">
 					<div>
 						<span class="color-fg font-bold">Nombre</span>
@@ -45,10 +45,10 @@
 		</FluentCard>
 	</div>
 
-	<p class="m-0 mt-16 color-fg">Selecciona la categoría e ingresa el número</p>
-	<FluentDivider class="mt-1 mb-4" />
+	<p class="color-fg m-0 mt-16">Selecciona la categoría e ingresa el número</p>
+	<FluentDivider class="mb-4 mt-1" />
 
-	<div class="flex flex-row justify-evenly w-full">
+	<div class="flex w-full flex-row justify-evenly">
 		<div>
 			<FluentSelect	Items=_categories
 							OptionText="@(i => i.Name)"
@@ -66,7 +66,7 @@
 	</div>
 
 
-	<div class="absolute bottom-0 mb-6 mt-6 flex flex-row w-full justify-center gap-24">
+	<div class="absolute bottom-0 mb-6 mt-6 flex w-full flex-row justify-center gap-24">
 		<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
 		<FluentButton Disabled=CanSend()
 				OnClick="@Save"

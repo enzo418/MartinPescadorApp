@@ -19,8 +19,8 @@
 <EditForm class="relative h-full" EditContext="_editContext" OnSubmit="Submit">
 	<h1 class="page-title-no-pt">Editar Competición</h1>
 
-	<p class="m-0 color-fg"></p>
-	<FluentDivider class="mt-1 mb-4" />
+	<p class="color-fg m-0"></p>
+	<FluentDivider class="mb-4 mt-1" />
 
 	<div class="flex flex-col items-start gap-y-5">
 		<div>
@@ -36,7 +36,7 @@
 
 		@if (EndDate is not null)
 		{
-			<div class="flex flex-row gap-x-5 items-end">
+			<div class="flex flex-row items-end gap-x-5">
 				<div>
 					<FluentDatePicker @bind-Value="@EndDate" Disabled="true">
 						<LabelTemplate>
@@ -51,7 +51,7 @@
 			</div>
 		} else
 		{
-			<div class="flex flex-row gap-x-5 items-end">
+			<div class="flex flex-row items-end gap-x-5">
 				<div>
 					<FluentTextField Value="Sin finalizar" Disabled="true" Appearance="FluentInputAppearance.Outline">
 						<LabelTemplate>
@@ -69,16 +69,16 @@
 
 	<FluentGrid Class="items-end">
 		<FluentGridItem sm="12" md="6">
-			<p class="m-0 mt-16 color-fg">Lugar de la competencia</p>
+			<p class="color-fg m-0 mt-16">Lugar de la competencia</p>
 		</FluentGridItem>
 
 		<FluentGridItem sm="12" md="6" Class="flex justify-end">
 		
 		</FluentGridItem>
 	</FluentGrid>
-	<FluentDivider class="mt-1 mb-4" />
+	<FluentDivider class="mb-4 mt-1" />
 
-	<div class="flex flex-row justify-evenly w-full">
+	<div class="flex w-full flex-row justify-evenly">
 		<div>
 			<FluentTextField
 				AutoComplete="off"
@@ -91,7 +91,7 @@
 		</div>
 	</div>
 
-	<div class="absolute bottom-0 mb-4 mt-6 flex flex-row w-full justify-center gap-24">
+	<div class="absolute bottom-0 mb-4 mt-6 flex w-full flex-row justify-center gap-24">
 		<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
 		<FluentButton 
 				IconStart="@(new Icons.Regular.Size16.Checkmark())" 

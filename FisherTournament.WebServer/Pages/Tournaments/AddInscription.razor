@@ -17,19 +17,19 @@
 @inject IJSRuntime _js
 
 <div class="relative h-full">
-	<div class="flex flex-row w-full items-center justify-between">
+	<div class="flex w-full flex-row items-center justify-between">
 		<h1 class="page-title-no-pt">Agregar Inscripción</h1>
 
 		<FluentSwitch @bind-Value="@_exitOnSave" Label="Volver al guardar" />
 	</div>
 
-	@* <p class="m-0 color-fg">Selecciona el Pescador</p>
-	<FluentDivider class="mt-1 mb-4" />
+	@* <p class="color-fg m-0">Selecciona el Pescador</p>
+	<FluentDivider class="mb-4 mt-1" />
 	 *@
-	<CenteredSectionSeparator Class="mt-10 mb-7">Pescador</CenteredSectionSeparator>
+	<CenteredSectionSeparator Class="mb-7 mt-10">Pescador</CenteredSectionSeparator>
 
 	<div class="flex flex-col items-center">
-		<div class="flex flex-row gap-4 items-end">
+		<div class="flex flex-row items-end gap-4">
 			<div>
 				<FluentTextField 
 					@bind-Value="_searchNameInput"
@@ -47,7 +47,7 @@
 		@if (selected is not null)
 		{
 			<FluentCard class="mt-4" style="height:100px;width:500px">
-				<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+				<div class="flex h-full w-full flex-row items-center justify-evenly gap-14">
 					<div class="flex flex-col gap-2">
 						<div>
 							<span class="color-fg font-bold">Nombre</span>
@@ -70,7 +70,7 @@
 			@foreach (var persona in searchResult)
 			{
 				<FluentCard class="mt-4" style="height:100px;width:500px">
-					<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+					<div class="flex h-full w-full flex-row items-center justify-evenly gap-14">
 						<div class="flex flex-col gap-2">
 							<div>
 								<span class="color-fg font-bold">Nombre</span>
@@ -95,8 +95,8 @@
 
 		@if (searchResult.Count == 1)
 			{
-				<FluentCard class="mt-4 dashed-rect" style="height:100px;width:500px">
-					<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+				<FluentCard class="dashed-rect mt-4" style="height:100px;width:500px">
+					<div class="flex h-full w-full flex-row items-center justify-evenly gap-14">
 						<span class="color-fg">Solo hubo un resultado</span>
 
 						<FluentButton 
@@ -108,8 +108,8 @@
 			}
 
 		@if (_searched && searchResult.Count == 0) {
-				<FluentCard class="mt-4 dashed-rect" style="height:100px;width:500px">
-					<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+				<FluentCard class="dashed-rect mt-4" style="height:100px;width:500px">
+					<div class="flex h-full w-full flex-row items-center justify-evenly gap-14">
 						<span class="color-fg">No se encontraron pescadores</span>
 
 						<FluentButton 
@@ -125,11 +125,11 @@
 
 	@if (selected is not null)
 	{
-		@* <p class="m-0 mt-16 color-fg">Selecciona la categoría e ingresa el número</p>
-		<FluentDivider class="mt-1 mb-4" /> *@
-		<CenteredSectionSeparator Class="mt-16 mb-7">Inscripción</CenteredSectionSeparator>
+		@* <p class="color-fg m-0 mt-16">Selecciona la categoría e ingresa el número</p>
+		<FluentDivider class="mb-4 mt-1" /> *@
+		<CenteredSectionSeparator Class="mb-7 mt-16">Inscripción</CenteredSectionSeparator>
 
-		<div class="flex flex-row justify-evenly w-full">
+		<div class="flex w-full flex-row justify-evenly">
 			<div>
 				<FluentSelect Items=_categories
 				OptionText="@(i => i.Name)"
@@ -149,7 +149,7 @@
 			</FluentNumberField>
 		</div>
 
-		<div class="absolute bottom-0 mb-6 mt-6 flex flex-row w-full justify-center gap-24">
+		<div class="absolute bottom-0 mb-6 mt-6 flex w-full flex-row justify-center gap-24">
 			<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Limpiar campos</FluentButton>
 			<FluentButton 
 					Disabled=!CanSave()

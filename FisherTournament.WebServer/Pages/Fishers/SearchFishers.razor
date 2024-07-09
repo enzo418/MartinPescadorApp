@@ -1,4 +1,4 @@
-@using System.Text.RegularExpressions
+﻿@using System.Text.RegularExpressions
 @using FisherTournament.Contracts.Fishers
 @using Application.Fishers.Queries
 @using FisherTournament.WebServer.Common.Errors;
@@ -11,7 +11,7 @@
 @page "/fishers"
 
 <div  class="h-full px-4">
-    <div class="flex flex-row w-full items-center justify-between">
+    <div class="flex w-full flex-row items-center justify-between">
         <h1 class="page-title">Buscar Pescador</h1>
     
         <FluentButton OnClick="@(() => _nav.NavigateTo("/fishers/add"))" IconStart="@(new Icons.Regular.Size16.AddCircle())" Appearance="Appearance.Accent">
@@ -20,7 +20,7 @@
     </div>
 
 
-    <div class="flex justify-center gap-20 pt-7 mb-6 items-end">
+    <div class="mb-6 flex items-end justify-center gap-20 pt-7">
                 <FluentTextField Autofocus="true" tabindex="6" @bind-Value=Name Placeholder="Nombre o Apellido" @oninput="SearchByNameAsync">
                 Buscar por nombre
                 </FluentTextField>

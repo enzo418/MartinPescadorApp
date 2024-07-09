@@ -14,7 +14,7 @@
 @inject IMapper _mapper;
 @inject NavigationManager _nav;
 
-<EditForm EditContext="@editContext" class="flex flex-col justify-between h-full" >
+<EditForm EditContext="@editContext" class="flex h-full flex-col justify-between" >
     <div>
         <h1 class="page-title-no-pt">Torneo</h1>
 
@@ -72,7 +72,7 @@
         </FluentStack>
     </div>
 
-    <div class="flex justify-between mb-6">
+    <div class="mb-6 flex justify-between">
         <FluentButton IconStart="@(new Icons.Regular.Size16.Delete())" OnClick="DeleteTournament">Eliminar</FluentButton>
     </div>
 </EditForm>
