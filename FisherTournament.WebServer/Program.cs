@@ -36,6 +36,19 @@ builder.Services.AddLocalization();
 
 var app = builder.Build();
 
+var rnd = new Random();
+
+app.Use(async (context, next) =>
+{
+    // Normal distribution 
+    var mu = 500;
+    var sigma = 100;
+    var v = rnd.NextDouble();
+    var val = (1 / (sigma * Math.Sqrt(2 * Math.PI))) * Math.Exp(-0.5 * Math.Pow((v - mu) / sigma, 2));
+    await Task.Delay((int)(val));
+    await next();
+});
+
 app.UseRequestLocalization(new RequestLocalizationOptions()
     .AddSupportedCultures(new[] { "es", "en-US" })
     .AddSupportedUICultures(new[] { "es", "en-US" }));

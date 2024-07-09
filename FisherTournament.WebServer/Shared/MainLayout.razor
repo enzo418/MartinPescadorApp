@@ -12,6 +12,7 @@
 @inject LeaderboardNotificationService _leaderboardNotificationService
 @inject IToastService _toast
 @inject IJSRuntime _js
+@inject NavigationManager Navigation
 
 <PageTitle>Control</PageTitle>
 
@@ -38,6 +39,14 @@
         <FluentToastContainer MaxToastCount="10" Timeout=@ToastTimeout RemoveToastsOnNavigation="false"  />
         <FluentDialogProvider />
         <FluentTooltipProvider />
+
+        <FluentOverlay @bind-Visible=@_navigating
+                       Opacity="0.1"
+                       FullScreen="true"
+                       Dismissable="false"
+                       PreventScroll=true>
+            <FluentProgressRing />
+        </FluentOverlay>
     </main>
 </div>
 
@@ -56,6 +65,9 @@
     private ThrottleCall _showLeaderBoardUpdateDelted = new(ToastTimeout);
 
     private IJSObjectReference? _jsModule;
+
+    private IDisposable? registration;
+    private bool _navigating = false; 
 
     protected override void OnInitialized()
     {
@@ -86,9 +98,24 @@
                 SwitchTheme();
                 StateHasChanged();
             }
-            
+
             _leaderboardNotificationService.OnLeaderboardWasUpdated += OnLeaderboardUpdated;
+
+            registration =
+                Navigation.RegisterLocationChangingHandler(OnLocationChanging);            
         }
+
+        if (_navigating)
+        {
+            _navigating = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        _navigating = true;
+        await InvokeAsync(StateHasChanged);
     }
 
     public async void SwitchTheme()
@@ -129,5 +156,7 @@
     void IDisposable.Dispose()
     {
         _leaderboardNotificationService.OnLeaderboardWasUpdated -= OnLeaderboardUpdated;
+
+        registration?.Dispose();
     }
 }
