@@ -22,7 +22,7 @@
 	<EditForm EditContext="_editContext" OnValidSubmit="Save">
 		@if (CompetitionId is null)
 		{
-			<CenteredSectionSeparator Class="mt-10 mb-7">Competencia</CenteredSectionSeparator>
+			<CenteredSectionSeparator Class="mb-7 mt-10">Competencia</CenteredSectionSeparator>
 
 			<div class="flex flex-col items-center">
 				<div>
@@ -38,10 +38,10 @@
 			</div>
 		}
 
-		<CenteredSectionSeparator Class="mt-16 mb-7">Pescador</CenteredSectionSeparator>
+		<CenteredSectionSeparator Class="mb-7 mt-16">Pescador</CenteredSectionSeparator>
 
 		<div class="flex flex-col items-center">
-			<div class="flex flex-row gap-4 items-end">
+			<div class="flex flex-row items-end gap-4">
 				<div>
 					<FluentTextField @bind-Value="_searchByNameValue"
 						Placeholder="Nombre"
@@ -69,7 +69,7 @@
 			@if (_selectedFisher is not null)
 			{
 				<FluentCard class="mt-4" style="height:100px;width:500px">
-					<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+					<div class="flex h-full w-full flex-row items-center justify-evenly gap-14">
 						<div class="flex flex-col gap-2">
 							<div>
 								<span class="color-fg font-bold">Nombre</span>
@@ -103,7 +103,7 @@
 				@foreach (var persona in _searchByNameResult)
 				{
 					<FluentCard class="mt-4" style="height:100px;width:500px">
-						<div class="flex flex-row justify-evenly items-center w-full h-full gap-14">
+						<div class="flex h-full w-full flex-row items-center justify-evenly gap-14">
 							<div class="flex flex-col gap-2">
 								<div>
 									<span class="color-fg font-bold">Nombre</span>
@@ -129,16 +129,16 @@
 
 		@if (_selectedFisher is not null)
 		{
-			<CenteredSectionSeparator Class="mt-16 mb-7">Puntaje</CenteredSectionSeparator>
+			<CenteredSectionSeparator Class="mb-7 mt-16">Puntaje</CenteredSectionSeparator>
 
-			<div class="flex flex-row justify-evenly w-full">
+			<div class="flex w-full flex-row justify-evenly">
 				<FluentNumberField @bind-Value=Score Min="0" Required="true">
 					Puntaje <span class="red">*</span>
 				</FluentNumberField>
 				<ValidationMessage For="@(() => Request.Score)" />
 			</div>
 
-			<div class="absolute mb-6 bottom-0 mt-10 flex flex-row w-full justify-center gap-24">
+			<div class="absolute mb-6 mt-10 flex w-full flex-row justify-center gap-24">
 				<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
 				<FluentButton Disabled=!CanSave()
 								IconStart="@(new Icons.Regular.Size16.Checkmark())"
