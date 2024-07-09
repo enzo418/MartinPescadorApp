@@ -113,6 +113,8 @@
 
     private async Task Submit()
     {
+        System.Globalization.CultureInfo resourceCulture;
+
         if (_sending) return;
         if (!editContext.Validate() || !editContext.IsModified()) return;
 
@@ -123,7 +125,8 @@
 
         if (response.IsError)
         {
-            editContext.AddValidationErrors(response.Errors, messageStore, Model);
+            editContext.AddValidationErrors(response.Errors, messageStore, Model)
+                    .AddValidationErrors(response.Errors, messageStore, Model, _toastService);
         }
         else
         {

@@ -135,7 +135,8 @@
 
             if (response.IsError)
             {
-                editContext.AddValidationErrors(response.Errors, messageStore, Model);
+                editContext.AddValidationErrors(response.Errors, messageStore, Model)
+                            .AddValidationErrors(response.Errors, messageStore, Model, _toast);
             } else
             {
                 _nav.NavigateTo("/tournament/" + response.Value.TournamentId);
@@ -162,7 +163,8 @@
 
             if (response.IsError)
             {
-                editContext.AddValidationErrors(response.Errors, messageStore, Model);
+                editContext.AddValidationErrors(response.Errors, messageStore, Model)
+                        .AddValidationErrors(response.Errors, messageStore, Model, _toast);
             } else
             {
                 _nav.NavigateTo("/tournament/"+response.Value.Id);

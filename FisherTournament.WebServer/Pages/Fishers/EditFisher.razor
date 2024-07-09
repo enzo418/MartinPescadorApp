@@ -16,7 +16,7 @@
 
     <EditForm EditContext="@editContext" OnSubmit="@Submit" class="relative h-full">
         <div class="flex justify-center gap-20 pt-7">
-            <div class="flex flex-col gap-10 justify-normal">
+            <div class="flex flex-col justify-normal gap-10">
                 <div>
                     <span class="text-sm">Información Personal</span>
                     <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
@@ -44,7 +44,7 @@
                 </p>
             </div>
 
-            <div class="flex flex-col gap-10 justify-normal">
+            <div class="flex flex-col justify-normal gap-10">
                 <div>
                     <span class="text-sm">Opcional</span>
                     <FluentDivider Style="width: 100%;" Role="DividerRole.Presentation" />
@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        <div class="absolute bottom-0 m-auto flex columns-2 gap-28 w-full place-content-center">
+        <div class="columns-2 absolute bottom-0 m-auto flex w-full place-content-center gap-28">
             <FluentButton Appearance="Appearance.Stealth" @onclick=OnCancel>Cancelar</FluentButton>
             <FluentButton Type=ButtonType.Submit Appearance="Appearance.Accent" Disabled=!editContext!.IsModified()>Guardar</FluentButton>
         </div>
@@ -142,7 +142,8 @@
 
         if (response.Result.IsError)
         {
-            editContext?.AddValidationErrors(response.Result.Errors, messageStore, Model);
+            editContext?.AddValidationErrors(response.Result.Errors, messageStore, Model)
+                        .AddValidationErrors(response.Result.Errors, messageStore, Model, _toastService);
         } else
         {
             _toastService.ShowSuccess($"Editado correctamente");
