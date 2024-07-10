@@ -1,0 +1,386 @@
+﻿@layout MainLayout
+
+@page "/tournament/{TournamentId}/competition/{CompetitionId}/edit-scores"
+
+@using FisherTournament.Application.Competitions.Commands.AddScore;
+@using FisherTournament.Application.Competitions.Commands.BulkEditScores
+@using FisherTournament.Application.Competitions.Queries.GetCompetition
+@using FisherTournament.Application.Competitions.Queries.GetLeaderboardItemDetails
+@using FisherTournament.Application.Competitions.Queries.GetTournamentCompetitions;
+@using FisherTournament.Application.Fishers.Queries;
+@using FisherTournament.Application.Tournaments.Queries.GetInscription;
+@using FisherTournament.Application.Tournaments.Queries.GetTournament
+@using FisherTournament.Application.Tournaments.Queries.GetTournamentCategories
+@using FisherTournament.Contracts.Competitions;
+@using FisherTournament.WebServer.Common.Model;
+
+@inject IToastService _toastService
+@inject NavigationManager _nav
+@inject ISender _sender
+@inject IJSRuntime _js
+@inject IMapper _mapper
+
+<div>
+	<FluentLabel Typo="Typography.Header" Class="page-title-no-pt w-full text-center">
+		Ingresar/Editar piezas de pescadores inscriptos en el torneo 
+		<span style="color: var(--accent-fill-rest);">"@tournament.Name"</span>,
+		<span style="color: var(--accent-fill-rest);">Fecha N° @competition.N</span>
+	</FluentLabel>
+
+
+
+	<div class="mt-4 flex flex-col items-center">
+		<div class="flex flex-row items-end gap-4">
+			<div>
+				<FluentTextField @bind-Value="_searchByNameValue"
+								 Placeholder="Nombre"
+								 AutoComplete="off"
+								 Label="Buscar por nombre"
+								 @oninput="@SearchFisherByName"
+								 Disabled="@(_selectedFisher is not null)">
+					<FluentIcon Value="@(new Icons.Regular.Size16.Person())" Slot="start" Color="Color.Neutral" />
+				</FluentTextField>
+			</div>
+
+			<div>
+				<FluentNumberField @bind-Value="_searchByNumberValue"
+								   Placeholder="Número"
+								   AutoComplete="off"
+								   Label="Buscar por Número de pescador"
+								   @bind-Value:after="@SearchFisherByFisherNumber"
+								   Disabled="@(_selectedFisher is not null)">
+					<FluentIcon Value="@(new Icons.Regular.Size16.Person())" Slot="start" Color="Color.Neutral" />
+				</FluentNumberField>
+			</div>
+		</div>
+
+
+		@if (_selectedFisher is not null)
+		{
+			<FluentCard class="mt-4" style="height:100px;width:500px">
+				<div class="flex h-full w-full flex-row items-center justify-evenly gap-14">
+					<div class="flex flex-col gap-2">
+						<div>
+							<span class="color-fg font-bold">Nombre</span>
+							<span class="color-fg">@($"{_selectedFisher?.FirstName} {_selectedFisher?.LastName}")</span>
+						</div>
+
+						<div>
+							<span class="color-fg font-bold">DNI</span>
+							<span class="color-fg">@_selectedFisher?.DNI</span>
+						</div>
+					</div>
+
+					<div>
+						<p style="color: var(--accent-fill-rest);">
+							@* <FluentIcon Value="@(new Icons.Regular.Size24.Checkmark())" /> *@
+							Seleccionado
+						</p>
+
+						<FluentButton IconStart="@(new Icons.Regular.Size16.ArrowUndo())"
+									  @onclick=Deselect
+									  Appearance="Appearance.Outline">
+							Deseleccionar
+						</FluentButton>
+
+					</div>
+				</div>
+			</FluentCard>
+		} else
+		{
+			@foreach (var persona in _searchByNameResult)
+			{
+				<FluentCard class="mt-4" style="height:100px;width:500px">
+					<div class="flex h-full w-full flex-row items-center justify-evenly gap-14">
+						<div class="flex flex-col gap-2">
+							<div>
+								<span class="color-fg font-bold">Nombre</span>
+								<span class="color-fg">@($"{persona.FirstName} {persona.LastName}")</span>
+							</div>
+
+							<div>
+								<span class="color-fg font-bold">DNI</span>
+								<span class="color-fg">@persona.DNI</span>
+							</div>
+						</div>
+
+						<FluentButton IconStart="@(new Icons.Regular.Size16.Checkmark())"
+									  @onclick="@(() => Select(persona))"
+									  Appearance="Appearance.Accent">
+							Seleccionar
+						</FluentButton>
+					</div>
+				</FluentCard>
+			}
+		}
+	</div>
+
+	<table class="mt-4 min-w-full table-auto">
+        <tr>
+            <th style="width: 150px;">Nombre</th>
+            <th style="width: 150px;">Apellido</th>
+			<th style="width: 50px;">Total</th>
+			<th style="">Piezas separadas por coma</th>
+        </tr>
+
+        @foreach(var result in results)
+	    {
+		    <tr>
+			    <td>
+					<FluentTextField ReadOnly="true" Value="@result.Fisher.FirstName" />
+                </td>
+			    <td>
+					<FluentTextField ReadOnly="true" Value="@result.Fisher.LastName" />
+                </td>
+
+				<td class="text-center" style="color: var(--accent-fill-rest);">
+					@(result.Scores.Sum())
+				</td>
+
+				<td>
+					<FluentTextField Class="w-full"							
+							Value="@string.Join(", ", result.Scores)"
+							@onchange="@((ChangeEventArgs __e) => ScoresChanged(result, __e?.Value?.ToString()))" />
+				</td>
+		    </tr>
+	    }
+	</table>
+
+	@if (!results.Any())
+	{
+		<div Style="min-height: 150px;" class="empty-content flex items-center justify-center pt-2">
+			<FluentIcon Icon="Icons.Regular.Size24.Warning" Color="@Color.Accent" />
+			&nbsp; Selecciona un pescador
+		</div>
+	}
+
+	<div class="mb-6 mt-10 flex w-full flex-row justify-center gap-24">
+		<FluentButton Appearance="Appearance.Stealth" OnClick="Cancel">Cancelar</FluentButton>
+		<FluentButton 
+					  IconStart="@(new Icons.Regular.Size16.Checkmark())"
+					  Appearance="Appearance.Accent"
+					  OnClick="Save">Guardar</FluentButton>
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public string TournamentId { get; set; } = null!;
+
+	[Parameter]
+	public string CompetitionId { get; set; } = null!;
+
+	GetCompetitionQueryResponse competition = default!;
+	GetTournamentResultQueryResult tournament = default!;
+
+	record struct FisherItem(string Id, string FirstName, string LastName, string DNI);
+
+	class BulkInputFisherResult
+	{
+		public FisherItem Fisher { get; set; }
+		public List<int> Scores { get; set; } = new(40);
+	}
+
+	List<BulkInputFisherResult> results = new();
+
+	FisherItem? _selectedFisher;
+	List<FisherItem> _searchByNameResult = new();
+	private string? _searchByNameValue = null;
+	private int? _searchByNumberValue = null;
+
+
+	List<(string Id, string Name)> _categories = new();
+
+	string _selectedCategoryId = "";
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		var query = new GetTournamentCategoriesQuery(TournamentId);
+		var categoriesRes = await _sender.Send(query);
+
+		if (categoriesRes.IsError)
+		{
+			_toastService.ShowErrors(categoriesRes.Errors);
+		} else
+		{
+			_categories = categoriesRes.Value.Where(c => c.Name != "General").Select(c => (c.Id, c.Name)).ToList();
+		}
+	}
+
+	protected override async Task OnParametersSetAsync()
+	{
+		await GetCompetition();
+		await GetTournament();
+	}
+
+	async Task GetCompetition()
+	{
+		var competitionQuery = new GetCompetitionQuery(CompetitionId);
+		var competitionRes = await _sender.Send(competitionQuery);
+
+		if (competitionRes.IsError)
+		{
+			_toastService.ShowErrors(competitionRes.Errors);
+		} else
+		{
+			competition = competitionRes.Value;
+		}
+	}
+
+	async Task GetTournament()
+	{
+		var tournamentQuery = new GetTournamentQuery(TournamentId);
+		var tournamentRes = await _sender.Send(tournamentQuery);
+
+		if (tournamentRes.IsError)
+		{
+			_toastService.ShowErrors(tournamentRes.Errors);
+		} else
+		{
+			tournament = tournamentRes.Value;
+		}
+	}
+
+	private async Task SearchFisherByName(ChangeEventArgs e)
+	{
+		_searchByNameValue = e.Value?.ToString() ?? string.Empty;
+
+		var query = new GetFishersQuery(_searchByNameValue, "", 1, 2);
+
+		var result = await _sender.Send(query);
+
+		if (result.IsError)
+		{
+			_toastService.ShowErrors(result.Errors);
+			return;
+		}
+
+		_searchByNameResult = result.Value.Items.Select(i => new FisherItem(i.Id, i.FirstName, i.LastName, i.DNI)).ToList();
+	}
+
+	private async Task SearchFisherByFisherNumber()
+	{
+		if (!_searchByNumberValue.HasValue) return;
+
+		var query = new GetInscriptionQueryByInscriptionNumber(TournamentId, _searchByNumberValue.Value);
+		var res = await _sender.Send(query);
+
+		if (res.IsError)
+		{
+			_toastService.ShowErrors(res.Errors);
+			return;
+		}
+
+		var getFisherQuery = new GetFisherQuery(res.Value.FisherId);
+		var getFisherRes = await _sender.Send(getFisherQuery);
+
+		if (getFisherRes.IsError)
+		{
+			_toastService.ShowErrors(getFisherRes.Errors);
+			return;
+		}
+
+		await SetSelectedPerson(new FisherItem(getFisherRes.Value.Id, getFisherRes.Value.FirstName, getFisherRes.Value.LastName, getFisherRes.Value.DNI));
+	}
+
+	private async Task Select(FisherItem persona)
+	{
+		//var query = new GetInscriptionQueryByFisherId(TournamentId, persona.Id);
+		await SetSelectedPerson(persona);
+	}
+
+	private async Task SetSelectedPerson(FisherItem persona)
+	{
+		_selectedFisher = persona;
+		_searchByNameResult.Clear();
+
+		if (results.Any(p => p.Fisher.Id == persona.Id))
+		{
+			_toastService.ShowError("El pescador ya fue agregado");
+			return;
+		}
+
+		// check enrolled
+		var queryEnrolled = new GetInscriptionQueryByFisherId(TournamentId, persona.Id);
+		var resEnrolled = await _sender.Send(queryEnrolled);
+		if (resEnrolled.IsError)
+		{
+			_toastService.ShowErrors(resEnrolled.Errors);
+			return;
+		}
+
+		// get scores
+		var query = new GetLeaderboardItemDetailsQuery(CompetitionId, persona.Id);
+		var res = await _sender.Send(query);
+
+		if (res.IsError 
+			&& !(res.Errors.Count == 1 && res.FirstError.Code == "Fisher.FisherHasNoParticipationRegistered"))
+		{
+			_toastService.ShowErrors(res.Errors);
+			return;
+		} else
+		{
+			var nf = new BulkInputFisherResult();
+
+			nf.Fisher = persona;
+
+			if (!res.IsError)
+			{
+				nf.Scores = res.Value.Caught.Select(c => c.Score).ToList();
+			}
+
+			results.Add(nf);
+		}
+
+		Deselect();
+
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private void Deselect()
+	{
+		_selectedFisher = null;
+	}
+
+	private void Cancel()
+	{
+		results.Clear();
+	}
+
+	private async Task Save()
+	{
+		//
+		var command = new BulkEditScoresCommand(
+			TournamentId, 
+			CompetitionId, 
+			results.Select(r => new BulkEditScoresItem(r.Fisher.Id, r.Scores)).ToList());
+		var res = await _sender.Send(command);
+
+		if (res.IsError)
+		{
+			_toastService.ShowErrors(res.Errors);
+		} else
+		{
+			_toastService.ShowSuccess("Cambios guardados");
+		}
+	}
+
+	private void ScoresChanged(BulkInputFisherResult i, string val)
+	{
+		try
+		{
+			val = val.Trim();
+			if (val.Any()){
+				var splitted = val.Split(",").Select(s => int.Parse(s)).ToList();
+				i.Scores = splitted.Where(s => s > 0).ToList();
+			} else
+			{
+				i.Scores.Clear();
+			}
+		} catch (Exception)
+		{
+			_toastService.ShowError("Alguno de los valores ingresados no es un número");
+		}
+	}
+}

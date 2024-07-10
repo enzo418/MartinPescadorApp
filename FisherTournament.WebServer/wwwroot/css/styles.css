@@ -138,6 +138,10 @@
   display: flex;
 }
 
+.table{
+  display: table;
+}
+
 .hidden{
   display: none;
 }
@@ -162,6 +166,14 @@
 
 .w-full{
   width: 100%;
+}
+
+.min-w-full{
+  min-width: 100%;
+}
+
+.table-auto{
+  table-layout: auto;
 }
 
 .transform{

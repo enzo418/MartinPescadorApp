@@ -71,6 +71,32 @@ public sealed class Competition : AggregateRoot<CompetitionId>
         return Result.Success;
     }
 
+    public ErrorOr<Success> AddScores(FisherId fisherId, IEnumerable<int> scores, IDateTimeProvider dateTimeProvider)
+    {
+        if (EndDateTime.HasValue)
+            return Errors.Competitions.HasEnded;
+
+        if (StartDateTime > dateTimeProvider.Now)
+            return Errors.Competitions.HasNotStarted;
+
+        var participation = _participations.Where(x => x.FisherId == fisherId)
+                                .SingleOrDefault();
+        if (participation == null)
+        {
+            AddParticipation(fisherId);
+            return AddScores(fisherId, scores, dateTimeProvider);
+        }
+
+        foreach (var score in scores)
+        {
+            participation.AddFishCaught(FishCaught.Create(this.Id, fisherId, score, dateTimeProvider));
+        }
+
+        // No need to trigger an event. AddParticipation already does that (it was removed before this call)
+
+        return Result.Success;
+    }
+
     public void EndCompetition(IDateTimeProvider dateTimeProvider)
     {
         EndDateTime = dateTimeProvider.Now;
@@ -101,6 +127,8 @@ public sealed class Competition : AggregateRoot<CompetitionId>
             return;
 
         _participations.Remove(participation);
+
+        AddDomainEvent(new ParticipationRemovedDomainEvent(fisherId, this.Id));
     }
 
     public void EditStartDate(DateTime startDateTime)

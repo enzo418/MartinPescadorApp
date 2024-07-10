@@ -20,6 +20,7 @@ namespace FisherTournament.Application.DomainEventHandlers;
 public class UpdateLeaderBoardEventsHandler
  : INotificationHandler<ScoreAddedDomainEvent>,
     INotificationHandler<ParticipationAddedDomainEvent>,
+    INotificationHandler<ParticipationRemovedDomainEvent>,
     INotificationHandler<InscriptionAddedDomainEvent>,
     INotificationHandler<InscriptionUpdatedDomainEvent>,
     INotificationHandler<CompetitionAddedDomainEvent>,
@@ -81,6 +82,23 @@ public class UpdateLeaderBoardEventsHandler
     /// <returns></returns>
     public async Task Handle(ParticipationAddedDomainEvent notification,
                              CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Handling ParticipationAddedDomainEvent");
+
+        (TournamentId? tournamentId, CategoryId? categoryId) = await GetTournamentAndCategoryIds(notification.CompetitionId,
+                                                                                                 notification.FisherId,
+                                                                                                 cancellationToken);
+
+        if (tournamentId == null || categoryId == null)
+        {
+            return;
+        }
+
+        _leaderBoardUpdateScheduler.ScheduleLeaderBoardUpdate(tournamentId, notification.CompetitionId, categoryId);
+    }
+
+
+    public async Task Handle(ParticipationRemovedDomainEvent notification, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Handling ParticipationAddedDomainEvent");
 

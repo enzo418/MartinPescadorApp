@@ -36,11 +36,16 @@
         <ScrollerGoToCompetition Class="ml-3" TournamentId=@TournamentId />
     </div>
     
-
-    <FluentButton 
+    <div>
+        <FluentAnchor 
+            IconStart="@(new Icons.Regular.Size16.Edit())"
+            Href=@($"/tournament/{TournamentId}/competition/{CompetitionId}/edit-scores") 
+            Appearance="Appearance.Outline">Editar puntajes</FluentAnchor>
+        <FluentButton 
             IconStart="@(new Icons.Regular.Size16.Share())" 
             OnClick="ExportLeaderboard" 
             Appearance="Appearance.Outline">Exportar</FluentButton>
+    </div>
 </div>
 
 <CompetitionLeaderboardList CategoryId="@_selectedCategoryId" OnCategoriesChanged=@OnCategoriesChanged CompetitionId=@CompetitionId />
